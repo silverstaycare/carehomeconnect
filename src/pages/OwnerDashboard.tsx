@@ -6,77 +6,143 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
 import { Home, DollarSign, Calendar } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Property {
   id: string;
   name: string;
   location: string;
   price: number;
-  image: string;
-  occupancy: {
-    current: number;
-    total: number;
-  };
-  activeDate: string;
-}
-
-interface Payment {
-  id: string;
-  amount: number;
-  status: string;
-  date: string;
-  property: string;
-  from: string;
+  description: string;
+  capacity: number;
+  city: string;
+  state: string;
 }
 
 const OwnerDashboard = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [properties, setProperties] = useState<Property[]>([]);
-  const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize with empty arrays instead of mock data
-    setProperties([]);
-    setRecentPayments([]);
-  }, []);
+    const fetchProperties = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast({
+            title: "Please log in",
+            description: "You must be logged in to view your properties",
+            variant: "destructive"
+          });
+          navigate("/login");
+          return;
+        }
 
-  // Function to redirect to subscription page
-  const handleSubscription = () => {
-    navigate("/owner/subscription");
+        const { data, error } = await supabase
+          .from('care_homes')
+          .select('*')
+          .eq('owner_id', user.id);
+
+        if (error) {
+          throw error;
+        }
+
+        setProperties(data || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch properties",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, [navigate, toast]);
+
+  // Redirect to list property page if no properties exist
+  const handleListProperty = () => {
+    navigate("/owner/list-property");
   };
 
-  return (
-    <div className="container py-8 px-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Owner Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user?.name}</p>
-        </div>
-        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
-          <Button onClick={() => navigate("/owner/list-property")}>
-            <Home className="mr-2 h-4 w-4" />
-            List New Property
-          </Button>
-          <Button variant="outline" onClick={handleSubscription}>
-            <DollarSign className="mr-2 h-4 w-4" />
-            Manage Subscription
-          </Button>
-        </div>
+  // If loading, show a loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[500px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
+    );
+  }
 
+  // If no properties, show empty state
+  if (properties.length === 0) {
+    return (
       <div className="flex flex-col items-center justify-center py-16 px-4 bg-muted/40 rounded-lg text-center">
         <Home className="h-16 w-16 text-muted-foreground mb-6" />
         <h2 className="text-2xl font-semibold mb-4">No Properties Listed Yet</h2>
         <p className="text-gray-600 mb-8 max-w-md">
           List your first property on Silver Stay to start connecting with potential residents and their families.
         </p>
-        <Button size="lg" onClick={() => navigate("/owner/list-property")}>
+        <Button size="lg" onClick={handleListProperty}>
           List Your First Property
         </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container py-8 px-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Owner Dashboard</h1>
+          <p className="text-gray-600">Manage your care homes</p>
+        </div>
+        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+          <Button onClick={() => navigate("/owner/list-property")}>
+            <Home className="mr-2 h-4 w-4" />
+            List New Property
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {properties.map((property) => (
+          <Card key={property.id} className="overflow-hidden">
+            <CardHeader>
+              <CardTitle>{property.name}</CardTitle>
+              <CardDescription>
+                {property.city}, {property.state}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">{property.description}</p>
+                <div className="flex items-center justify-between">
+                  <Badge variant="secondary">
+                    Capacity: {property.capacity} residents
+                  </Badge>
+                  <span className="font-semibold text-primary">
+                    ${property.price.toLocaleString()}/month
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate(`/property/${property.id}`)}
+              >
+                View Details
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );

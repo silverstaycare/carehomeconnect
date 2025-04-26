@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import LocationSearchBox from "@/components/search/LocationSearchBox";
 import SearchFilters from "@/components/search/SearchFilters";
 import PropertiesGrid from "@/components/search/PropertiesGrid";
@@ -10,10 +12,8 @@ interface Property {
   name: string;
   location: string;
   price: number;
-  image: string;
-  amenities: string[];
-  rating: number;
-  reviews: number;
+  city: string;
+  state: string;
 }
 
 const SearchResults = () => {
@@ -44,63 +44,45 @@ const SearchResults = () => {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        await new Promise(resolve => setTimeout(resolve, 800));
+        setLoading(true);
         
-        const mockProperties: Property[] = [
-          {
-            id: "1",
-            name: "Sunshine Senior Care",
-            location: "San Francisco, CA",
-            price: 2800,
-            image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
-            amenities: ["24/7 Staff", "Private Rooms", "Memory Care", "Garden"],
-            rating: 4.8,
-            reviews: 45
-          },
-          {
-            id: "2",
-            name: "Golden Years Manor",
-            location: "Los Angeles, CA",
-            price: 3200,
-            image: "https://images.unsplash.com/photo-1570129477492-45c003edd2be",
-            amenities: ["Medication Management", "Social Activities", "Gourmet Meals", "Physical Therapy"],
-            rating: 4.6,
-            reviews: 38
-          },
-          {
-            id: "3",
-            name: "Serenity Care Home",
-            location: "Seattle, WA",
-            price: 2950,
-            image: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09",
-            amenities: ["Beautiful Garden", "Private Bathrooms", "Housekeeping", "Transportation"],
-            rating: 4.9,
-            reviews: 52
-          },
-          {
-            id: "4",
-            name: "Tranquil Gardens Care",
-            location: "Portland, OR",
-            price: 3100,
-            image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914",
-            amenities: ["Transportation", "24/7 Staff", "Meal Service", "Social Activities"],
-            rating: 4.7,
-            reviews: 29
-          },
-          {
-            id: "5",
-            name: "Harmony House",
-            location: "San Diego, CA",
-            price: 2600,
-            image: "https://images.unsplash.com/photo-1577495508048-b635879837f1",
-            amenities: ["Private Rooms", "Medication Management", "Housekeeping", "Garden"],
-            rating: 4.5,
-            reviews: 33
-          }
-        ];
-        
-        setProperties(mockProperties);
-        setFilteredProperties(mockProperties);
+        // Base query to fetch properties
+        let query = supabase
+          .from('care_homes')
+          .select(`
+            id, 
+            name, 
+            price, 
+            city, 
+            state,
+            care_home_amenities!inner(*)
+          `);
+
+        // Filter by location if provided
+        if (searchLocation) {
+          query = query.or(
+            `city.ilike.%${searchLocation}%, state.ilike.%${searchLocation}%`
+          );
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          throw error;
+        }
+
+        // Transform data to match Property interface
+        const transformedProperties = data.map(home => ({
+          id: home.id,
+          name: home.name,
+          location: `${home.city}, ${home.state}`,
+          price: home.price,
+          city: home.city,
+          state: home.state
+        }));
+
+        setProperties(transformedProperties);
+        setFilteredProperties(transformedProperties);
       } catch (error) {
         console.error("Error fetching properties:", error);
       } finally {
@@ -109,7 +91,7 @@ const SearchResults = () => {
     };
 
     fetchProperties();
-  }, []);
+  }, [searchLocation]);
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) {
@@ -119,31 +101,21 @@ const SearchResults = () => {
     const filtered = properties.filter(property => {
       const inPriceRange = property.price >= priceRange[0] && property.price <= priceRange[1];
       
-      const hasSelectedAmenities = selectedAmenities.length === 0 || 
-        selectedAmenities.some(amenity => property.amenities.includes(amenity));
-      
       const matchesLocation = searchLocation === "" || 
         property.location.toLowerCase().includes(searchLocation.toLowerCase());
       
-      return inPriceRange && hasSelectedAmenities && matchesLocation;
+      return inPriceRange && matchesLocation;
     });
     
     setFilteredProperties(filtered);
     navigate(`/search?location=${encodeURIComponent(searchLocation)}`);
   };
 
-  const toggleAmenity = (amenity: string) => {
-    setSelectedAmenities(prev => 
-      prev.includes(amenity) 
-        ? prev.filter(a => a !== amenity)
-        : [...prev, amenity]
-    );
-  };
-
   const handleReset = () => {
     setSearchLocation("");
     setPriceRange([1000, 10000]);
     setSelectedAmenities([]);
+    setFilteredProperties(properties);
   };
 
   return (
@@ -162,7 +134,7 @@ const SearchResults = () => {
             priceRange={priceRange}
             setPriceRange={setPriceRange}
             selectedAmenities={selectedAmenities}
-            toggleAmenity={toggleAmenity}
+            toggleAmenity={() => {}} // Placeholder since we're not using amenities filtering yet
             amenitiesList={amenitiesList}
             filterOpen={filterOpen}
             setFilterOpen={setFilterOpen}
@@ -177,7 +149,13 @@ const SearchResults = () => {
       </div>
 
       <PropertiesGrid 
-        properties={filteredProperties}
+        properties={filteredProperties.map(p => ({
+          ...p,
+          image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994", // Placeholder image
+          amenities: [], // We'll add real amenities later
+          rating: 4.5,
+          reviews: 45
+        }))}
         loading={loading}
         onReset={handleReset}
       />
