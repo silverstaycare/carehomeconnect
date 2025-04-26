@@ -1,10 +1,26 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+
+// Pages
+import HomePage from "./pages/HomePage";
 import NotFound from "./pages/NotFound";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import OwnerDashboard from "./pages/OwnerDashboard";
+import FamilyDashboard from "./pages/FamilyDashboard";
+import PropertyDetails from "./pages/PropertyDetails";
+import ListProperty from "./pages/ListProperty";
+import SearchResults from "./pages/SearchResults";
+import SubscriptionPage from "./pages/SubscriptionPage";
+import PaymentPage from "./pages/PaymentPage";
+
+// Context providers
+import { AuthProvider } from "./contexts/AuthContext";
+import { AppLayout } from "./components/layout/AppLayout";
 
 const queryClient = new QueryClient();
 
@@ -13,13 +29,25 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<AppLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="register" element={<RegisterPage />} />
+              <Route path="owner/dashboard" element={<OwnerDashboard />} />
+              <Route path="owner/list-property" element={<ListProperty />} />
+              <Route path="owner/subscription" element={<SubscriptionPage />} />
+              <Route path="family/dashboard" element={<FamilyDashboard />} />
+              <Route path="property/:id" element={<PropertyDetails />} />
+              <Route path="search" element={<SearchResults />} />
+              <Route path="payment/:propertyId" element={<PaymentPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
