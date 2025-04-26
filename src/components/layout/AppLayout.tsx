@@ -1,8 +1,7 @@
-
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Search, Users, Home, Info, Shield, FileText } from "lucide-react";
+import { Search, Users, Home, Info, Shield, FileText, X, Instagram, TikTok } from "lucide-react";
 import Logo from "@/components/common/Logo";
 
 const AppLayout = () => {
@@ -158,10 +157,36 @@ const AppLayout = () => {
               </ul>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <p className="text-center text-gray-500">
+          <div className="mt-8 pt-8 border-t border-gray-200 flex justify-between items-center">
+            <p className="text-gray-500">
               © {new Date().getFullYear()} Silver Stay. All rights reserved.
             </p>
+            <div className="flex space-x-4">
+              <a 
+                href="https://x.com/silverstay" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-600 hover:text-black transition-colors"
+              >
+                <X size={24} />
+              </a>
+              <a 
+                href="https://instagram.com/silverstay" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-600 hover:text-pink-500 transition-colors"
+              >
+                <Instagram size={24} />
+              </a>
+              <a 
+                href="https://tiktok.com/@silverstay" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-600 hover:text-black transition-colors"
+              >
+                <TikTok size={24} />
+              </a>
+            </div>
           </div>
         </div>
       </footer>
