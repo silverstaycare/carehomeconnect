@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,12 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
   const { toast } = useToast();
   
   const [name, setName] = useState("");
@@ -37,11 +37,24 @@ const RegisterPage = () => {
     }
 
     try {
-      await register(email, password, name, role);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: name.split(' ')[0],
+            last_name: name.split(' ').slice(1).join(' '),
+            role: role
+          }
+        }
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Registration successful",
         description: "Welcome to Silver Stay!",
-        duration: 5000 // Automatically disappear after 5 seconds
+        duration: 5000
       });
       
       if (role === "owner") {
@@ -49,8 +62,8 @@ const RegisterPage = () => {
       } else {
         navigate("/family/dashboard");
       }
-    } catch (error) {
-      setError("An error occurred during registration. Please try again.");
+    } catch (error: any) {
+      setError(error.message || "An error occurred during registration. Please try again.");
     } finally {
       setIsLoading(false);
     }
