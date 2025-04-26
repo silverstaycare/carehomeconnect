@@ -49,7 +49,19 @@ const OwnerDashboard = () => {
           throw error;
         }
 
-        setProperties(data || []);
+        // Transform the data to match the Property interface
+        const transformedProperties: Property[] = data?.map(home => ({
+          id: home.id,
+          name: home.name,
+          location: `${home.city}, ${home.state}`, // Create the location field
+          price: home.price,
+          description: home.description,
+          capacity: home.capacity,
+          city: home.city,
+          state: home.state
+        })) || [];
+
+        setProperties(transformedProperties);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching properties:", error);

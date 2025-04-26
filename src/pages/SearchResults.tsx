@@ -49,14 +49,7 @@ const SearchResults = () => {
         // Base query to fetch properties
         let query = supabase
           .from('care_homes')
-          .select(`
-            id, 
-            name, 
-            price, 
-            city, 
-            state,
-            care_home_amenities!inner(*)
-          `);
+          .select('*');
 
         // Filter by location if provided
         if (searchLocation) {
@@ -72,14 +65,14 @@ const SearchResults = () => {
         }
 
         // Transform data to match Property interface
-        const transformedProperties = data.map(home => ({
+        const transformedProperties: Property[] = data?.map(home => ({
           id: home.id,
           name: home.name,
           location: `${home.city}, ${home.state}`,
           price: home.price,
           city: home.city,
           state: home.state
-        }));
+        })) || [];
 
         setProperties(transformedProperties);
         setFilteredProperties(transformedProperties);
