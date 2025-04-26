@@ -48,11 +48,6 @@ const LocationSearchBox = ({ value, onChange, onSearch }: LocationSearchBoxProps
     }
   }, [value]);
 
-  const handleSelect = (city: string) => {
-    onChange(city);
-    setOpen(false);
-  };
-
   return (
     <div className="relative w-full">
       <div className="relative">
@@ -64,29 +59,27 @@ const LocationSearchBox = ({ value, onChange, onSearch }: LocationSearchBoxProps
             onValueChange={onChange}
             className="pl-10"
           />
+          {open && value.length >= 3 && (
+            <CommandList className="absolute w-full bg-white border rounded-lg mt-1 shadow-lg max-h-64 overflow-auto z-50">
+              <CommandEmpty>No locations found.</CommandEmpty>
+              <CommandGroup>
+                {filteredCities.map((city) => (
+                  <CommandItem
+                    key={city}
+                    onSelect={() => {
+                      onChange(city);
+                      setOpen(false);
+                    }}
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    {city}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          )}
         </Command>
       </div>
-      
-      {open && value.length >= 3 && (
-        <div className="absolute w-full bg-white border rounded-lg mt-1 shadow-lg max-h-64 overflow-auto z-50">
-          {filteredCities.length === 0 ? (
-            <div className="py-6 text-center text-sm">No locations found.</div>
-          ) : (
-            <div className="p-1">
-              {filteredCities.map((city) => (
-                <div 
-                  key={city}
-                  className="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-sm"
-                  onClick={() => handleSelect(city)}
-                >
-                  <Search className="h-4 w-4" />
-                  {city}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
