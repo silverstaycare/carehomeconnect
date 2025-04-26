@@ -33,7 +33,7 @@ const TestimonialSection = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">What Our Users Say</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Hear from families and care home owners who've experienced the difference Care Home Connect makes.
+            Hear from families and care home owners who've experienced the difference Silver Stay makes.
           </p>
         </div>
         
