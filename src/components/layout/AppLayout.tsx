@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Search, Users, Home, Info, Shield, FileText, X, Instagram, TikTok } from "lucide-react";
+import { Search, Users, Home, Info, Shield, FileText, X, Instagram, Twitter } from "lucide-react";
 import Logo from "@/components/common/Logo";
 
 const AppLayout = () => {
@@ -179,12 +179,12 @@ const AppLayout = () => {
                 <Instagram size={24} />
               </a>
               <a 
-                href="https://tiktok.com/@silverstay" 
+                href="https://twitter.com/silverstay" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-gray-600 hover:text-black transition-colors"
+                className="text-gray-600 hover:text-blue-400 transition-colors"
               >
-                <TikTok size={24} />
+                <Twitter size={24} />
               </a>
             </div>
           </div>
