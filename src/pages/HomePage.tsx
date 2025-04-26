@@ -15,13 +15,13 @@ const HomePage = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate(`/search?location=${location}`);
+    navigate(`/search?location=${encodeURIComponent(location)}`);
   };
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="hero-gradient text-white py-20 px-4">
+      <section className="bg-gradient-to-r from-care-700 to-care-500 text-white py-20 px-4">
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
