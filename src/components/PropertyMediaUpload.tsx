@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { files, upload } from "lucide-react";
+import { Files, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyMediaUploadProps {
@@ -100,7 +100,7 @@ export const PropertyMediaUpload = ({ onUploadComplete }: PropertyMediaUploadPro
             disabled={isUploading || photos.length >= 10}
             className="relative"
           >
-            <files className="mr-2" />
+            <Files className="mr-2" />
             Add Photos
             <Input
               type="file"
@@ -135,7 +135,7 @@ export const PropertyMediaUpload = ({ onUploadComplete }: PropertyMediaUploadPro
             disabled={isUploading || !!video}
             className="relative"
           >
-            <upload className="mr-2" />
+            <Upload className="mr-2" />
             Add Video
             <Input
               type="file"
