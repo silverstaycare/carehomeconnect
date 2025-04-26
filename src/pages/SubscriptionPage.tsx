@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Check } from 'lucide-react';
+import { Check, Rocket } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface SubscriptionPlan {
   id: string;
   name: string;
-  price: number;
+  pricePerBed: number;
   billingCycle: string;
   features: string[];
   recommended?: boolean;
@@ -20,6 +22,7 @@ interface Subscription {
   planId: string;
   status: 'active' | 'canceled' | 'expired' | null;
   currentPeriodEnd: string | null;
+  hasBoost?: boolean;
 }
 
 const SubscriptionPage = () => {
@@ -28,57 +31,62 @@ const SubscriptionPage = () => {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [boostEnabled, setBoostEnabled] = useState(false);
+  const [numberOfBeds, setNumberOfBeds] = useState(1);
+  const boostPrice = 49.99;
 
   useEffect(() => {
     // Mock data for subscription plans
     const mockPlans: SubscriptionPlan[] = [
       {
         id: 'basic',
-        name: 'Basic',
-        price: 29,
+        name: 'Nest Basic',
+        pricePerBed: 9.99,
         billingCycle: 'monthly',
         features: [
-          'List 1 property',
-          'Basic property details',
-          'Email support',
-          'Standard visibility'
+          'List your property',
+          'Basic profile (photos, description, pricing)',
+          'Inquiries sent to email',
+          'Limited to 1 active listing per home'
         ]
       },
       {
-        id: 'premium',
-        name: 'Premium',
-        price: 79,
+        id: 'pro',
+        name: 'Nest Pro',
+        pricePerBed: 14.99,
         billingCycle: 'monthly',
         features: [
-          'List up to 3 properties',
-          'Enhanced property details',
-          'Priority email and phone support',
-          'Featured placement in search results',
-          'Property analytics'
+          'Everything in Basic',
+          'Priority placement in search results',
+          'SMS/Email lead notifications',
+          'Online booking inquiry form',
+          'Up to 5 homes/properties',
+          'Analytics dashboard (views, inquiries)'
         ],
         recommended: true
       },
       {
-        id: 'enterprise',
-        name: 'Enterprise',
-        price: 149,
+        id: 'elite',
+        name: 'Nest Elite',
+        pricePerBed: 19.99,
         billingCycle: 'monthly',
         features: [
-          'Unlimited properties',
-          'Complete property details',
-          'Dedicated account manager',
-          'Top placement in search results',
-          'Advanced analytics dashboard',
-          'Resident management tools'
+          'Everything in Pro',
+          'Verified Home Badge (trust badge)',
+          'CRM-lite: Track leads and resident pipeline',
+          'Automated reviews collection',
+          'Ability to offer promotions (first month free, etc.)',
+          'Multi-user accounts (for staff)'
         ]
       }
     ];
 
-    // Mock current subscription - in a real app this would be fetched from an API
+    // Mock current subscription
     const mockSubscription: Subscription = {
       planId: 'basic',
       status: 'active',
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      hasBoost: false
     };
 
     setPlans(mockPlans);
@@ -86,16 +94,30 @@ const SubscriptionPage = () => {
     setIsLoading(false);
   }, []);
 
+  const calculateTotalPrice = (pricePerBed: number) => {
+    let total = pricePerBed * numberOfBeds;
+    if (boostEnabled) {
+      total += boostPrice;
+    }
+    return total.toFixed(2);
+  };
+
   const handleSubscribe = (planId: string) => {
-    // In a real app, this would redirect to a payment page or open a Stripe checkout
+    const selectedPlan = plans.find(p => p.id === planId);
+    if (!selectedPlan) return;
+
+    const total = calculateTotalPrice(selectedPlan.pricePerBed);
+    
     toast({
       title: 'Subscription Updated',
-      description: `You have successfully subscribed to the ${plans.find(p => p.id === planId)?.name} plan.`,
+      description: `You have successfully subscribed to the ${selectedPlan.name} plan with ${numberOfBeds} bed${numberOfBeds > 1 ? 's' : ''} ${boostEnabled ? 'and Boost add-on' : ''} for $${total}/month.`,
     });
+    
     setCurrentSubscription({
       planId,
       status: 'active',
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      hasBoost: boostEnabled
     });
   };
 
@@ -116,113 +138,157 @@ const SubscriptionPage = () => {
     <div className="container py-8 px-4 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Subscription Plans</h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 mb-6">
           Choose the subscription plan that works best for your care home business needs.
         </p>
+        
+        {/* Boost Add-on Switch */}
+        <Card className="p-4 mb-6 bg-gradient-to-r from-purple-50 to-pink-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Rocket className="h-5 w-5 text-purple-500" />
+              <div>
+                <h3 className="font-semibold">Boost Your Listing</h3>
+                <p className="text-sm text-gray-600">Push your property to the top of search results</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={boostEnabled}
+                onCheckedChange={setBoostEnabled}
+                id="boost-mode"
+              />
+              <Label htmlFor="boost-mode" className="font-medium text-purple-700">
+                +$49.99/mo
+              </Label>
+            </div>
+          </div>
+        </Card>
+
+        {/* Number of Beds Input */}
+        <Card className="p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="beds" className="font-medium">Number of Beds:</Label>
+            <input
+              type="number"
+              id="beds"
+              min="1"
+              value={numberOfBeds}
+              onChange={(e) => setNumberOfBeds(Math.max(1, parseInt(e.target.value) || 1))}
+              className="w-24 px-3 py-2 border rounded-md"
+            />
+          </div>
+        </Card>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-        </div>
-      ) : (
-        <>
-          {currentSubscription?.status === 'active' && (
-            <div className="mb-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Current Subscription</CardTitle>
-                  <CardDescription>
-                    Your subscription details and management options.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between">
-                    <div>
-                      <Badge className="mb-2">
-                        {currentSubscription.status === 'active' ? 'Active' : 'Canceled'}
-                      </Badge>
-                      <h3 className="text-xl font-bold">
-                        {plans.find(p => p.id === currentSubscription.planId)?.name} Plan
-                      </h3>
-                      <p className="text-gray-600">
-                        {currentSubscription.currentPeriodEnd ? (
-                          <>
-                            {currentSubscription.status === 'active' ? (
-                              <>Next billing date: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}</>
-                            ) : (
-                              <>Access until: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}</>
-                            )}
-                          </>
-                        ) : null}
-                      </p>
-                    </div>
-                    {currentSubscription.status === 'active' && (
-                      <Button 
-                        variant="outline"
-                        className="mt-4 md:mt-0"
-                        onClick={handleCancel}
-                      >
-                        Cancel Subscription
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plans.map((plan) => (
-              <Card 
-                key={plan.id} 
-                className={`${plan.recommended ? 'border-2 border-care-500 relative' : ''} care-card`}
-              >
-                {plan.recommended && (
-                  <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4">
-                    <Badge className="bg-care-500">Recommended</Badge>
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle>{plan.name}</CardTitle>
-                  <CardDescription>
-                    {plan.name === 'Basic' ? 'For small care homes just starting out' :
-                     plan.name === 'Premium' ? 'For established care homes looking to grow' :
-                     'For multiple locations and advanced needs'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-6">
-                    <p className="text-3xl font-bold">${plan.price}<span className="text-lg font-normal text-gray-600">/mo</span></p>
-                  </div>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
+      {currentSubscription?.status === 'active' && (
+        <div className="mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Current Subscription</CardTitle>
+              <CardDescription>
+                Your subscription details and management options.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row md:items-center justify-between">
+                <div>
+                  <Badge className="mb-2">
+                    {currentSubscription.status === 'active' ? 'Active' : 'Canceled'}
+                  </Badge>
+                  <h3 className="text-xl font-bold">
+                    {plans.find(p => p.id === currentSubscription.planId)?.name} Plan
+                  </h3>
+                  <p className="text-gray-600">
+                    {currentSubscription.currentPeriodEnd ? (
+                      <>
+                        {currentSubscription.status === 'active' ? (
+                          <>Next billing date: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}</>
+                        ) : (
+                          <>Access until: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}</>
+                        )}
+                      </>
+                    ) : null}
+                  </p>
+                  {currentSubscription.hasBoost && (
+                    <Badge variant="secondary" className="mt-2">
+                      Boost Enabled
+                    </Badge>
+                  )}
+                </div>
+                {currentSubscription.status === 'active' && (
                   <Button 
-                    className={`w-full ${plan.recommended ? 'bg-care-600 hover:bg-care-700' : ''}`}
-                    variant={plan.recommended ? 'default' : 'outline'}
-                    disabled={currentSubscription?.planId === plan.id && currentSubscription?.status === 'active'}
-                    onClick={() => handleSubscribe(plan.id)}
+                    variant="outline"
+                    className="mt-4 md:mt-0"
+                    onClick={handleCancel}
                   >
-                    {currentSubscription?.planId === plan.id && currentSubscription?.status === 'active'
-                      ? 'Current Plan'
-                      : plan.recommended
-                        ? 'Upgrade Now'
-                        : 'Subscribe'}
+                    Cancel Subscription
                   </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {plans.map((plan) => (
+          <Card 
+            key={plan.id} 
+            className={`${plan.recommended ? 'border-2 border-care-500 relative' : ''}`}
+          >
+            {plan.recommended && (
+              <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4">
+                <Badge className="bg-care-500">Recommended</Badge>
+              </div>
+            )}
+            <CardHeader>
+              <CardTitle>{plan.name}</CardTitle>
+              <CardDescription>
+                {plan.name === 'Nest Basic' ? 'For small care homes just starting out' :
+                 plan.name === 'Nest Pro' ? 'For established care homes looking to grow' :
+                 'For multiple locations and advanced needs'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-6">
+                <p className="text-3xl font-bold">
+                  ${calculateTotalPrice(plan.pricePerBed)}
+                  <span className="text-lg font-normal text-gray-600">/mo</span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  ${plan.pricePerBed}/bed/mo × {numberOfBeds} beds
+                  {boostEnabled && (
+                    <> + ${boostPrice} boost</>
+                  )}
+                </p>
+              </div>
+              <ul className="space-y-3">
+                {plan.features.map((feature, index) => (
+                  <li key={index} className="flex items-start">
+                    <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                className={`w-full ${plan.recommended ? 'bg-care-600 hover:bg-care-700' : ''}`}
+                variant={plan.recommended ? 'default' : 'outline'}
+                disabled={currentSubscription?.planId === plan.id && currentSubscription?.status === 'active'}
+                onClick={() => handleSubscribe(plan.id)}
+              >
+                {currentSubscription?.planId === plan.id && currentSubscription?.status === 'active'
+                  ? 'Current Plan'
+                  : plan.recommended
+                    ? 'Upgrade Now'
+                    : 'Subscribe'}
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
