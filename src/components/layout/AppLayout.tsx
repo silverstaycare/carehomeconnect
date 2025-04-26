@@ -1,20 +1,35 @@
 
 import { Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Home, Info, Shield, FileText } from "lucide-react";
 import Logo from "@/components/common/Logo";
+import { useState, useEffect } from "react";
+import { Session } from "@supabase/supabase-js";
 
 const AppLayout = () => {
-  const { user, logout } = useAuth();
+  const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        setSession(currentSession);
+      }
+    );
 
-  const handleLogout = () => {
-    logout();
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+    });
+
+    // Cleanup subscription
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     navigate("/");
   };
 
@@ -36,15 +51,15 @@ const AppLayout = () => {
               Find homes
             </Button>
             
-            {user ? (
+            {session ? (
               <>
                 <Button 
                   variant="ghost"
-                  onClick={() => navigate(user.role === "owner" ? "/owner/dashboard" : "/family/dashboard")}
+                  onClick={() => navigate(session.user.user_metadata.role === "owner" ? "/owner/dashboard" : "/family/dashboard")}
                 >
                   Dashboard
                 </Button>
-                {user.role === "owner" && (
+                {session.user.user_metadata.role === "owner" && (
                   <Button 
                     variant="outline"
                     onClick={() => navigate("/owner/list-property")}
