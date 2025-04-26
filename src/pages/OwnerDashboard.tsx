@@ -72,7 +72,7 @@ const OwnerDashboard = () => {
         <Home className="h-16 w-16 text-muted-foreground mb-6" />
         <h2 className="text-2xl font-semibold mb-4">No Properties Listed Yet</h2>
         <p className="text-gray-600 mb-8 max-w-md">
-          List your first property on Care Home Connect to start connecting with potential residents and their families.
+          List your first property on Silver Stay to start connecting with potential residents and their families.
         </p>
         <Button size="lg" onClick={() => navigate("/owner/list-property")}>
           List Your First Property
