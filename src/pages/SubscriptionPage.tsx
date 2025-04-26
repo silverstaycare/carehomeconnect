@@ -6,6 +6,7 @@ import { BoostAddOn } from "@/components/subscription/BoostAddOn";
 import { BedsInput } from "@/components/subscription/BedsInput";
 import { CurrentSubscription } from "@/components/subscription/CurrentSubscription";
 import { PlanCard } from "@/components/subscription/PlanCard";
+import { PromoCodeBox } from "@/components/subscription/PromoCodeBox";
 
 const SubscriptionPage = () => {
   const navigate = useNavigate();
@@ -102,6 +103,13 @@ const SubscriptionPage = () => {
     }
   };
 
+  const handlePromoCode = (code: string) => {
+    toast({
+      title: "Promo Code Applied",
+      description: `The promo code "${code}" has been applied to your subscription.`,
+    });
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -135,6 +143,8 @@ const SubscriptionPage = () => {
           onCancel={handleCancel}
         />
       )}
+
+      <PromoCodeBox onApplyPromo={handlePromoCode} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {plans.map((plan) => (
