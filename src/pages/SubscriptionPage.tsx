@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +6,7 @@ import { BoostAddOn } from "@/components/subscription/BoostAddOn";
 import { BedsInput } from "@/components/subscription/BedsInput";
 import { CurrentSubscription } from "@/components/subscription/CurrentSubscription";
 import { PlanCard } from "@/components/subscription/PlanCard";
+import { PromoCodeInput } from "@/components/subscription/PromoCodeInput";
 
 const SubscriptionPage = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const SubscriptionPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [boostEnabled, setBoostEnabled] = useState(false);
   const [numberOfBeds, setNumberOfBeds] = useState(1);
+  const [discountPercentage, setDiscountPercentage] = useState(0);
   const boostPrice = 49.99;
 
   useEffect(() => {
@@ -68,6 +69,9 @@ const SubscriptionPage = () => {
     if (boostEnabled) {
       total += boostPrice;
     }
+    if (discountPercentage > 0) {
+      total = total * (1 - discountPercentage / 100);
+    }
     return total.toFixed(2);
   };
 
@@ -103,6 +107,10 @@ const SubscriptionPage = () => {
     }
   };
 
+  const handlePromoCodeApplied = (discount: number) => {
+    setDiscountPercentage(discount);
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -115,16 +123,20 @@ const SubscriptionPage = () => {
           Choose the subscription plan that works best for your residential care home business needs.
         </p>
         
-        <BoostAddOn 
-          boostEnabled={boostEnabled}
-          onBoostChange={setBoostEnabled}
-          price={boostPrice}
-        />
+        <div className="space-y-6">
+          <BoostAddOn 
+            boostEnabled={boostEnabled}
+            onBoostChange={setBoostEnabled}
+            price={boostPrice}
+          />
 
-        <BedsInput
-          numberOfBeds={numberOfBeds}
-          onBedsChange={setNumberOfBeds}
-        />
+          <BedsInput
+            numberOfBeds={numberOfBeds}
+            onBedsChange={setNumberOfBeds}
+          />
+
+          <PromoCodeInput onPromoCodeApplied={handlePromoCodeApplied} />
+        </div>
       </div>
 
       {currentSubscription?.status === 'active' && (
