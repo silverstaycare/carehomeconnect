@@ -28,7 +28,7 @@ const HomePage = () => {
               Find the Perfect Residential Care Home with Silver Stay
             </h1>
             <p className="text-xl md:text-2xl max-w-3xl mx-auto">
-              Connecting families with licensed residential care homes with verified amenities, transparent pricing, and real reviews.
+              Connecting families with licensed residential care homes with verified owners, amenities, transparent pricing, and real reviews.
             </p>
           </div>
 
