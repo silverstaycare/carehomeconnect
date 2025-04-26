@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Search, Users, Home, Info, Shield, FileText, X, Instagram, Twitter } from "lucide-react";
+import { Search, Users, Home, Info, Shield, FileText } from "lucide-react";
 import Logo from "@/components/common/Logo";
 
 const AppLayout = () => {
@@ -157,36 +157,10 @@ const AppLayout = () => {
               </ul>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-200 flex justify-between items-center">
+          <div className="mt-8 pt-8 border-t border-gray-200 text-center">
             <p className="text-gray-500">
               © {new Date().getFullYear()} Silver Stay. All rights reserved.
             </p>
-            <div className="flex space-x-4">
-              <a 
-                href="https://x.com/silverstay" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-600 hover:text-black transition-colors"
-              >
-                <X size={24} />
-              </a>
-              <a 
-                href="https://instagram.com/silverstay" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-600 hover:text-pink-500 transition-colors"
-              >
-                <Instagram size={24} />
-              </a>
-              <a 
-                href="https://twitter.com/silverstay" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-gray-600 hover:text-blue-400 transition-colors"
-              >
-                <Twitter size={24} />
-              </a>
-            </div>
           </div>
         </div>
       </footer>
