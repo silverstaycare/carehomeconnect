@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingSpinner from '@/components/payment/LoadingSpinner';
 import PropertyNotFound from '@/components/payment/PropertyNotFound';
-import PromoCodeSection from '@/components/payment/PromoCodeSection';
 import PaymentSummary from '@/components/payment/PaymentSummary';
 import PaymentForm from '@/components/payment/PaymentForm';
 
@@ -24,8 +23,6 @@ const PaymentPage = () => {
   const [expiry, setExpiry] = useState('');
   const [cvc, setCvc] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('credit-card');
-  const [promoCode, setPromoCode] = useState('');
-  const [discountedRate, setDiscountedRate] = useState<number | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -127,14 +124,8 @@ const PaymentPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        <PromoCodeSection 
-          promoCode={promoCode}
-          setPromoCode={setPromoCode}
-        />
-
         <PaymentSummary 
           monthlyRate={property?.monthlyRate || 0}
-          discountedRate={discountedRate}
         />
 
         <PaymentForm

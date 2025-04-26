@@ -6,10 +6,9 @@ import { DollarSign } from 'lucide-react';
 
 interface PaymentSummaryProps {
   monthlyRate: number;
-  discountedRate: number | null;
 }
 
-const PaymentSummary = ({ monthlyRate, discountedRate }: PaymentSummaryProps) => {
+const PaymentSummary = ({ monthlyRate }: PaymentSummaryProps) => {
   return (
     <Card>
       <CardHeader>
@@ -25,13 +24,6 @@ const PaymentSummary = ({ monthlyRate, discountedRate }: PaymentSummaryProps) =>
             </div>
           </div>
 
-          {discountedRate && (
-            <div className="flex justify-between text-green-600">
-              <span>Promo Discount:</span>
-              <span>-${(monthlyRate - discountedRate).toFixed(2)}</span>
-            </div>
-          )}
-
           <Separator />
 
           <div className="flex justify-between">
@@ -39,7 +31,7 @@ const PaymentSummary = ({ monthlyRate, discountedRate }: PaymentSummaryProps) =>
             <div className="flex items-center gap-1">
               <DollarSign className="h-4 w-4" />
               <span className="font-bold text-xl">
-                {(discountedRate || monthlyRate).toFixed(2)}
+                {monthlyRate.toFixed(2)}
               </span>
             </div>
           </div>
