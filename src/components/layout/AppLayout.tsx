@@ -88,11 +88,6 @@ export const AppLayout = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="/how-it-works" className="text-gray-600 hover:text-care-600">
-                    How It Works
-                  </a>
-                </li>
-                <li>
                   <a href="/resources" className="text-gray-600 hover:text-care-600">
                     Resources
                   </a>
@@ -108,19 +103,13 @@ export const AppLayout = () => {
             <div>
               <h3 className="font-bold text-xl mb-6 flex items-center gap-2">
                 <Home size={20} className="text-care-600" />
-                For Home Owners
+                For Owners
               </h3>
               <ul className="space-y-3">
                 <li>
                   <a href="/owner/list-property" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
                     <List size={16} />
                     List Your Property
-                  </a>
-                </li>
-                <li>
-                  <a href="/pricing" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
-                    <DollarSign size={16} />
-                    Pricing
                   </a>
                 </li>
                 <li>
