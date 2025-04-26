@@ -82,7 +82,7 @@ export const AppLayout = () => {
             <div>
               <h3 className="font-bold text-lg mb-4">Silver Stay</h3>
               <p className="text-gray-600">
-                Connecting families with quality residential care homes for their loved ones.
+                Connecting families with licensed residential care homes for their loved ones.
               </p>
             </div>
             <div>
