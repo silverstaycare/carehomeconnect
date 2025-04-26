@@ -135,9 +135,6 @@ const PaymentPage = () => {
         <PaymentSummary 
           monthlyRate={property?.monthlyRate || 0}
           discountedRate={discountedRate}
-          numberOfBeds={1}
-          pricePerBed={property?.monthlyRate || 0}
-          tierName="Standard Care"
         />
 
         <PaymentForm
