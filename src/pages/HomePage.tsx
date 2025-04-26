@@ -25,7 +25,7 @@ const HomePage = () => {
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Find the Perfect Care Home with Silver Stay
+              Find the Perfect Residential Care Home with Silver Stay
             </h1>
             <p className="text-xl md:text-2xl max-w-3xl mx-auto">
               Browse trusted residential care homes with verified amenities, transparent pricing, and real reviews.
