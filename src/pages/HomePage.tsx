@@ -25,10 +25,10 @@ const HomePage = () => {
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Find the Perfect Care Home for Your Loved Ones
+              Find the Perfect Care Home with Silver Stay
             </h1>
             <p className="text-xl md:text-2xl max-w-3xl mx-auto">
-              Browse trusted senior group homes with verified amenities, transparent pricing, and real reviews.
+              Browse trusted residential care homes with verified amenities, transparent pricing, and real reviews.
             </p>
           </div>
 
@@ -75,7 +75,7 @@ const HomePage = () => {
         <div className="container mx-auto max-w-5xl text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Find the Perfect Care Home?</h2>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
-            Join thousands of families who have found the perfect care home for their loved ones through Care Home Connect.
+            Join thousands of families who have found the perfect care home for their loved ones through Silver Stay.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

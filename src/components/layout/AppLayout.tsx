@@ -26,7 +26,7 @@ export const AppLayout = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2" onClick={() => navigate("/")} role="button">
             <Home className="h-6 w-6 text-care-600" />
-            <h1 className="text-xl font-bold text-care-800">Care Home Connect</h1>
+            <h1 className="text-xl font-bold text-care-800">Silver Stay</h1>
           </div>
           
           <div className="flex items-center gap-4">
@@ -80,9 +80,9 @@ export const AppLayout = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">Care Home Connect</h3>
+              <h3 className="font-bold text-lg mb-4">Silver Stay</h3>
               <p className="text-gray-600">
-                Connecting families with quality care homes for their loved ones.
+                Connecting families with quality residential care homes for their loved ones.
               </p>
             </div>
             <div>
@@ -100,13 +100,13 @@ export const AppLayout = () => {
                 123 Care Street<br />
                 Suite 456<br />
                 Careington, CA 90210<br />
-                info@carehomeconnect.com
+                info@silverstay.com
               </p>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-200">
             <p className="text-center text-gray-500">
-              © {new Date().getFullYear()} Care Home Connect. All rights reserved.
+              © {new Date().getFullYear()} Silver Stay. All rights reserved.
             </p>
           </div>
         </div>

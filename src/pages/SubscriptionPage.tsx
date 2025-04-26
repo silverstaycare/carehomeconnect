@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +27,7 @@ const SubscriptionPage = () => {
         billingCycle: 'monthly',
         features: [
           'Get online.',
-          'List your property',
+          'List your care home',
           'Basic profile (photos, description, pricing)',
           'Inquiries sent to email',
           'Limited to 1 active listing per home'
@@ -109,9 +110,9 @@ const SubscriptionPage = () => {
   return (
     <div className="container py-8 px-4 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Subscription Plans</h1>
+        <h1 className="text-3xl font-bold mb-2">Silver Stay Subscription Plans</h1>
         <p className="text-gray-600 mb-6">
-          Choose the subscription plan that works best for your care home business needs.
+          Choose the subscription plan that works best for your residential care home business needs.
         </p>
         
         <BoostAddOn 
