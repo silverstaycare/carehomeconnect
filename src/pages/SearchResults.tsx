@@ -111,8 +111,11 @@ const SearchResults = () => {
     fetchProperties();
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
     const filtered = properties.filter(property => {
       const inPriceRange = property.price >= priceRange[0] && property.price <= priceRange[1];
       
