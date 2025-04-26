@@ -74,7 +74,7 @@ export const AppLayout = () => {
 
       <footer className="bg-gray-50 border-t">
         <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
             <div>
               <h3 className="font-bold text-xl mb-6 flex items-center gap-2">
                 <Users size={20} className="text-care-600" />
