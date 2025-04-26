@@ -74,7 +74,17 @@ export const AppLayout = () => {
 
       <footer className="bg-gray-50 border-t">
         <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-6xl mx-auto">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Home className="h-6 w-6 text-care-600" />
+                <h3 className="text-xl font-bold text-care-800">Silver Stay</h3>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Find the Perfect Residential Care Home with Silver Stay
+              </p>
+            </div>
+
             <div>
               <h3 className="font-bold text-xl mb-6 flex items-center gap-2">
                 <Users size={20} className="text-care-600" />
