@@ -59,9 +59,10 @@ const LocationSearchBox = ({ value, onChange, onSearch }: LocationSearchBoxProps
             onValueChange={onChange}
             className="pl-10"
           />
-          {open && value.length >= 3 && (
-            <CommandList className="absolute w-full bg-white border rounded-lg mt-1 shadow-lg max-h-64 overflow-auto z-50">
+          <CommandList className={open ? "visible" : "hidden"}>
+            {filteredCities.length === 0 ? (
               <CommandEmpty>No locations found.</CommandEmpty>
+            ) : (
               <CommandGroup>
                 {filteredCities.map((city) => (
                   <CommandItem
@@ -76,8 +77,8 @@ const LocationSearchBox = ({ value, onChange, onSearch }: LocationSearchBoxProps
                   </CommandItem>
                 ))}
               </CommandGroup>
-            </CommandList>
-          )}
+            )}
+          </CommandList>
         </Command>
       </div>
     </div>
