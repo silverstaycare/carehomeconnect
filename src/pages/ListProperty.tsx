@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
+import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
 
 const ListProperty = () => {
   const navigate = useNavigate();
@@ -49,6 +49,11 @@ const ListProperty = () => {
     mealPreparation: false,
     memoryCare: false,
     socialActivities: false,
+  });
+
+  const [mediaUrls, setMediaUrls] = useState<{ photos: string[], video: string | null }>({
+    photos: [],
+    video: null
   });
 
   // Loading state
@@ -370,6 +375,21 @@ const ListProperty = () => {
                 <Label htmlFor="socialActivities">Social Activities</Label>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Media Upload */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Property Media</CardTitle>
+            <CardDescription>
+              Add photos and a video of your care home to help families get a better view.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PropertyMediaUpload
+              onUploadComplete={setMediaUrls}
+            />
           </CardContent>
         </Card>
 
