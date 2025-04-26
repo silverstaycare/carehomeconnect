@@ -1,20 +1,16 @@
-
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Search, CalendarCheck } from "lucide-react";
-import { useEffect } from "react";
+import { Home, Search, List, DollarSign, Users, Info, Phone, Briefcase, Shield, FileText } from "lucide-react";
 
 export const AppLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Function to handle navigation
   const handleNavigation = (path: string) => {
     navigate(path);
   };
 
-  // Function to handle logout
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -77,31 +73,106 @@ export const AppLayout = () => {
       </main>
 
       <footer className="bg-gray-50 border-t">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             <div>
-              <h3 className="font-bold text-lg mb-4">Silver Stay</h3>
-              <p className="text-gray-600">
-                Connecting families with licensed residential care homes for their loved ones.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-4">Quick Links</h3>
-              <ul className="space-y-2">
-                <li><a href="/" className="text-care-600 hover:underline">Home</a></li>
-                <li><a href="/search" className="text-care-600 hover:underline">Search</a></li>
-                <li><a href="/login" className="text-care-600 hover:underline">Login</a></li>
-                <li><a href="/register" className="text-care-600 hover:underline">Sign Up</a></li>
+              <h3 className="font-bold text-xl mb-6 flex items-center gap-2">
+                <Users size={20} className="text-care-600" />
+                For Families
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="/search" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
+                    <Search size={16} />
+                    Search Homes
+                  </a>
+                </li>
+                <li>
+                  <a href="/how-it-works" className="text-gray-600 hover:text-care-600">
+                    How It Works
+                  </a>
+                </li>
+                <li>
+                  <a href="/resources" className="text-gray-600 hover:text-care-600">
+                    Resources
+                  </a>
+                </li>
+                <li>
+                  <a href="/faq" className="text-gray-600 hover:text-care-600">
+                    FAQ
+                  </a>
+                </li>
               </ul>
             </div>
+
             <div>
-              <h3 className="font-bold text-lg mb-4">Contact</h3>
-              <p className="text-gray-600">
-                123 Care Street<br />
-                Suite 456<br />
-                Careington, CA 90210<br />
-                info@silverstay.com
-              </p>
+              <h3 className="font-bold text-xl mb-6 flex items-center gap-2">
+                <Home size={20} className="text-care-600" />
+                For Home Owners
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="/owner/list-property" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
+                    <List size={16} />
+                    List Your Property
+                  </a>
+                </li>
+                <li>
+                  <a href="/pricing" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
+                    <DollarSign size={16} />
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="/owner/resources" className="text-gray-600 hover:text-care-600">
+                    Owner Resources
+                  </a>
+                </li>
+                <li>
+                  <a href="/owner/faq" className="text-gray-600 hover:text-care-600">
+                    Owner FAQ
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-xl mb-6 flex items-center gap-2">
+                <Info size={20} className="text-care-600" />
+                Company
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <a href="/about" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
+                    <Info size={16} />
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a href="/contact" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
+                    <Phone size={16} />
+                    Contact
+                  </a>
+                </li>
+                <li>
+                  <a href="/careers" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
+                    <Briefcase size={16} />
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a href="/privacy" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
+                    <Shield size={16} />
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a href="/terms" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
+                    <FileText size={16} />
+                    Terms of Service
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-200">
