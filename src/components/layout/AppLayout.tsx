@@ -1,9 +1,10 @@
+
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Home, Search, DollarSign, Users, Info, Shield, FileText } from "lucide-react";
 
-export const AppLayout = () => {
+const AppLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
