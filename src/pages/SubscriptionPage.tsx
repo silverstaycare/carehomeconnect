@@ -1,28 +1,12 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Rocket } from 'lucide-react';
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  pricePerBed: number;
-  billingCycle: string;
-  features: string[];
-  recommended?: boolean;
-}
-
-interface Subscription {
-  planId: string;
-  status: 'active' | 'canceled' | 'expired' | null;
-  currentPeriodEnd: string | null;
-  hasBoost?: boolean;
-}
+import type { Subscription, SubscriptionPlan } from "@/types/subscription";
+import { BoostAddOn } from "@/components/subscription/BoostAddOn";
+import { BedsInput } from "@/components/subscription/BedsInput";
+import { CurrentSubscription } from "@/components/subscription/CurrentSubscription";
+import { PlanCard } from "@/components/subscription/PlanCard";
 
 const SubscriptionPage = () => {
   const navigate = useNavigate();
@@ -134,6 +118,10 @@ const SubscriptionPage = () => {
     }
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="container py-8 px-4 max-w-6xl">
       <div className="mb-8">
@@ -142,149 +130,38 @@ const SubscriptionPage = () => {
           Choose the subscription plan that works best for your care home business needs.
         </p>
         
-        <Card className="p-4 mb-6 bg-gradient-to-r from-purple-50 to-pink-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Rocket className="h-5 w-5 text-purple-500" />
-              <div>
-                <h3 className="font-semibold">Boost Your Listing</h3>
-                <p className="text-sm text-gray-600">Push your property to the top of search results</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={boostEnabled}
-                onCheckedChange={setBoostEnabled}
-                id="boost-mode"
-              />
-              <Label htmlFor="boost-mode" className="font-medium text-purple-700">
-                +$49.99/mo
-              </Label>
-            </div>
-          </div>
-        </Card>
+        <BoostAddOn 
+          boostEnabled={boostEnabled}
+          onBoostChange={setBoostEnabled}
+          price={boostPrice}
+        />
 
-        <Card className="p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="beds" className="font-medium">Number of Beds:</Label>
-            <input
-              type="number"
-              id="beds"
-              min="1"
-              value={numberOfBeds}
-              onChange={(e) => setNumberOfBeds(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-24 px-3 py-2 border rounded-md"
-            />
-          </div>
-        </Card>
+        <BedsInput
+          numberOfBeds={numberOfBeds}
+          onBedsChange={setNumberOfBeds}
+        />
       </div>
 
       {currentSubscription?.status === 'active' && (
-        <div className="mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Current Subscription</CardTitle>
-              <CardDescription>
-                Your subscription details and management options.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row md:items-center justify-between">
-                <div>
-                  <Badge className="mb-2">
-                    {currentSubscription.status === 'active' ? 'Active' : 'Canceled'}
-                  </Badge>
-                  <h3 className="text-xl font-bold">
-                    {plans.find(p => p.id === currentSubscription.planId)?.name} Plan
-                  </h3>
-                  <p className="text-gray-600">
-                    {currentSubscription.currentPeriodEnd ? (
-                      <>
-                        {currentSubscription.status === 'active' ? (
-                          <>Next billing date: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}</>
-                        ) : (
-                          <>Access until: {new Date(currentSubscription.currentPeriodEnd).toLocaleDateString()}</>
-                        )}
-                      </>
-                    ) : null}
-                  </p>
-                  {currentSubscription.hasBoost && (
-                    <Badge variant="secondary" className="mt-2">
-                      Boost Enabled
-                    </Badge>
-                  )}
-                </div>
-                {currentSubscription.status === 'active' && (
-                  <Button 
-                    variant="outline"
-                    className="mt-4 md:mt-0"
-                    onClick={handleCancel}
-                  >
-                    Cancel Subscription
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <CurrentSubscription
+          subscription={currentSubscription}
+          plans={plans}
+          onCancel={handleCancel}
+        />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {plans.map((plan) => (
-          <Card 
-            key={plan.id} 
-            className={`${plan.recommended ? 'border-2 border-care-500 relative' : ''}`}
-          >
-            {plan.recommended && (
-              <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4">
-                <Badge className="bg-care-500">Recommended</Badge>
-              </div>
-            )}
-            <CardHeader>
-              <CardTitle>{plan.name}</CardTitle>
-              <CardDescription>
-                {plan.name === 'Starter' ? 'For small care homes just starting out' :
-                 plan.name === 'Pro' ? 'For established care homes looking to grow' :
-                 'For multiple locations and advanced needs'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-6">
-                <p className="text-3xl font-bold">
-                  ${calculateTotalPrice(plan.pricePerBed)}
-                  <span className="text-lg font-normal text-gray-600">/mo</span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  ${plan.pricePerBed}/bed/mo × {numberOfBeds} beds
-                  {boostEnabled && (
-                    <> + ${boostPrice} boost</>
-                  )}
-                </p>
-              </div>
-              <ul className="space-y-3">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                className={`w-full ${plan.recommended ? 'bg-care-600 hover:bg-care-700' : ''}`}
-                variant={plan.recommended ? 'default' : 'outline'}
-                disabled={currentSubscription?.planId === plan.id && currentSubscription?.status === 'active'}
-                onClick={() => handleSubscribe(plan.id)}
-              >
-                {currentSubscription?.planId === plan.id && currentSubscription?.status === 'active'
-                  ? 'Current Plan'
-                  : plan.recommended
-                    ? 'Upgrade Now'
-                    : 'Subscribe'}
-              </Button>
-            </CardFooter>
-          </Card>
+          <PlanCard
+            key={plan.id}
+            plan={plan}
+            isCurrentPlan={currentSubscription?.planId === plan.id && currentSubscription?.status === 'active'}
+            totalPrice={Number(calculateTotalPrice(plan.pricePerBed))}
+            numberOfBeds={numberOfBeds}
+            boostEnabled={boostEnabled}
+            boostPrice={boostPrice}
+            onSubscribe={() => handleSubscribe(plan.id)}
+          />
         ))}
       </div>
     </div>
