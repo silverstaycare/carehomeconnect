@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Check, Rocket } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -36,14 +35,14 @@ const SubscriptionPage = () => {
   const boostPrice = 49.99;
 
   useEffect(() => {
-    // Mock data for subscription plans
     const mockPlans: SubscriptionPlan[] = [
       {
         id: 'basic',
-        name: 'Nest Basic',
+        name: 'Starter',
         pricePerBed: 9.99,
         billingCycle: 'monthly',
         features: [
+          'Get online.',
           'List your property',
           'Basic profile (photos, description, pricing)',
           'Inquiries sent to email',
@@ -52,11 +51,12 @@ const SubscriptionPage = () => {
       },
       {
         id: 'pro',
-        name: 'Nest Pro',
+        name: 'Pro',
         pricePerBed: 14.99,
         billingCycle: 'monthly',
         features: [
-          'Everything in Basic',
+          'Grow faster, more leads.',
+          'Everything in Starter',
           'Priority placement in search results',
           'SMS/Email lead notifications',
           'Online booking inquiry form',
@@ -67,10 +67,11 @@ const SubscriptionPage = () => {
       },
       {
         id: 'elite',
-        name: 'Nest Elite',
+        name: 'Elite',
         pricePerBed: 19.99,
         billingCycle: 'monthly',
         features: [
+          'Professionalize + dominate your market.',
           'Everything in Pro',
           'Verified Home Badge (trust badge)',
           'CRM-lite: Track leads and resident pipeline',
@@ -81,7 +82,6 @@ const SubscriptionPage = () => {
       }
     ];
 
-    // Mock current subscription
     const mockSubscription: Subscription = {
       planId: 'basic',
       status: 'active',
@@ -142,7 +142,6 @@ const SubscriptionPage = () => {
           Choose the subscription plan that works best for your care home business needs.
         </p>
         
-        {/* Boost Add-on Switch */}
         <Card className="p-4 mb-6 bg-gradient-to-r from-purple-50 to-pink-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -165,7 +164,6 @@ const SubscriptionPage = () => {
           </div>
         </Card>
 
-        {/* Number of Beds Input */}
         <Card className="p-4 mb-6">
           <div className="flex items-center justify-between">
             <Label htmlFor="beds" className="font-medium">Number of Beds:</Label>
@@ -245,8 +243,8 @@ const SubscriptionPage = () => {
             <CardHeader>
               <CardTitle>{plan.name}</CardTitle>
               <CardDescription>
-                {plan.name === 'Nest Basic' ? 'For small care homes just starting out' :
-                 plan.name === 'Nest Pro' ? 'For established care homes looking to grow' :
+                {plan.name === 'Starter' ? 'For small care homes just starting out' :
+                 plan.name === 'Pro' ? 'For established care homes looking to grow' :
                  'For multiple locations and advanced needs'}
               </CardDescription>
             </CardHeader>
