@@ -1,14 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import { Search, Filter, Home } from "lucide-react";
+import { Filter, Home } from "lucide-react";
+import LocationSearchBox from "@/components/search/LocationSearchBox";
 
 interface Property {
   id: string;
@@ -32,9 +31,9 @@ const SearchResults = () => {
   const [priceRange, setPriceRange] = useState([2000, 5000]);
   const [loading, setLoading] = useState(true);
   const [properties, setProperties] = useState<Property[]>([]);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
-  // Mock list of amenities for filtering
   const amenitiesList = [
     "Private Rooms",
     "24/7 Staff",
@@ -49,10 +48,8 @@ const SearchResults = () => {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        // Mock API call delay
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Mock data
         const mockProperties: Property[] = [
           {
             id: "1",
@@ -107,6 +104,7 @@ const SearchResults = () => {
         ];
         
         setProperties(mockProperties);
+        setFilteredProperties(mockProperties);
       } catch (error) {
         console.error("Error fetching properties:", error);
       } finally {
@@ -119,8 +117,20 @@ const SearchResults = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would trigger an API call with the search params
-    console.log("Searching for:", searchLocation);
+    const filtered = properties.filter(property => {
+      const inPriceRange = property.price >= priceRange[0] && property.price <= priceRange[1];
+      
+      const hasSelectedAmenities = selectedAmenities.length === 0 || 
+        selectedAmenities.some(amenity => property.amenities.includes(amenity));
+      
+      const matchesLocation = searchLocation === "" || 
+        property.location.toLowerCase().includes(searchLocation.toLowerCase());
+      
+      return inPriceRange && hasSelectedAmenities && matchesLocation;
+    });
+    
+    setFilteredProperties(filtered);
+    navigate(`/search?location=${encodeURIComponent(searchLocation)}`);
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -131,34 +141,15 @@ const SearchResults = () => {
     }
   };
 
-  // Filter properties based on selected filters
-  const filteredProperties = properties.filter(property => {
-    // Price filter
-    const inPriceRange = property.price >= priceRange[0] && property.price <= priceRange[1];
-    
-    // Amenity filter - if any amenities are selected, property must have at least one
-    const hasSelectedAmenities = selectedAmenities.length === 0 || 
-      selectedAmenities.some(amenity => property.amenities.includes(amenity));
-    
-    // Location filter (simplified - just check if location contains the search text)
-    const matchesLocation = searchLocation === "" || 
-      property.location.toLowerCase().includes(searchLocation.toLowerCase());
-    
-    return inPriceRange && hasSelectedAmenities && matchesLocation;
-  });
-
   return (
     <div className="container py-8 px-4">
-      {/* Search and Filter Bar */}
       <div className="bg-white rounded-lg shadow-sm border p-4 mb-8">
         <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <Input 
-              placeholder="City, state, or zip code"
-              className="pl-10"
+            <LocationSearchBox
               value={searchLocation}
-              onChange={(e) => setSearchLocation(e.target.value)}
+              onChange={setSearchLocation}
+              onSearch={handleSearch}
             />
           </div>
           <Button type="submit">Search</Button>
@@ -212,21 +203,18 @@ const SearchResults = () => {
         )}
       </div>
 
-      {/* Results Count */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">
           {loading ? "Searching..." : `${filteredProperties.length} Care Homes Found`}
         </h2>
       </div>
 
-      {/* Loading State */}
       {loading && (
         <div className="flex justify-center my-12">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
       )}
 
-      {/* No Results State */}
       {!loading && filteredProperties.length === 0 && (
         <div className="text-center py-12">
           <div className="inline-flex rounded-full bg-primary-100 p-4">
@@ -246,7 +234,6 @@ const SearchResults = () => {
         </div>
       )}
 
-      {/* Results Grid */}
       {!loading && filteredProperties.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map(property => (
