@@ -1,7 +1,7 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Search, List, DollarSign, Users, Info, Phone, Briefcase, Shield, FileText } from "lucide-react";
+import { Home, Search, DollarSign, Users, Info, Shield, FileText } from "lucide-react";
 
 export const AppLayout = () => {
   const { user, logout } = useAuth();
@@ -92,8 +92,7 @@ export const AppLayout = () => {
               </h3>
               <ul className="space-y-3">
                 <li>
-                  <a href="/search" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
-                    <Search size={16} />
+                  <a href="/search" className="text-gray-600 hover:text-care-600">
                     Search Homes
                   </a>
                 </li>
@@ -113,12 +112,11 @@ export const AppLayout = () => {
             <div>
               <h3 className="font-bold text-xl mb-6 flex items-center gap-2">
                 <Home size={20} className="text-care-600" />
-                For Owners
+                Owners
               </h3>
               <ul className="space-y-3">
                 <li>
-                  <a href="/owner/list-property" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
-                    <List size={16} />
+                  <a href="/owner/list-property" className="text-gray-600 hover:text-care-600">
                     List Your Property
                   </a>
                 </li>
@@ -148,18 +146,6 @@ export const AppLayout = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="/contact" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
-                    <Phone size={16} />
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <a href="/careers" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
-                    <Briefcase size={16} />
-                    Careers
-                  </a>
-                </li>
-                <li>
                   <a href="/privacy" className="text-gray-600 hover:text-care-600 flex items-center gap-2">
                     <Shield size={16} />
                     Privacy Policy
@@ -184,3 +170,5 @@ export const AppLayout = () => {
     </div>
   );
 };
+
+export { AppLayout };
