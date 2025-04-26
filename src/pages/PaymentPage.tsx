@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/use-toast';
-import { CreditCard, Calendar, ChevronsUpDown } from 'lucide-react';
+import { CreditCard, Calendar, Tag } from 'lucide-react';
 
 interface PropertyDetails {
   id: string;
@@ -23,28 +22,23 @@ const PaymentPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Form state
   const [cardName, setCardName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvc, setCvc] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('credit-card');
-  
-  // Loading states
+  const [promoCode, setPromoCode] = useState('');
+  const [discountedRate, setDiscountedRate] = useState<number | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  // Property details state
   const [property, setProperty] = useState<PropertyDetails | null>(null);
   const [loadingProperty, setLoadingProperty] = useState(true);
 
   useEffect(() => {
     const fetchPropertyDetails = async () => {
       try {
-        // Mock API delay
         await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Mock property data - in a real app this would come from an API
         setProperty({
           id: propertyId || '1',
           name: 'Sunshine Senior Care',
@@ -66,7 +60,6 @@ const PaymentPage = () => {
     fetchPropertyDetails();
   }, [propertyId, toast]);
 
-  // Format card number with spaces
   const formatCardNumber = (value: string) => {
     const val = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     const matches = val.match(/\d{4,16}/g);
@@ -84,7 +77,6 @@ const PaymentPage = () => {
     }
   };
 
-  // Format expiry date
   const formatExpiry = (value: string) => {
     const val = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     if (val.length > 2) {
@@ -93,29 +85,24 @@ const PaymentPage = () => {
     return val;
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      // Validate form fields
       if (!cardName) throw new Error('Please enter the name on card');
       if (cardNumber.replace(/\s+/g, '').length < 16) throw new Error('Please enter a valid card number');
       if (expiry.length < 5) throw new Error('Please enter a valid expiry date');
       if (cvc.length < 3) throw new Error('Please enter a valid CVC');
 
-      // Mock payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Show success toast
       toast({
         title: 'Payment Successful',
         description: `Your payment of $${property?.monthlyRate} to ${property?.name} has been processed.`,
       });
 
-      // Redirect back to dashboard
       navigate('/family/dashboard');
     } catch (error) {
       console.error('Payment error:', error);
@@ -162,7 +149,39 @@ const PaymentPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        {/* Payment Summary Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Promo Code</CardTitle>
+            <CardDescription>
+              Have a promo code? Enter it below to apply a discount.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="promoCode">Promo Code</Label>
+              <div className="relative">
+                <Input
+                  id="promoCode"
+                  placeholder="Enter promo code"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                />
+                <Tag className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2"
+                onClick={() => {
+                  console.log('Promo code:', promoCode);
+                }}
+              >
+                Apply Promo Code
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Payment Summary</CardTitle>
@@ -170,27 +189,26 @@ const PaymentPage = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-gray-600">Property:</span>
-                <span className="font-medium">{property.name}</span>
+                <span className="text-gray-600">Original Amount:</span>
+                <span className="font-medium">${property.monthlyRate}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Owner:</span>
-                <span className="font-medium">{property.owner}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Payment Type:</span>
-                <span className="font-medium">Monthly Rent</span>
-              </div>
+              {discountedRate && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount:</span>
+                  <span>-${(property.monthlyRate - discountedRate).toFixed(2)}</span>
+                </div>
+              )}
               <Separator />
               <div className="flex justify-between">
                 <span className="font-medium">Total Amount:</span>
-                <span className="font-bold text-xl">${property.monthlyRate}</span>
+                <span className="font-bold text-xl">
+                  ${discountedRate || property.monthlyRate}
+                </span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Payment Method Card */}
         <form onSubmit={handleSubmit}>
           <Card>
             <CardHeader>
