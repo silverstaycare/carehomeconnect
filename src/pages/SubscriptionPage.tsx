@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -48,21 +47,6 @@ const SubscriptionPage = () => {
           'Analytics dashboard (views, inquiries)'
         ],
         recommended: true
-      },
-      {
-        id: 'elite',
-        name: 'Elite',
-        pricePerBed: 19.99,
-        billingCycle: 'monthly',
-        features: [
-          'Professionalize + dominate your market.',
-          'Everything in Pro',
-          'Verified Home Badge (trust badge)',
-          'CRM-lite: Track leads and resident pipeline',
-          'Automated reviews collection',
-          'Ability to offer promotions (first month free, etc.)',
-          'Multi-user accounts (for staff)'
-        ]
       }
     ];
 
@@ -150,7 +134,7 @@ const SubscriptionPage = () => {
         />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {plans.map((plan) => (
           <PlanCard
             key={plan.id}
