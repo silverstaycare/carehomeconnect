@@ -75,7 +75,7 @@ const HomePage = () => {
         <div className="container mx-auto max-w-5xl text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Find the Perfect Care Home?</h2>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
-            Join thousands of families who have found the perfect care home for their loved ones through Silver Stay.
+            Join thousands of families who have found the licensed care home for their loved ones through Silver Stay.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
