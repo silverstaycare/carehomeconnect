@@ -38,7 +38,8 @@ const RegisterPage = () => {
       await register(email, password, name, role);
       toast({
         title: "Registration successful",
-        description: "Welcome to Care Home Connect!",
+        description: "Welcome to Silver Stay!",
+        duration: 5000 // Automatically disappear after 5 seconds
       });
       
       if (role === "owner") {
@@ -156,3 +157,4 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
+
