@@ -1,8 +1,8 @@
-
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Search, DollarSign, Users, Info, Shield, FileText } from "lucide-react";
+import { Search } from "lucide-react";
+import Logo from "@/components/common/Logo";
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
@@ -21,9 +21,8 @@ const AppLayout = () => {
     <div className="min-h-screen flex flex-col">
       <header className="border-b bg-white sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2" onClick={() => navigate("/")} role="button">
-            <Home className="h-6 w-6 text-care-600" />
-            <h1 className="text-xl font-bold text-care-800">Silver Stay</h1>
+          <div onClick={() => navigate("/")} role="button">
+            <Logo />
           </div>
           
           <div className="flex items-center gap-4">
@@ -77,11 +76,8 @@ const AppLayout = () => {
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-6xl mx-auto">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Home className="h-6 w-6 text-care-600" />
-                <h3 className="text-xl font-bold text-care-800">Silver Stay</h3>
-              </div>
-              <p className="text-gray-600 mb-6">
+              <Logo className="mb-4" />
+              <p className="text-gray-600">
                 Find the Perfect Residential Care Home with Silver Stay
               </p>
             </div>
