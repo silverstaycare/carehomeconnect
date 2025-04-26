@@ -1,7 +1,8 @@
+
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Users, Home, Info, Shield, FileText } from "lucide-react";
 import Logo from "@/components/common/Logo";
 
 const AppLayout = () => {
