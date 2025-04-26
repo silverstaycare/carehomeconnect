@@ -9,7 +9,298 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          care_home_id: string
+          created_at: string
+          id: string
+          payment_status: string | null
+          resident_name: string
+          start_date: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          care_home_id: string
+          created_at?: string
+          id?: string
+          payment_status?: string | null
+          resident_name: string
+          start_date: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          care_home_id?: string
+          created_at?: string
+          id?: string
+          payment_status?: string | null
+          resident_name?: string
+          start_date?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_care_home_id_fkey"
+            columns: ["care_home_id"]
+            isOneToOne: false
+            referencedRelation: "care_homes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_home_amenities: {
+        Row: {
+          care_home_id: string
+          communal_dining: boolean
+          ensuite_rooms: boolean
+          entertainment_area: boolean
+          garden: boolean
+          housekeeping: boolean
+          id: string
+          laundry: boolean
+          private_rooms: boolean
+          transportation: boolean
+        }
+        Insert: {
+          care_home_id: string
+          communal_dining?: boolean
+          ensuite_rooms?: boolean
+          entertainment_area?: boolean
+          garden?: boolean
+          housekeeping?: boolean
+          id?: string
+          laundry?: boolean
+          private_rooms?: boolean
+          transportation?: boolean
+        }
+        Update: {
+          care_home_id?: string
+          communal_dining?: boolean
+          ensuite_rooms?: boolean
+          entertainment_area?: boolean
+          garden?: boolean
+          housekeeping?: boolean
+          id?: string
+          laundry?: boolean
+          private_rooms?: boolean
+          transportation?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_home_amenities_care_home_id_fkey"
+            columns: ["care_home_id"]
+            isOneToOne: false
+            referencedRelation: "care_homes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_home_media: {
+        Row: {
+          care_home_id: string
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          photo_url: string | null
+          video_url: string | null
+        }
+        Insert: {
+          care_home_id: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          photo_url?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          care_home_id?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          photo_url?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_home_media_care_home_id_fkey"
+            columns: ["care_home_id"]
+            isOneToOne: false
+            referencedRelation: "care_homes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_home_services: {
+        Row: {
+          care_home_id: string
+          id: string
+          meal_preparation: boolean
+          medication_management: boolean
+          memory_care: boolean
+          mobility_assistance: boolean
+          personal_care: boolean
+          social_activities: boolean
+          twenty_four_hour_staff: boolean
+        }
+        Insert: {
+          care_home_id: string
+          id?: string
+          meal_preparation?: boolean
+          medication_management?: boolean
+          memory_care?: boolean
+          mobility_assistance?: boolean
+          personal_care?: boolean
+          social_activities?: boolean
+          twenty_four_hour_staff?: boolean
+        }
+        Update: {
+          care_home_id?: string
+          id?: string
+          meal_preparation?: boolean
+          medication_management?: boolean
+          memory_care?: boolean
+          mobility_assistance?: boolean
+          personal_care?: boolean
+          social_activities?: boolean
+          twenty_four_hour_staff?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_home_services_care_home_id_fkey"
+            columns: ["care_home_id"]
+            isOneToOne: false
+            referencedRelation: "care_homes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_homes: {
+        Row: {
+          address: string
+          capacity: number
+          city: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          owner_id: string
+          price: number
+          state: string
+          updated_at: string
+          zip_code: string
+        }
+        Insert: {
+          address: string
+          capacity: number
+          city: string
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+          owner_id: string
+          price: number
+          state: string
+          updated_at?: string
+          zip_code: string
+        }
+        Update: {
+          address?: string
+          capacity?: number
+          city?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          price?: number
+          state?: string
+          updated_at?: string
+          zip_code?: string
+        }
+        Relationships: []
+      }
+      inquiries: {
+        Row: {
+          care_home_id: string
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          care_home_id: string
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          care_home_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiries_care_home_id_fkey"
+            columns: ["care_home_id"]
+            isOneToOne: false
+            referencedRelation: "care_homes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
