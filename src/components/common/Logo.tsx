@@ -16,7 +16,7 @@ const Logo = ({ className = '', showText = true }: LogoProps) => {
       </div>
       {showText && (
         <div>
-          <h1 className="text-xl font-bold text-care-800">Silver Stay</h1>
+          <h1 className="text-xl font-bold text-care-800">Care Home Connect</h1>
           {showText === true && (
             <p className="text-xs text-gray-500 leading-tight">
               Find the Perfect Residential Care Home

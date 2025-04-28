@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ const HomePage = () => {
         <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Find the Perfect Residential Care Home with Silver Stay
+              Find the Perfect Residential Care Home with Care Home Connect
             </h1>
             <p className="text-xl md:text-2xl max-w-3xl mx-auto">
               Connecting families with licensed residential care homes with verified owners, amenities, transparent pricing, and real reviews.
@@ -75,7 +74,7 @@ const HomePage = () => {
         <div className="container mx-auto max-w-5xl text-center">
           <h2 className="text-3xl font-bold mb-6">Ready to Find the Perfect Care Home?</h2>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
-            Join thousands of families who have found the licensed care home for their loved ones through Silver Stay.
+            Join thousands of families who have found the licensed care home for their loved ones through Care Home Connect.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 

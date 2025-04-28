@@ -1,4 +1,3 @@
-
 import { Outlet, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -94,7 +93,7 @@ const AppLayout = () => {
             <div>
               <Logo className="mb-4" />
               <p className="text-gray-600">
-                Find the Perfect Residential Care Home with Silver Stay
+                Find the Perfect Residential Care Home with Care Home Connect
               </p>
             </div>
 
@@ -175,7 +174,7 @@ const AppLayout = () => {
           </div>
           <div className="mt-8 pt-8 border-t border-gray-200 text-center">
             <p className="text-gray-500">
-              © {new Date().getFullYear()} Silver Stay. All rights reserved.
+              © {new Date().getFullYear()} Care Home Connect. All rights reserved.
             </p>
           </div>
         </div>
