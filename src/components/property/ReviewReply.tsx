@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Reply } from "lucide-react";
 
@@ -23,18 +22,11 @@ const ReviewReply = ({ reviewId, propertyOwnerId, existingReply }: ReviewReplyPr
     
     setIsSaving(true);
     try {
+      // For demonstration purposes, we'll just simulate the API call
       // In a real implementation, you would save this to your database
-      // For this example, we'll just simulate the API call
-      const { error } = await supabase
-        .from('review_responses')
-        .upsert({
-          review_id: reviewId,
-          owner_id: propertyOwnerId,
-          response: replyText,
-          created_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
         title: "Reply Saved",
