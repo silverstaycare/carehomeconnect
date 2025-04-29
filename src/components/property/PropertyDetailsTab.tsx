@@ -2,9 +2,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EditPropertyForm from "./EditPropertyForm";
 import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyDetailsTabProps {
   description: string;
@@ -47,6 +48,52 @@ const PropertyDetailsTab = ({
   isEditing,
   setIsEditing
 }: PropertyDetailsTabProps) => {
+  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
+  const [existingVideo, setExistingVideo] = useState<string | null>(null);
+  
+  // Fetch existing media when in edit mode
+  useEffect(() => {
+    if (isEditing && propertyId) {
+      const fetchMedia = async () => {
+        const { data, error } = await supabase
+          .from('care_home_media')
+          .select('*')
+          .eq('care_home_id', propertyId);
+          
+        if (error) {
+          console.error('Error fetching media:', error);
+          return;
+        }
+        
+        if (data) {
+          // Sort so primary image comes first
+          const sortedData = [...data].sort((a, b) => {
+            if (a.is_primary) return -1;
+            if (b.is_primary) return 1;
+            return 0;
+          });
+          
+          const photos: string[] = [];
+          let video: string | null = null;
+          
+          sortedData.forEach(item => {
+            if (item.video_url) {
+              // If it has a video_url, treat it as a video
+              video = item.video_url;
+            } else if (item.photo_url) {
+              // Otherwise treat it as a photo
+              photos.push(item.photo_url);
+            }
+          });
+          
+          setExistingPhotos(photos);
+          setExistingVideo(video);
+        }
+      };
+      
+      fetchMedia();
+    }
+  }, [isEditing, propertyId]);
 
   const handleSave = (updatedProperty: any) => {
     setIsEditing(false);
@@ -90,7 +137,10 @@ const PropertyDetailsTab = ({
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Property Media</h3>
             <PropertyMediaUpload 
-              onUploadComplete={handleMediaUploadComplete} 
+              onUploadComplete={handleMediaUploadComplete}
+              propertyId={propertyId}
+              existingPhotos={existingPhotos}
+              existingVideo={existingVideo}
             />
           </div>
         </CardContent>
