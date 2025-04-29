@@ -358,6 +358,8 @@ const PropertyDetails = () => {
         reviews={property.reviews}
         capacity={property.capacity}
         userRole={user?.user_metadata?.role}
+        price={property.price}
+        image={property.image}
       />
 
       {/* Property Image */}

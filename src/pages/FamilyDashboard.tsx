@@ -10,7 +10,13 @@ import useFamilyDashboardData from "@/hooks/useFamilyDashboardData";
 
 const FamilyDashboard = () => {
   const { user } = useAuth();
-  const { currentBookings, savedProperties, recentPayments, removeSavedProperty } = useFamilyDashboardData();
+  const { 
+    currentBookings, 
+    savedProperties, 
+    recentPayments, 
+    removeSavedProperty,
+    loading 
+  } = useFamilyDashboardData();
   
   // Get user's display name from metadata
   const getUserDisplayName = () => {

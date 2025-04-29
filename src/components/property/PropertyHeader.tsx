@@ -1,10 +1,11 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Heart, MapPin } from "lucide-react";
+import { CreditCard, Heart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import useFamilyDashboardData from "@/hooks/useFamilyDashboardData";
 
 interface PropertyHeaderProps {
   id: string;
@@ -14,6 +15,8 @@ interface PropertyHeaderProps {
   reviews: { rating: number }[];
   capacity: number;
   userRole?: string;
+  price?: number;
+  image?: string;
 }
 
 const PropertyHeader = ({ 
@@ -23,11 +26,21 @@ const PropertyHeader = ({
   active, 
   reviews, 
   capacity,
-  userRole 
+  userRole,
+  price,
+  image = "/placeholder.svg"
 }: PropertyHeaderProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { saveProperty, savedProperties, hasCurrentBookings } = useFamilyDashboardData();
   const [saved, setSaved] = useState(false);
+
+  // Check if property is saved on component mount and when savedProperties changes
+  useEffect(() => {
+    if (savedProperties) {
+      setSaved(savedProperties.some(property => property.id === id));
+    }
+  }, [savedProperties, id]);
 
   const calculateAverageRating = () => {
     if (!reviews.length) return 0;
@@ -39,14 +52,28 @@ const PropertyHeader = ({
     navigate(`/payment/${id}`);
   };
 
-  const toggleSave = () => {
-    setSaved(!saved);
-    toast({
-      title: saved ? "Property removed" : "Property saved",
-      description: saved 
-        ? "The property has been removed from your saved list" 
-        : "The property has been added to your saved list"
-    });
+  const toggleSave = async () => {
+    if (saved) {
+      // Removing is handled in SavedProperties component
+      toast({
+        title: "Cannot remove from here",
+        description: "Please remove the property from your saved list page"
+      });
+    } else {
+      // Save property
+      const propertyData = {
+        id,
+        name,
+        location,
+        price: price || 0,
+        image
+      };
+      
+      const success = await saveProperty(propertyData);
+      if (success) {
+        setSaved(true);
+      }
+    }
   };
 
   return (
@@ -54,7 +81,10 @@ const PropertyHeader = ({
       <div>
         <h1 className="text-3xl font-bold mb-2">{name}</h1>
         <div className="flex items-center text-gray-600 mb-4">
-          <MapPin className="h-4 w-4 mr-2" />
+          <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
           <span>{location}</span>
         </div>
         <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -78,6 +108,7 @@ const PropertyHeader = ({
             <Button 
               onClick={handlePayment}
               className="bg-care-600 hover:bg-care-700"
+              disabled={!hasCurrentBookings}
             >
               <CreditCard className="mr-2 h-4 w-4" />
               Make Payment
