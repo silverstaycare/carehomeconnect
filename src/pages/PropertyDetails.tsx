@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { CreditCard, Heart, Calendar, MapPin, Trash2 } from "lucide-react";
-import DeactivatePropertyDialog from "@/components/property/DeactivatePropertyDialog";
 import { supabase } from "@/integrations/supabase/client";
+
+// Import extracted components
+import PropertyHeader from "@/components/property/PropertyHeader";
+import PropertyImage from "@/components/property/PropertyImage";
+import PropertyDetailsTab from "@/components/property/PropertyDetailsTab";
+import AmenitiesServicesTab from "@/components/property/AmenitiesServicesTab";
+import ReviewsTab from "@/components/property/ReviewsTab";
+import OwnerActions from "@/components/property/OwnerActions";
 
 interface Property {
   id: string;
@@ -44,8 +47,6 @@ const PropertyDetails = () => {
   const { toast } = useToast();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saved, setSaved] = useState(false);
-  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
@@ -227,24 +228,6 @@ const PropertyDetails = () => {
     fetchProperty();
   }, [id, navigate, toast]);
 
-  const handlePayment = () => {
-    navigate(`/payment/${id}`);
-  };
-
-  const toggleSave = () => {
-    setSaved(!saved);
-    toast({
-      title: saved ? "Property removed" : "Property saved",
-      description: saved 
-        ? "The property has been removed from your saved list" 
-        : "The property has been added to your saved list"
-    });
-  };
-
-  const handleDeactivateProperty = () => {
-    setIsDeactivateDialogOpen(true);
-  };
-
   const handlePropertyDeactivated = () => {
     if (property) {
       setProperty({
@@ -286,68 +269,22 @@ const PropertyDetails = () => {
     );
   }
 
-  const calculateAverageRating = () => {
-    if (!property.reviews.length) return 0;
-    const sum = property.reviews.reduce((acc, review) => acc + review.rating, 0);
-    return sum / property.reviews.length;
-  };
-
   return (
     <div className="container py-8 px-4">
       {/* Property Header */}
-      <div className="md:flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">{property.name}</h1>
-          <div className="flex items-center text-gray-600 mb-4">
-            <MapPin className="h-4 w-4 mr-2" />
-            <span>{property.location}</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <Badge className="text-sm">
-              ★ {calculateAverageRating().toFixed(1)} ({property.reviews.length} reviews)
-            </Badge>
-            <Badge variant="outline" className="text-sm">
-              Capacity: {property.capacity} residents
-            </Badge>
-            {!property.active && (
-              <Badge variant="destructive" className="text-sm">
-                Inactive
-              </Badge>
-            )}
-          </div>
-        </div>
-        
-        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
-          {user?.role === "family" && (
-            <>
-              <Button 
-                onClick={handlePayment}
-                className="bg-care-600 hover:bg-care-700"
-              >
-                <CreditCard className="mr-2 h-4 w-4" />
-                Make Payment
-              </Button>
-              <Button 
-                variant={saved ? "default" : "outline"} 
-                onClick={toggleSave}
-              >
-                <Heart className={`mr-2 h-4 w-4 ${saved ? 'fill-current' : ''}`} />
-                {saved ? "Saved" : "Save Property"}
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
+      <PropertyHeader
+        id={property.id}
+        name={property.name}
+        location={property.location}
+        active={property.active}
+        reviews={property.reviews}
+        capacity={property.capacity}
+        userRole={user?.role}
+      />
 
-      {/* Property Images */}
+      {/* Property Image */}
       <div className="mb-8">
-        <div className="rounded-lg overflow-hidden h-80">
-          <img 
-            src={property.image} 
-            alt={property.name} 
-            className="w-full h-full object-cover"
-          />
-        </div>
+        <PropertyImage image={property.image} name={property.name} />
       </div>
 
       {/* Property Tabs */}
@@ -360,177 +297,36 @@ const PropertyDetails = () => {
         
         {/* Details Tab */}
         <TabsContent value="details">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-bold mb-4">About This Care Home</h2>
-                  <p className="text-gray-700 mb-6">
-                    {property.description}
-                  </p>
-                  
-                  <h3 className="text-lg font-semibold mb-3">Care Home Details</h3>
-                  <ul className="space-y-2 mb-6">
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Monthly Price:</span>
-                      <span className="font-medium">${property.price.toLocaleString()}/month</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Capacity:</span>
-                      <span className="font-medium">{property.capacity} residents</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Type:</span>
-                      <span className="font-medium">Senior Group Home</span>
-                    </li>
-                    <li className="flex justify-between">
-                      <span className="text-gray-600">Status:</span>
-                      <span className={`font-medium ${property.active ? 'text-green-600' : 'text-red-600'}`}>
-                        {property.active ? 'Active' : 'Inactive'}
-                      </span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div>
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-bold mb-4">Contact Information</h2>
-                  <ul className="space-y-4">
-                    <li>
-                      <p className="font-medium">{property.owner.name}</p>
-                      <p className="text-gray-600">Care Home Owner</p>
-                    </li>
-                    <Separator />
-                    <li>
-                      <p className="font-medium">{property.owner.phone}</p>
-                      <p className="text-gray-600">Phone</p>
-                    </li>
-                    <li>
-                      <p className="font-medium">{property.owner.email}</p>
-                      <p className="text-gray-600">Email</p>
-                    </li>
-                  </ul>
-                  {user?.role === "family" && property.active && (
-                    <Button className="w-full mt-6">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Schedule a Visit
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <PropertyDetailsTab
+            description={property.description}
+            price={property.price}
+            capacity={property.capacity}
+            active={property.active}
+            owner={property.owner}
+            userRole={user?.role}
+          />
         </TabsContent>
         
         {/* Amenities Tab */}
         <TabsContent value="amenities">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-bold mb-4">Amenities</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {property.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center">
-                      <div className="h-2 w-2 rounded-full bg-care-600 mr-2"></div>
-                      <span>{amenity}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-xl font-bold mb-4">Care Services</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {property.careServices.map((service, index) => (
-                    <div key={index} className="flex items-center">
-                      <div className="h-2 w-2 rounded-full bg-care-600 mr-2"></div>
-                      <span>{service}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <AmenitiesServicesTab
+            amenities={property.amenities}
+            careServices={property.careServices}
+          />
         </TabsContent>
         
         {/* Reviews Tab */}
         <TabsContent value="reviews">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-xl font-bold mb-6">
-                Reviews ({property.reviews.length})
-              </h2>
-              
-              {property.reviews.length === 0 ? (
-                <p className="text-gray-600">This property has no reviews yet.</p>
-              ) : (
-                <div className="space-y-8">
-                  {property.reviews.map(review => (
-                    <div key={review.id} className="border-b pb-6 last:border-0">
-                      <div className="flex justify-between mb-2">
-                        <p className="font-medium">{review.author}</p>
-                        <p className="text-gray-500 text-sm">
-                          {new Date(review.date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center mb-3">
-                        {[...Array(5)].map((_, i) => (
-                          <span 
-                            key={i} 
-                            className={`text-lg ${i < review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-gray-700">{review.comment}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ReviewsTab reviews={property.reviews} />
         </TabsContent>
       </Tabs>
 
       {/* Owner Actions */}
       {isOwner && (
-        <div className="mt-10 border-t pt-6">
-          <h2 className="text-xl font-bold mb-4">Owner Actions</h2>
-          <div className="flex flex-col sm:flex-row gap-4">
-            {property.active && (
-              <Button 
-                variant="destructive" 
-                onClick={handleDeactivateProperty}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Deactivate Home
-              </Button>
-            )}
-            {!property.active && (
-              <p className="text-gray-600">
-                This property has been deactivated and is no longer visible to families.
-              </p>
-            )}
-          </div>
-          <p className="mt-4 text-sm text-gray-500">
-            Note: Once added, properties cannot be deleted from the system, only deactivated.
-          </p>
-        </div>
-      )}
-
-      {/* Deactivate dialog */}
-      {property && (
-        <DeactivatePropertyDialog
+        <OwnerActions
           propertyId={property.id}
           propertyName={property.name}
-          isOpen={isDeactivateDialogOpen}
-          onClose={() => setIsDeactivateDialogOpen(false)}
+          active={property.active}
           onDeactivate={handlePropertyDeactivated}
         />
       )}
