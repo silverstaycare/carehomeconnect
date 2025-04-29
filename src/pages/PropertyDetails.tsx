@@ -272,6 +272,21 @@ const PropertyDetails = () => {
     }
   };
 
+  const handleMediaUpdated = (urls: { photos: string[], video: string | null }) => {
+    if (property && urls.photos.length > 0) {
+      // Update the primary image if photos were uploaded
+      setProperty({
+        ...property,
+        image: urls.photos[0] // Use the first photo as primary
+      });
+      
+      toast({
+        title: "Media Updated",
+        description: "Property media has been updated successfully"
+      });
+    }
+  };
+
   const handleAmenitiesServicesUpdated = (updatedData: { amenities?: string[], careServices?: string[] }) => {
     if (property) {
       setProperty({
@@ -352,6 +367,7 @@ const PropertyDetails = () => {
           isOwner={isOwner}
           propertyId={property.id}
           onImageUpdated={handleImageUpdated}
+          isEditing={isEditing}
         />
       </div>
       
@@ -391,6 +407,7 @@ const PropertyDetails = () => {
                 state={property.state}
                 zip_code={property.zip_code}
                 onPropertyUpdated={handlePropertyUpdated}
+                onMediaUpdated={handleMediaUpdated}
                 isEditing={isEditing}
                 setIsEditing={setIsEditing}
               />

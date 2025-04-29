@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Camera } from "lucide-react";
 
@@ -13,6 +13,7 @@ interface PropertyImageProps {
   isOwner?: boolean;
   propertyId?: string;
   onImageUpdated?: (newImageUrl: string) => void;
+  isEditing?: boolean;
 }
 
 const PropertyImage = ({ 
@@ -21,7 +22,8 @@ const PropertyImage = ({
   className,
   isOwner = false,
   propertyId,
-  onImageUpdated
+  onImageUpdated,
+  isEditing = false
 }: PropertyImageProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
@@ -46,7 +48,7 @@ const PropertyImage = ({
 
     setIsUploading(true);
     try {
-      // Upload image to Supabase Storage (this is a placeholder - you'd need to set up Storage)
+      // Upload image to Supabase Storage
       const { data, error } = await supabase.storage
         .from('property-images')
         .upload(`${propertyId}/${Date.now()}`, file);
@@ -102,7 +104,7 @@ const PropertyImage = ({
         className="w-full h-full object-cover"
       />
       
-      {isOwner && (
+      {isOwner && isEditing && (
         <div className="absolute bottom-4 right-4">
           <input 
             type="file" 

@@ -1,10 +1,10 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "lucide-react";
 import { useState } from "react";
 import EditPropertyForm from "./EditPropertyForm";
+import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
 
 interface PropertyDetailsTabProps {
   description: string;
@@ -24,6 +24,7 @@ interface PropertyDetailsTabProps {
   state?: string;
   zip_code?: string;
   onPropertyUpdated?: (updatedProperty: Partial<any>) => void;
+  onMediaUpdated?: (urls: { photos: string[], video: string | null }) => void;
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
 }
@@ -42,6 +43,7 @@ const PropertyDetailsTab = ({
   state = "",
   zip_code = "",
   onPropertyUpdated,
+  onMediaUpdated,
   isEditing,
   setIsEditing
 }: PropertyDetailsTabProps) => {
@@ -55,6 +57,12 @@ const PropertyDetailsTab = ({
 
   const handleCancel = () => {
     setIsEditing(false);
+  };
+  
+  const handleMediaUploadComplete = (urls: { photos: string[], video: string | null }) => {
+    if (onMediaUpdated) {
+      onMediaUpdated(urls);
+    }
   };
 
   if (isEditing && isOwner) {
@@ -78,6 +86,13 @@ const PropertyDetailsTab = ({
             onSave={handleSave}
             onCancel={handleCancel}
           />
+          
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold mb-4">Property Media</h3>
+            <PropertyMediaUpload 
+              onUploadComplete={handleMediaUploadComplete} 
+            />
+          </div>
         </CardContent>
       </Card>
     );
