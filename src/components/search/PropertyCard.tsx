@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface Property {
   id: string;
@@ -24,12 +25,14 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
 
   return (
     <Card className="overflow-hidden care-card">
-      <div className="h-48 w-full relative">
-        <img 
-          src={property.image} 
-          alt={property.name} 
-          className="w-full h-full object-cover"
-        />
+      <div className="relative">
+        <AspectRatio ratio={16 / 9}>
+          <img 
+            src={property.image} 
+            alt={property.name} 
+            className="w-full h-full object-cover"
+          />
+        </AspectRatio>
         <div className="absolute top-4 right-4">
           <Badge className="bg-white text-care-700">
             ★ {property.rating} ({property.reviews})

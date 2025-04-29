@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 // Mock data for featured listings
 const featuredHomes = [
@@ -55,12 +56,14 @@ const FeaturedListings = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredHomes.map(home => (
             <Card key={home.id} className="overflow-hidden care-card">
-              <div className="h-48 w-full relative">
-                <img 
-                  src={home.image} 
-                  alt={home.name} 
-                  className="w-full h-full object-cover"
-                />
+              <div className="relative">
+                <AspectRatio ratio={16 / 9}>
+                  <img 
+                    src={home.image} 
+                    alt={home.name} 
+                    className="w-full h-full object-cover"
+                  />
+                </AspectRatio>
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-white text-care-700">
                     ★ {home.rating} ({home.reviews})

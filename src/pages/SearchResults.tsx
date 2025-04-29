@@ -14,6 +14,10 @@ interface Property {
   price: number;
   city: string;
   state: string;
+  image: string;
+  amenities: string[];
+  rating: number;
+  reviews: number;
 }
 
 const SearchResults = () => {
@@ -64,15 +68,30 @@ const SearchResults = () => {
           throw error;
         }
 
-        // Transform data to match Property interface
-        const transformedProperties: Property[] = data?.map(home => ({
-          id: home.id,
-          name: home.name,
-          location: `${home.city}, ${home.state}`,
-          price: home.price,
-          city: home.city,
-          state: home.state
-        })) || [];
+        // Transform data and fetch images for each property
+        const transformedProperties = await Promise.all(data?.map(async (home) => {
+          // Fetch primary image for this property
+          const { data: mediaData } = await supabase
+            .from('care_home_media')
+            .select('photo_url')
+            .eq('care_home_id', home.id)
+            .eq('is_primary', true)
+            .maybeSingle();
+            
+          // For now, use placeholder ratings and reviews
+          return {
+            id: home.id,
+            name: home.name,
+            location: `${home.city}, ${home.state}`,
+            price: home.price,
+            city: home.city,
+            state: home.state,
+            image: mediaData?.photo_url || "/placeholder.svg",
+            amenities: [], // We'll add real amenities in a future update
+            rating: 4.5,
+            reviews: 45
+          };
+        }) || []);
 
         setProperties(transformedProperties);
         setFilteredProperties(transformedProperties);
@@ -142,13 +161,7 @@ const SearchResults = () => {
       </div>
 
       <PropertiesGrid 
-        properties={filteredProperties.map(p => ({
-          ...p,
-          image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994", // Placeholder image
-          amenities: [], // We'll add real amenities later
-          rating: 4.5,
-          reviews: 45
-        }))}
+        properties={filteredProperties}
         loading={loading}
         onReset={handleReset}
       />
