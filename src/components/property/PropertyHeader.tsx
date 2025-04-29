@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Heart } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useFamilyDashboardData from "@/hooks/useFamilyDashboardData";
@@ -113,7 +113,7 @@ const PropertyHeader = ({
           <Button 
             onClick={handlePayment}
             className="w-full md:w-auto bg-care-600 hover:bg-care-700"
-            disabled={!hasCurrentBookings}
+            disabled={true} // Deactivated the button by setting disabled to true
           >
             <CreditCard className="mr-2 h-4 w-4" />
             Make Payment
