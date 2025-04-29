@@ -7,6 +7,7 @@ import EditPropertyForm from "./EditPropertyForm";
 import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+
 interface PropertyDetailsTabProps {
   description: string;
   price: number;
@@ -33,6 +34,7 @@ interface PropertyDetailsTabProps {
   setIsEditing: (isEditing: boolean) => void;
   isAuthenticated?: boolean;
 }
+
 const PropertyDetailsTab = ({
   description,
   price,
@@ -263,11 +265,12 @@ const PropertyDetailsTab = ({
             </ul>
             {userRole === "family" && active && <Button className="w-full mt-6">
                 <Calendar className="mr-2 h-4 w-4" />
-                Schedule a Visit
+                Contact for Tour
               </Button>}
           </CardContent>
         </Card>
       </div>
     </div>;
 };
+
 export default PropertyDetailsTab;
