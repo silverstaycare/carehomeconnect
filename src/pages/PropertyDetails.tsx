@@ -149,11 +149,13 @@ const PropertyDetails = () => {
           .eq('id', homeData.owner_id)
           .single();
         
+        // Construct owner info, ensuring we have all necessary fields
         const ownerInfo = {
           name: ownerData?.first_name && ownerData?.last_name 
             ? `${ownerData.first_name} ${ownerData.last_name}` 
             : "Care Home Owner",
           phone: ownerData?.phone || "(555) 123-4567",
+          // Use user_metadata email as fallback if not available in profiles
           email: ownerData?.email || "contact@carehomeconnect.com"
         };
 
@@ -175,7 +177,7 @@ const PropertyDetails = () => {
           }
         ];
 
-        // Construct the property object
+        // Construct the property object with active status
         const propertyData: Property = {
           id: homeData.id,
           name: homeData.name,

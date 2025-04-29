@@ -181,6 +181,7 @@ export type Database = {
       }
       care_homes: {
         Row: {
+          active: boolean | null
           address: string
           capacity: number
           city: string
@@ -195,6 +196,7 @@ export type Database = {
           zip_code: string
         }
         Insert: {
+          active?: boolean | null
           address: string
           capacity: number
           city: string
@@ -209,6 +211,7 @@ export type Database = {
           zip_code: string
         }
         Update: {
+          active?: boolean | null
           address?: string
           capacity?: number
           city?: string
