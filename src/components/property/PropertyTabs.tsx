@@ -42,6 +42,7 @@ const PropertyTabs = ({
   user
 }: PropertyTabsProps) => {
   const [hasNewInquiries, setHasNewInquiries] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     if (isOwner) {
@@ -68,8 +69,15 @@ const PropertyTabs = ({
     }
   }, [isOwner, property.id]);
 
+  // Hide bell icon when inquiries tab is active
+  const shouldShowBell = hasNewInquiries && activeTab !== "inquiries";
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
-    <Tabs defaultValue="details" className="w-full">
+    <Tabs defaultValue="details" className="w-full" onValueChange={handleTabChange}>
       <div className="flex items-center justify-between">
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
@@ -77,7 +85,7 @@ const PropertyTabs = ({
           {isOwner && (
             <TabsTrigger value="inquiries" className="flex items-center">
               Inquiries
-              {hasNewInquiries && (
+              {shouldShowBell && (
                 <Bell className="ml-1 h-4 w-4 text-amber-500" />
               )}
             </TabsTrigger>
@@ -144,6 +152,7 @@ const PropertyTabs = ({
         <InquiriesTab
           propertyId={property.id}
           isOwner={isOwner}
+          activeTab={activeTab}
         />
       </TabsContent>
     </Tabs>

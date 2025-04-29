@@ -19,12 +19,14 @@ interface Inquiry {
 interface InquiriesTabProps {
   propertyId: string;
   isOwner: boolean;
+  activeTab?: string;
 }
 
-const InquiriesTab = ({ propertyId, isOwner }: InquiriesTabProps) => {
+const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch inquiries when the component mounts or when activeTab changes to "inquiries"
   useEffect(() => {
     const fetchInquiries = async () => {
       try {
@@ -42,16 +44,27 @@ const InquiriesTab = ({ propertyId, isOwner }: InquiriesTabProps) => {
         
         setInquiries(data || []);
         
-        // Mark inquiries as viewed if owner is viewing them
-        if (isOwner && data && data.some(inquiry => inquiry.status === 'pending')) {
+        // Mark inquiries as viewed if owner is viewing them and the inquiries tab is active
+        if (isOwner && activeTab === "inquiries" && data && data.some(inquiry => inquiry.status === 'pending')) {
           const pendingInquiryIds = data
             .filter(inquiry => inquiry.status === 'pending')
             .map(inquiry => inquiry.id);
             
-          await supabase
-            .from('inquiries')
-            .update({ status: 'viewed' })
-            .in('id', pendingInquiryIds);
+          if (pendingInquiryIds.length > 0) {
+            await supabase
+              .from('inquiries')
+              .update({ status: 'viewed' })
+              .in('id', pendingInquiryIds);
+              
+            // Update local state to reflect the change
+            setInquiries(prevInquiries => 
+              prevInquiries.map(inquiry => 
+                pendingInquiryIds.includes(inquiry.id) 
+                  ? { ...inquiry, status: 'viewed' } 
+                  : inquiry
+              )
+            );
+          }
         }
       } catch (error) {
         console.error('Error fetching inquiries:', error);
@@ -61,7 +74,7 @@ const InquiriesTab = ({ propertyId, isOwner }: InquiriesTabProps) => {
     };
     
     fetchInquiries();
-  }, [propertyId, isOwner]);
+  }, [propertyId, isOwner, activeTab]);
 
   if (loading) {
     return (
@@ -109,7 +122,7 @@ const InquiriesTab = ({ propertyId, isOwner }: InquiriesTabProps) => {
                     <Badge variant="default" className="bg-amber-500">New</Badge>
                   )}
                   <span className="text-sm text-muted-foreground">
-                    {format(new Date(inquiry.created_at), 'MMM d, yyyy')}
+                    {format(new Date(inquiry.created_at), 'MMM d, yyyy - h:mm a')}
                   </span>
                 </div>
               </div>
