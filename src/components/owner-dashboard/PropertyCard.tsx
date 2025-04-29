@@ -36,7 +36,7 @@ export const PropertyCard = ({ property }: PropertyCardProps) => {
       <CardContent className="p-0 flex flex-col h-full">
         <div className="relative">
           <img 
-            src={property.photos?.[0] || "/placeholder.svg"} 
+            src={property.image || "/placeholder.svg"} 
             alt={property.name}
             className="h-48 w-full object-cover rounded-t-lg"
           />
