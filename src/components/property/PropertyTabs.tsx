@@ -44,6 +44,7 @@ const PropertyTabs = ({
   const [hasNewInquiries, setHasNewInquiries] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
 
+  // Check for pending inquiries on component mount and when new inquiries arrive
   useEffect(() => {
     if (isOwner) {
       const fetchPendingInquiries = async () => {
@@ -66,6 +67,25 @@ const PropertyTabs = ({
       };
       
       fetchPendingInquiries();
+      
+      // Set up a real-time subscription to listen for new inquiries
+      const channel = supabase
+        .channel('inquiry-notifications')
+        .on('postgres_changes', { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'inquiries',
+          filter: `care_home_id=eq.${property.id}`
+        }, () => {
+          // When a new inquiry is inserted, update the hasNewInquiries state
+          setHasNewInquiries(true);
+        })
+        .subscribe();
+        
+      // Clean up the subscription when the component unmounts
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [isOwner, property.id]);
 
@@ -74,6 +94,9 @@ const PropertyTabs = ({
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
+    
+    // If switching to the inquiries tab and there are new inquiries,
+    // they will be marked as viewed by the InquiriesTab component
   };
 
   return (

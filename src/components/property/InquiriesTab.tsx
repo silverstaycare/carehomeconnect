@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface Inquiry {
   id: string;
@@ -25,6 +26,7 @@ interface InquiriesTabProps {
 const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   // Fetch inquiries when the component mounts or when activeTab changes to "inquiries"
   useEffect(() => {
@@ -45,16 +47,22 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
         setInquiries(data || []);
         
         // Mark inquiries as viewed if owner is viewing them and the inquiries tab is active
-        if (isOwner && activeTab === "inquiries" && data && data.some(inquiry => inquiry.status === 'pending')) {
-          const pendingInquiryIds = data
-            .filter(inquiry => inquiry.status === 'pending')
-            .map(inquiry => inquiry.id);
+        if (isOwner && activeTab === "inquiries") {
+          const pendingInquiries = data ? data.filter(inquiry => inquiry.status === 'pending') : [];
+          
+          if (pendingInquiries.length > 0) {
+            const pendingInquiryIds = pendingInquiries.map(inquiry => inquiry.id);
             
-          if (pendingInquiryIds.length > 0) {
-            await supabase
+            // Update the status in Supabase
+            const { error: updateError } = await supabase
               .from('inquiries')
               .update({ status: 'viewed' })
               .in('id', pendingInquiryIds);
+              
+            if (updateError) {
+              console.error('Error updating inquiry status:', updateError);
+              return;
+            }
               
             // Update local state to reflect the change
             setInquiries(prevInquiries => 
@@ -74,7 +82,35 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
     };
     
     fetchInquiries();
-  }, [propertyId, isOwner, activeTab]);
+    
+    // Set up a real-time subscription to listen for new inquiries
+    const channel = supabase
+      .channel('inquiries-changes')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'inquiries',
+        filter: `care_home_id=eq.${propertyId}`
+      }, (payload) => {
+        // Add the new inquiry to the state
+        const newInquiry = payload.new as Inquiry;
+        setInquiries(prev => [newInquiry, ...prev]);
+        
+        // Show a toast notification
+        if (activeTab !== 'inquiries') {
+          toast({
+            title: "New Inquiry",
+            description: `New inquiry received from ${newInquiry.name}`,
+          });
+        }
+      })
+      .subscribe();
+      
+    // Clean up subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [propertyId, isOwner, activeTab, toast]);
 
   if (loading) {
     return (
