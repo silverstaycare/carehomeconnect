@@ -155,7 +155,7 @@ const EditPropertyForm = ({
         <div className="grid grid-cols-2 gap-4">
           <FormField control={form.control} name="price" render={({ field }) => (
             <FormItem>
-              <FormLabel>Starting Monthly Price ($)</FormLabel>
+              <FormLabel>Starting Monthly Rent ($)</FormLabel>
               <FormControl>
                 <Input type="number" {...field} />
               </FormControl>
