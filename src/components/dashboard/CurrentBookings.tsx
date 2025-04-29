@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CreditCard } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface Booking {
   id: string;
@@ -23,6 +24,7 @@ interface CurrentBookingsProps {
 
 const CurrentBookings = ({ bookings }: CurrentBookingsProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleMakePayment = (propertyId: string) => {
     navigate(`/payment/${propertyId}`);
@@ -47,14 +49,14 @@ const CurrentBookings = ({ bookings }: CurrentBookingsProps) => {
       {bookings.map(booking => (
         <Card key={booking.id} className="overflow-hidden care-card">
           <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3">
+            <div className="w-full md:w-1/3">
               <img 
                 src={booking.image} 
                 alt={booking.propertyName} 
-                className="w-full h-full object-cover"
+                className="w-full h-48 md:h-full object-cover"
               />
             </div>
-            <div className="md:w-2/3">
+            <div className="w-full md:w-2/3">
               <CardHeader>
                 <CardTitle>{booking.propertyName}</CardTitle>
                 <CardDescription>{booking.location}</CardDescription>
@@ -79,9 +81,9 @@ const CurrentBookings = ({ bookings }: CurrentBookingsProps) => {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex flex-col sm:flex-row gap-3">
+              <CardFooter className="flex flex-col gap-3">
                 <Button 
-                  className="w-full sm:w-auto"
+                  className="w-full"
                   onClick={() => handleMakePayment(booking.propertyId)}
                   disabled={bookings.length === 0}
                 >
@@ -90,7 +92,7 @@ const CurrentBookings = ({ bookings }: CurrentBookingsProps) => {
                 </Button>
                 <Button 
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  className="w-full"
                   onClick={() => navigate(`/property/${booking.propertyId}`)}
                 >
                   View Property

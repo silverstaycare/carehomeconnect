@@ -12,12 +12,15 @@ const DashboardHeader = ({ displayName }: DashboardHeaderProps) => {
   
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-      <div>
-        <h1 className="text-3xl font-bold">Family Dashboard</h1>
+      <div className="mb-4 md:mb-0">
+        <h1 className="text-2xl md:text-3xl font-bold">Family Dashboard</h1>
         <p className="text-gray-600">Welcome back, {displayName}</p>
       </div>
-      <div className="mt-4 md:mt-0">
-        <Button onClick={() => navigate("/search")}>
+      <div>
+        <Button 
+          onClick={() => navigate("/search")} 
+          className="w-full md:w-auto"
+        >
           <Search className="mr-2 h-4 w-4" />
           Find Care Homes
         </Button>

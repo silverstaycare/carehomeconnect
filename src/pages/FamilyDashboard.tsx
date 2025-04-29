@@ -6,6 +6,7 @@ import CurrentBookings from "@/components/dashboard/CurrentBookings";
 import SavedProperties from "@/components/dashboard/SavedProperties";
 import PaymentHistory from "@/components/dashboard/PaymentHistory";
 import useFamilyDashboardData from "@/hooks/useFamilyDashboardData";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const FamilyDashboard = () => {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ const FamilyDashboard = () => {
     hasCurrentBookings,
     loading 
   } = useFamilyDashboardData();
+  const isMobile = useIsMobile();
   
   // Get user's display name from metadata
   const getUserDisplayName = () => {
@@ -38,14 +40,29 @@ const FamilyDashboard = () => {
   const defaultTab = hasCurrentBookings ? "current" : "saved";
 
   return (
-    <div className="container py-8 px-4">
+    <div className="container py-6 px-3 md:py-8 md:px-4">
       <DashboardHeader displayName={getUserDisplayName()} />
 
-      <Tabs defaultValue={defaultTab}>
-        <TabsList className="mb-8">
-          <TabsTrigger value="current">Current Bookings</TabsTrigger>
-          <TabsTrigger value="saved">Saved Properties</TabsTrigger>
-          <TabsTrigger value="payments">Payment History</TabsTrigger>
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList className="mb-6 w-full md:w-auto flex">
+          <TabsTrigger 
+            value="current" 
+            className="flex-1 md:flex-none"
+          >
+            Current Bookings
+          </TabsTrigger>
+          <TabsTrigger 
+            value="saved"
+            className="flex-1 md:flex-none"
+          >
+            Saved Properties
+          </TabsTrigger>
+          <TabsTrigger 
+            value="payments"
+            className="flex-1 md:flex-none"
+          >
+            Payment History
+          </TabsTrigger>
         </TabsList>
         
         {/* Current Bookings Tab */}

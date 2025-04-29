@@ -44,7 +44,7 @@ const SavedProperties = ({ properties, onRemoveProperty }: SavedPropertiesProps)
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {properties.map(property => (
         <Card key={property.id} className="care-card">
           <div className="h-40 w-full relative">
@@ -55,7 +55,7 @@ const SavedProperties = ({ properties, onRemoveProperty }: SavedPropertiesProps)
             />
           </div>
           <CardHeader className="pb-2">
-            <CardTitle>{property.name}</CardTitle>
+            <CardTitle className="text-lg">{property.name}</CardTitle>
             <CardDescription>{property.location}</CardDescription>
           </CardHeader>
           <CardContent className="pb-2">

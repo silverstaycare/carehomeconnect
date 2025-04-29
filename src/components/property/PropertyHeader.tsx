@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useFamilyDashboardData from "@/hooks/useFamilyDashboardData";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PropertyHeaderProps {
   id: string;
@@ -34,6 +35,7 @@ const PropertyHeader = ({
   const { toast } = useToast();
   const { saveProperty, savedProperties, hasCurrentBookings } = useFamilyDashboardData();
   const [saved, setSaved] = useState(false);
+  const isMobile = useIsMobile();
 
   // Check if property is saved on component mount and when savedProperties changes
   useEffect(() => {
@@ -81,9 +83,9 @@ const PropertyHeader = ({
   };
 
   return (
-    <div className="md:flex items-start justify-between mb-6">
+    <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6 gap-4">
       <div>
-        <h1 className="text-3xl font-bold mb-2">{name}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">{name}</h1>
         <div className="flex items-center text-gray-600 mb-4">
           <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -106,28 +108,26 @@ const PropertyHeader = ({
         </div>
       </div>
       
-      <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
-        {userRole === "family" && (
-          <>
-            <Button 
-              onClick={handlePayment}
-              className="bg-care-600 hover:bg-care-700"
-              disabled={!hasCurrentBookings}
-            >
-              <CreditCard className="mr-2 h-4 w-4" />
-              Make Payment
-            </Button>
-            <Button 
-              variant={saved ? "default" : "outline"}
-              onClick={handleSaveProperty}
-              className="flex items-center"
-            >
-              <Heart className={`mr-2 h-4 w-4 ${saved ? 'fill-current' : ''}`} />
-              {saved ? "Saved" : "Save Property"}
-            </Button>
-          </>
-        )}
-      </div>
+      {userRole === "family" && (
+        <div className="flex flex-col w-full md:w-auto gap-3">
+          <Button 
+            onClick={handlePayment}
+            className="w-full md:w-auto bg-care-600 hover:bg-care-700"
+            disabled={!hasCurrentBookings}
+          >
+            <CreditCard className="mr-2 h-4 w-4" />
+            Make Payment
+          </Button>
+          <Button 
+            variant={saved ? "default" : "outline"}
+            onClick={handleSaveProperty}
+            className="w-full md:w-auto"
+          >
+            <Heart className={`mr-2 h-4 w-4 ${saved ? 'fill-current' : ''}`} />
+            {saved ? "Saved" : "Save Property"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
