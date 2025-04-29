@@ -49,19 +49,19 @@ const FamilyDashboard = () => {
             value="current" 
             className="flex-1 md:flex-none"
           >
-            Current Bookings
+            Bookings
           </TabsTrigger>
           <TabsTrigger 
             value="saved"
             className="flex-1 md:flex-none"
           >
-            Saved Properties
+            Favorites
           </TabsTrigger>
           <TabsTrigger 
             value="payments"
             className="flex-1 md:flex-none"
           >
-            Payment History
+            Payments
           </TabsTrigger>
         </TabsList>
         
