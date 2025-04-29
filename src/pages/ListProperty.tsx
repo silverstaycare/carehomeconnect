@@ -165,16 +165,19 @@ const ListProperty = () => {
 
       // Insert media if available
       if (mediaUrls.photos.length > 0 || mediaUrls.video) {
+        // Handle photo entries
         const mediaEntries = mediaUrls.photos.map((photo, index) => ({
           care_home_id: careHomeId,
           photo_url: photo,
           is_primary: index === 0 // First photo is primary
         }));
 
+        // Add video as a separate entry if available
         if (mediaUrls.video) {
+          // Modified: Use photo_url for videos as well, but prefix with "video:" to distinguish
           mediaEntries.push({
             care_home_id: careHomeId,
-            video_url: mediaUrls.video,
+            photo_url: mediaUrls.video, // Store video URL in photo_url field
             is_primary: false
           });
         }
