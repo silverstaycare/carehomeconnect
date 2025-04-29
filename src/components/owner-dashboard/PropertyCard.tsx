@@ -1,82 +1,80 @@
 
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { BellDot } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Property } from "@/hooks/useOwnerProperties";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface PropertyCardProps {
-  property: {
-    id: string;
-    name: string;
-    location: string;
-    price: number;
-    description: string;
-    capacity: number;
-    city: string;
-    state: string;
-    active: boolean;
-    image?: string;
-    newInquiryCount: number;
-  }
+  property: Property;
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
+export const PropertyCard = ({ property }: PropertyCardProps) => {
+  const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+  
+  // Format price for display
+  const formattedPrice = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(property.price || 0);
+  
+  const handleCardClick = () => {
+    navigate(`/property/${property.id}`);
+  };
 
   return (
-    <Card key={property.id} className="overflow-hidden">
-      <div className="relative">
-        <AspectRatio ratio={16 / 9}>
-          <img
-            src={property.image}
+    <Card 
+      className="h-full cursor-pointer transition-all duration-300 hover:shadow-lg"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
+    >
+      <CardContent className="p-0 flex flex-col h-full">
+        <div className="relative">
+          <img 
+            src={property.photos?.[0] || "/placeholder.svg"} 
             alt={property.name}
-            className="object-cover w-full h-full"
+            className="h-48 w-full object-cover rounded-t-lg"
           />
-        </AspectRatio>
-        {property.active === false && (
-          <Badge variant="destructive" className="absolute top-2 right-2">
-            Inactive
-          </Badge>
-        )}
-      </div>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{property.name}</CardTitle>
-          {property.newInquiryCount > 0 && (
-            <div className="flex items-center text-amber-500 font-semibold">
-              <BellDot className="h-4 w-4 mr-1" />
-              <span>{property.newInquiryCount}</span>
+          <div className="absolute bottom-2 left-2">
+            <Badge className="bg-care-500">{formattedPrice}</Badge>
+          </div>
+          
+          {!property.active && (
+            <div className="absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center rounded-t-lg">
+              <Badge variant="outline" className="bg-black/75 text-white border-white">
+                Inactive
+              </Badge>
             </div>
           )}
         </div>
-        <CardDescription>
-          {property.city}, {property.state}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <p className="text-sm text-gray-600 line-clamp-2">{property.description}</p>
-          <div className="flex items-center justify-between">
-            <Badge variant="secondary">
-              Capacity: {property.capacity} residents
-            </Badge>
-            <span className="font-semibold text-primary">
-              ${property.price.toLocaleString()}/month
-            </span>
+        
+        <div className="p-4 flex flex-col flex-grow">
+          <h3 className="font-bold text-lg mb-1 line-clamp-1">{property.name}</h3>
+          <p className="text-muted-foreground text-sm mb-2 line-clamp-1">
+            {property.city}, {property.state}
+          </p>
+          
+          <div className="mt-auto flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-medium">Capacity:</span>
+              <span className="text-sm">{property.capacity || 0}</span>
+            </div>
+            
+            <Link 
+              to={`/property/${property.id}`}
+              className="text-care-600 hover:text-care-700 text-sm font-medium"
+              onClick={(e) => e.stopPropagation()}
+            >
+              View
+            </Link>
           </div>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button 
-          variant="outline" 
-          className="w-full"
-          onClick={() => navigate(`/property/${property.id}`)}
-        >
-          View Details
-        </Button>
-      </CardFooter>
     </Card>
   );
-}
+};
