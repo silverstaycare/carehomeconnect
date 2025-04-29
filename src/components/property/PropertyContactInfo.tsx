@@ -2,8 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ContactTourDialog from "./ContactTourDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import LastInquiryDialog from "./LastInquiryDialog";
 
 interface PropertyContactInfoProps {
   owner: {
@@ -30,6 +33,46 @@ const PropertyContactInfo = ({
   userData
 }: PropertyContactInfoProps) => {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [lastInquiryDialogOpen, setLastInquiryDialogOpen] = useState(false);
+  const [lastInquiry, setLastInquiry] = useState<any>(null);
+  const [inquiriesCount, setInquiriesCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserInquiries = async () => {
+      if (!userRole || userRole !== "family") return;
+
+      try {
+        setLoading(true);
+        const { data: user } = await supabase.auth.getUser();
+        
+        if (user?.user) {
+          // Get all inquiries for this property by this user
+          const { data: inquiries, error } = await supabase
+            .from('inquiries')
+            .select('*')
+            .eq('care_home_id', propertyId)
+            .eq('user_id', user.user.id)
+            .order('created_at', { ascending: false });
+            
+          if (error) throw error;
+          
+          setInquiriesCount(inquiries?.length || 0);
+          
+          // Set the most recent inquiry if available
+          if (inquiries && inquiries.length > 0) {
+            setLastInquiry(inquiries[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching inquiries:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInquiries();
+  }, [propertyId, userRole]);
 
   return (
     <Card>
@@ -50,13 +93,32 @@ const PropertyContactInfo = ({
             <p className="text-gray-600">Email</p>
           </li>
         </ul>
+        
         {userRole === "family" && active && (
-          <Button 
-            className="w-full mt-6"
-            onClick={() => setContactDialogOpen(true)}
-          >
-            Inquiry
-          </Button>
+          <div className="mt-6 space-y-3">
+            {lastInquiry && (
+              <div className="bg-muted/40 p-3 rounded-md text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <span className="font-medium">Inquiry Sent On:</span> {format(new Date(lastInquiry.created_at), 'MMM d, yyyy')}
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setLastInquiryDialogOpen(true)}
+                >
+                  Show
+                </Button>
+              </div>
+            )}
+            
+            <Button 
+              className="w-full"
+              onClick={() => setContactDialogOpen(true)}
+              disabled={loading || inquiriesCount >= 3}
+            >
+              {inquiriesCount >= 3 ? "Maximum Inquiries Sent (3)" : "Inquiry"}
+            </Button>
+          </div>
         )}
           
         {/* Contact Dialog */}
@@ -66,7 +128,27 @@ const PropertyContactInfo = ({
           propertyId={propertyId}
           propertyName={propertyName}
           userData={userData}
+          onSuccess={() => {
+            // Refresh the inquiries count and last inquiry
+            setInquiriesCount(prev => prev + 1);
+            // We set a temporary object until the page refreshes
+            setLastInquiry({
+              created_at: new Date().toISOString(),
+              name: userData.name,
+              email: userData.email
+            });
+          }}
         />
+
+        {/* Last Inquiry Dialog */}
+        {lastInquiry && (
+          <LastInquiryDialog
+            open={lastInquiryDialogOpen}
+            onOpenChange={setLastInquiryDialogOpen}
+            inquiry={lastInquiry}
+            propertyName={propertyName}
+          />
+        )}
       </CardContent>
     </Card>
   );

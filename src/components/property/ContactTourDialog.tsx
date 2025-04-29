@@ -37,6 +37,7 @@ interface ContactTourDialogProps {
     name?: string;
     email?: string;
   };
+  onSuccess?: () => void;
 }
 
 const ContactTourDialog = ({
@@ -44,7 +45,8 @@ const ContactTourDialog = ({
   onOpenChange,
   propertyId,
   propertyName,
-  userData
+  userData,
+  onSuccess
 }: ContactTourDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -95,6 +97,11 @@ const ContactTourDialog = ({
         title: "Inquiry Submitted Successfully",
         description: `Your inquiry for ${propertyName} has been sent to the owner.`,
       });
+      
+      // Call onSuccess callback to update parent component
+      if (onSuccess) {
+        onSuccess();
+      }
       
       // Close the dialog
       onOpenChange(false);
