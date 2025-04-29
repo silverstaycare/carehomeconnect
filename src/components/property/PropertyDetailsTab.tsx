@@ -7,7 +7,6 @@ import EditPropertyForm from "./EditPropertyForm";
 import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-
 interface PropertyDetailsTabProps {
   description: string;
   price: number;
@@ -26,12 +25,14 @@ interface PropertyDetailsTabProps {
   state?: string;
   zip_code?: string;
   onPropertyUpdated?: (updatedProperty: Partial<any>) => void;
-  onMediaUpdated?: (urls: { photos: string[], video: string | null }) => void;
+  onMediaUpdated?: (urls: {
+    photos: string[];
+    video: string | null;
+  }) => void;
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
   isAuthenticated?: boolean;
 }
-
 const PropertyDetailsTab = ({
   description,
   price,
@@ -53,21 +54,19 @@ const PropertyDetailsTab = ({
 }: PropertyDetailsTabProps) => {
   const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
   const [existingVideo, setExistingVideo] = useState<string | null>(null);
-  
+
   // Fetch existing media when in edit mode
   useEffect(() => {
     if (isEditing && propertyId) {
       const fetchMedia = async () => {
-        const { data, error } = await supabase
-          .from('care_home_media')
-          .select('*')
-          .eq('care_home_id', propertyId);
-          
+        const {
+          data,
+          error
+        } = await supabase.from('care_home_media').select('*').eq('care_home_id', propertyId);
         if (error) {
           console.error('Error fetching media:', error);
           return;
         }
-        
         if (data) {
           // Sort so primary image comes first
           const sortedData = [...data].sort((a, b) => {
@@ -75,10 +74,8 @@ const PropertyDetailsTab = ({
             if (b.is_primary) return 1;
             return 0;
           });
-          
           const photos: string[] = [];
           let video: string | null = null;
-          
           sortedData.forEach(item => {
             if (item.video_url) {
               // If it has a video_url, treat it as a video
@@ -88,12 +85,10 @@ const PropertyDetailsTab = ({
               photos.push(item.photo_url);
             }
           });
-          
           setExistingPhotos(photos);
           setExistingVideo(video);
         }
       };
-      
       fetchMedia();
     }
   }, [isEditing, propertyId]);
@@ -102,16 +97,14 @@ const PropertyDetailsTab = ({
   useEffect(() => {
     if (propertyId) {
       const fetchMedia = async () => {
-        const { data, error } = await supabase
-          .from('care_home_media')
-          .select('*')
-          .eq('care_home_id', propertyId);
-          
+        const {
+          data,
+          error
+        } = await supabase.from('care_home_media').select('*').eq('care_home_id', propertyId);
         if (error) {
           console.error('Error fetching media:', error);
           return;
         }
-        
         if (data) {
           // Sort so primary image comes first
           const sortedData = [...data].sort((a, b) => {
@@ -119,10 +112,8 @@ const PropertyDetailsTab = ({
             if (b.is_primary) return 1;
             return 0;
           });
-          
           const photos: string[] = [];
           let video: string | null = null;
-          
           sortedData.forEach(item => {
             if (item.video_url) {
               // If it has a video_url, treat it as a video
@@ -132,71 +123,56 @@ const PropertyDetailsTab = ({
               photos.push(item.photo_url);
             }
           });
-          
           setExistingPhotos(photos);
           setExistingVideo(video);
         }
       };
-      
       fetchMedia();
     }
   }, [propertyId]);
-
   const handleSave = (updatedProperty: any) => {
     setIsEditing(false);
     if (onPropertyUpdated) {
       onPropertyUpdated(updatedProperty);
     }
   };
-
   const handleCancel = () => {
     setIsEditing(false);
   };
-  
-  const handleMediaUploadComplete = (urls: { photos: string[], video: string | null }) => {
+  const handleMediaUploadComplete = (urls: {
+    photos: string[];
+    video: string | null;
+  }) => {
     if (onMediaUpdated) {
       onMediaUpdated(urls);
     }
   };
-
   if (isEditing && isOwner) {
-    return (
-      <Card>
+    return <Card>
         <CardContent className="p-6">
           <h2 className="text-xl font-bold mb-4">Edit Property Details</h2>
-          <EditPropertyForm 
-            property={{
-              id: propertyId,
-              name: "",  // This will be filled by the parent component
-              description,
-              location: `${address}, ${city}, ${state} ${zip_code}`,
-              price,
-              capacity,
-              address,
-              city,
-              state,
-              zip_code
-            }}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
+          <EditPropertyForm property={{
+          id: propertyId,
+          name: "",
+          // This will be filled by the parent component
+          description,
+          location: `${address}, ${city}, ${state} ${zip_code}`,
+          price,
+          capacity,
+          address,
+          city,
+          state,
+          zip_code
+        }} onSave={handleSave} onCancel={handleCancel} />
           
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Property Media</h3>
-            <PropertyMediaUpload 
-              onUploadComplete={handleMediaUploadComplete}
-              propertyId={propertyId}
-              existingPhotos={existingPhotos}
-              existingVideo={existingVideo}
-            />
+            <PropertyMediaUpload onUploadComplete={handleMediaUploadComplete} propertyId={propertyId} existingPhotos={existingPhotos} existingVideo={existingVideo} />
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+  return <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div className="md:col-span-2">
         <Card>
           <CardContent className="p-6">
@@ -211,14 +187,10 @@ const PropertyDetailsTab = ({
             <ul className="space-y-2 mb-6">
               <li className="flex justify-between">
                 <span className="text-gray-600">Monthly Price:</span>
-                {isAuthenticated ? (
-                  <span className="font-medium">Starting at ${price.toLocaleString()}/month</span>
-                ) : (
-                  <span className="flex items-center text-amber-600 font-medium">
+                {isAuthenticated ? <span className="font-medium">Starting at ${price.toLocaleString()}/month</span> : <span className="flex items-center text-amber-600 font-medium">
                     <Lock className="h-4 w-4 mr-1" /> 
                     <span>Login to view price</span>
-                  </span>
-                )}
+                  </span>}
               </li>
               <li className="flex justify-between">
                 <span className="text-gray-600">Capacity:</span>
@@ -237,37 +209,21 @@ const PropertyDetailsTab = ({
             </ul>
             
             {/* Property Media Thumbnails */}
-            {(existingPhotos.length > 0 || existingVideo) && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-3">Property Media</h3>
+            {(existingPhotos.length > 0 || existingVideo) && <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-3">Media</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {existingPhotos.map((photo, index) => (
-                    <div key={photo} className="relative">
-                      <AspectRatio ratio={4/3} className="bg-gray-100 rounded-md overflow-hidden">
-                        <img
-                          src={photo}
-                          alt={`Property photo ${index + 1}`}
-                          className="w-full h-full object-cover rounded-md hover:opacity-90 transition-opacity cursor-pointer"
-                          onClick={() => window.open(photo, "_blank")}
-                        />
+                  {existingPhotos.map((photo, index) => <div key={photo} className="relative">
+                      <AspectRatio ratio={4 / 3} className="bg-gray-100 rounded-md overflow-hidden">
+                        <img src={photo} alt={`Property photo ${index + 1}`} className="w-full h-full object-cover rounded-md hover:opacity-90 transition-opacity cursor-pointer" onClick={() => window.open(photo, "_blank")} />
                       </AspectRatio>
-                      {index === 0 && (
-                        <div className="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded">
+                      {index === 0 && <div className="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded">
                           Primary
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        </div>}
+                    </div>)}
                   
-                  {existingVideo && (
-                    <div className="relative">
-                      <AspectRatio ratio={4/3} className="bg-gray-100 rounded-md overflow-hidden">
-                        <video
-                          src={existingVideo}
-                          className="w-full h-full object-cover rounded-md hover:opacity-90 transition-opacity cursor-pointer"
-                          onClick={() => window.open(existingVideo!, "_blank")}
-                          poster={existingPhotos[0] || undefined}
-                        />
+                  {existingVideo && <div className="relative">
+                      <AspectRatio ratio={4 / 3} className="bg-gray-100 rounded-md overflow-hidden">
+                        <video src={existingVideo} className="w-full h-full object-cover rounded-md hover:opacity-90 transition-opacity cursor-pointer" onClick={() => window.open(existingVideo!, "_blank")} poster={existingPhotos[0] || undefined} />
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="rounded-full bg-black/50 p-3">
                             <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -279,11 +235,9 @@ const PropertyDetailsTab = ({
                       <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
                         Video
                       </div>
-                    </div>
-                  )}
+                    </div>}
                 </div>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
       </div>
@@ -307,17 +261,13 @@ const PropertyDetailsTab = ({
                 <p className="text-gray-600">Email</p>
               </li>
             </ul>
-            {userRole === "family" && active && (
-              <Button className="w-full mt-6">
+            {userRole === "family" && active && <Button className="w-full mt-6">
                 <Calendar className="mr-2 h-4 w-4" />
                 Schedule a Visit
-              </Button>
-            )}
+              </Button>}
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default PropertyDetailsTab;
