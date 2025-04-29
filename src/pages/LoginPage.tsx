@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ const LoginPage = () => {
       toast({
         title: "Login successful",
         description: "Welcome back to Care Home Connect!",
+        duration: 2000, // Explicitly set to 2 seconds
       });
       
       // Redirection will be handled by the useEffect above
