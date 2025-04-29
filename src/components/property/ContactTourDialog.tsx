@@ -173,7 +173,7 @@ const ContactTourDialog = ({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Tell us about your needs, preferred visiting time, or any questions you have." 
+                      placeholder="Tell us about your loved ones, preferred visiting time, or any questions you have." 
                       className="min-h-[120px]" 
                       {...field} 
                     />
