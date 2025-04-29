@@ -34,7 +34,7 @@ const LastInquiryDialog = ({
         <DialogHeader>
           <DialogTitle>Inquiry Details</DialogTitle>
           <DialogDescription>
-            Your inquiry for {propertyName} sent on {format(new Date(inquiry.created_at), 'MMMM d, yyyy')}
+            Your inquiry for {propertyName} sent on {format(new Date(inquiry.created_at), 'MMMM d, yyyy h:mm a')}
           </DialogDescription>
         </DialogHeader>
 

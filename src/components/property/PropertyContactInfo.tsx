@@ -121,7 +121,7 @@ const PropertyContactInfo = ({
                     className="bg-muted/40 p-3 rounded-md text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
                   >
                     <div>
-                      <span className="font-medium">Inquiry Sent On:</span> {format(new Date(inquiry.created_at), 'MMM d, yyyy')}
+                      <span className="font-medium">Inquiry Sent On:</span> {format(new Date(inquiry.created_at), 'MMM d, yyyy h:mm a')}
                     </div>
                     <Button 
                       variant="outline" 
