@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -149,14 +148,27 @@ const PropertyDetails = () => {
           .eq('id', homeData.owner_id)
           .single();
         
+        // Get user email from auth table if needed
+        let ownerEmail = "contact@carehomeconnect.com"; // Default fallback
+        try {
+          // Try to get owner's auth data if we're the owner or an admin
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (currentUser?.id === homeData.owner_id) {
+            // If we're the owner, we can use our own email
+            ownerEmail = currentUser.email || ownerEmail;
+          }
+        } catch (error) {
+          console.error("Error fetching user email:", error);
+          // Keep using the default fallback email
+        }
+        
         // Construct owner info, ensuring we have all necessary fields
         const ownerInfo = {
           name: ownerData?.first_name && ownerData?.last_name 
             ? `${ownerData.first_name} ${ownerData.last_name}` 
             : "Care Home Owner",
           phone: ownerData?.phone || "(555) 123-4567",
-          // Use user_metadata email as fallback if not available in profiles
-          email: ownerData?.email || "contact@carehomeconnect.com"
+          email: ownerEmail // Use the email we determined above
         };
 
         // Get reviews (mock data for now)
