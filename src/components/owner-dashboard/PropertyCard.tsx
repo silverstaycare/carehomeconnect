@@ -53,11 +53,7 @@ export const PropertyCard = ({
               <span className="text-sm font-medium">Starting at {formattedPrice}/month</span>
             </div>
             
-            <div className="flex justify-end">
-              <Link to={`/property/${property.id}`} className="text-care-600 hover:text-care-700 text-sm font-medium" onClick={e => e.stopPropagation()}>
-                View
-              </Link>
-            </div>
+            
           </div>
         </div>
       </CardContent>
