@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Check, X } from "lucide-react";
+
 interface Property {
   id: string;
   name: string;
@@ -22,6 +24,7 @@ interface Property {
   state: string;
   zip_code: string;
 }
+
 interface EditPropertyFormProps {
   property: Property;
   onSave: (updatedProperty: Partial<Property>) => void;
@@ -55,18 +58,18 @@ const formSchema = z.object({
     message: "Valid zip code is required"
   })
 });
+
 const EditPropertyForm = ({
   property,
   onSave,
   onCancel
 }: EditPropertyFormProps) => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Split the location into components if available
   const addressParts = property.location.split(", ");
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -80,6 +83,7 @@ const EditPropertyForm = ({
       zip_code: property.zip_code || (addressParts.length > 2 ? addressParts[2].split(" ")[1] : "")
     }
   });
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
@@ -96,9 +100,11 @@ const EditPropertyForm = ({
       };
 
       // Update the database
-      const {
-        error
-      } = await supabase.from('care_homes').update(propertyUpdate).eq('id', property.id);
+      const { error } = await supabase
+        .from('care_homes')
+        .update(propertyUpdate)
+        .eq('id', property.id);
+        
       if (error) throw error;
 
       // Call the onSave prop with the new values
@@ -106,6 +112,7 @@ const EditPropertyForm = ({
         ...propertyUpdate,
         location: `${values.address}, ${values.city}, ${values.state} ${values.zip_code}`
       });
+      
       toast({
         title: "Property Updated",
         description: "Your property details have been successfully updated"
@@ -121,94 +128,116 @@ const EditPropertyForm = ({
       setIsSubmitting(false);
     }
   };
-  return <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField control={form.control} name="name" render={({
-        field
-      }) => <FormItem>
-              <FormLabel>Property Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter property name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>} />
 
-        <FormField control={form.control} name="description" render={({
-        field
-      }) => <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Describe your property" className="min-h-[150px]" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>} />
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField control={form.control} name="name" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Property Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter property name" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        <FormField control={form.control} name="description" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea placeholder="Describe your property" className="min-h-[150px]" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField control={form.control} name="price" render={({
-          field
-        }) => <FormItem>
-                <FormLabel>Monthly Price ($)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>} />
-
-          <FormField control={form.control} name="capacity" render={({
-          field
-        }) => <FormItem>
-                <FormLabel>Capacity (residents)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>} />
-        </div>
-
-        <FormField control={form.control} name="address" render={({
-        field
-      }) => <FormItem>
-              <FormLabel>Street Address</FormLabel>
+          <FormField control={form.control} name="price" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Starting Monthly Price ($)</FormLabel>
               <FormControl>
-                <Input placeholder="123 Main St" {...field} />
+                <Input type="number" {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>} />
+            </FormItem>
+          )} />
 
-        <div className="grid grid-cols-3 gap-4">
-          <FormField control={form.control} name="city" render={({
-          field
-        }) => <FormItem>
-                <FormLabel>City</FormLabel>
-                <FormControl>
-                  <Input placeholder="City" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>} />
-
-          <FormField control={form.control} name="state" render={({
-          field
-        }) => <FormItem>
-                <FormLabel>State</FormLabel>
-                <FormControl>
-                  <Input placeholder="State" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>} />
-
-          <FormField control={form.control} name="zip_code" render={({
-          field
-        }) => <FormItem>
-                <FormLabel>Zip Code</FormLabel>
-                <FormControl>
-                  <Input placeholder="12345" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>} />
+          <FormField control={form.control} name="capacity" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Capacity (residents)</FormLabel>
+              <FormControl>
+                <Input type="number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
         </div>
 
-        
+        <FormField control={form.control} name="address" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Street Address</FormLabel>
+            <FormControl>
+              <Input placeholder="123 Main St" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+
+        <div className="grid grid-cols-3 gap-4">
+          <FormField control={form.control} name="city" render={({ field }) => (
+            <FormItem>
+              <FormLabel>City</FormLabel>
+              <FormControl>
+                <Input placeholder="City" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+
+          <FormField control={form.control} name="state" render={({ field }) => (
+            <FormItem>
+              <FormLabel>State</FormLabel>
+              <FormControl>
+                <Input placeholder="State" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+
+          <FormField control={form.control} name="zip_code" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Zip Code</FormLabel>
+              <FormControl>
+                <Input placeholder="12345" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+        </div>
+
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            <X className="mr-2 h-4 w-4" /> Cancel
+          </Button>
+          <Button 
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 
+              "Saving..." : 
+              <><Check className="mr-2 h-4 w-4" /> Save Changes</>
+            }
+          </Button>
+        </div>
       </form>
-    </Form>;
+    </Form>
+  );
 };
+
 export default EditPropertyForm;
