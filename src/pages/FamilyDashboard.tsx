@@ -14,6 +14,7 @@ const FamilyDashboard = () => {
     savedProperties, 
     recentPayments, 
     removeSavedProperty,
+    hasCurrentBookings,
     loading 
   } = useFamilyDashboardData();
   
@@ -33,11 +34,14 @@ const FamilyDashboard = () => {
     return user.email || 'User';
   };
 
+  // Determine which tab should be default based on booking status
+  const defaultTab = hasCurrentBookings ? "current" : "saved";
+
   return (
     <div className="container py-8 px-4">
       <DashboardHeader displayName={getUserDisplayName()} />
 
-      <Tabs defaultValue="current">
+      <Tabs defaultValue={defaultTab}>
         <TabsList className="mb-8">
           <TabsTrigger value="current">Current Bookings</TabsTrigger>
           <TabsTrigger value="saved">Saved Properties</TabsTrigger>

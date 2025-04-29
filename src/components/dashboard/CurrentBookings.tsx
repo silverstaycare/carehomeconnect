@@ -83,6 +83,7 @@ const CurrentBookings = ({ bookings }: CurrentBookingsProps) => {
                 <Button 
                   className="w-full sm:w-auto"
                   onClick={() => handleMakePayment(booking.propertyId)}
+                  disabled={bookings.length === 0}
                 >
                   <CreditCard className="mr-2 h-4 w-4" />
                   Make Payment
