@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Property } from "@/hooks/useOwnerProperties";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { DollarSign } from "lucide-react";
 
 interface PropertyCardProps {
   property: Property;
@@ -40,9 +41,6 @@ export const PropertyCard = ({ property }: PropertyCardProps) => {
             alt={property.name}
             className="h-48 w-full object-cover rounded-t-lg"
           />
-          <div className="absolute bottom-2 left-2">
-            <Badge className="bg-care-500">{formattedPrice}</Badge>
-          </div>
           
           {!property.active && (
             <div className="absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center rounded-t-lg">
@@ -59,19 +57,26 @@ export const PropertyCard = ({ property }: PropertyCardProps) => {
             {property.city}, {property.state}
           </p>
           
-          <div className="mt-auto flex items-center justify-between">
+          <div className="flex flex-col gap-2 mt-auto">
             <div className="flex items-center gap-1">
               <span className="text-sm font-medium">Capacity:</span>
               <span className="text-sm">{property.capacity || 0}</span>
             </div>
             
-            <Link 
-              to={`/property/${property.id}`}
-              className="text-care-600 hover:text-care-700 text-sm font-medium"
-              onClick={(e) => e.stopPropagation()}
-            >
-              View
-            </Link>
+            <div className="flex items-center text-care-600">
+              <DollarSign className="h-4 w-4 mr-1" />
+              <span className="text-sm font-medium">Starting at {formattedPrice}/month</span>
+            </div>
+            
+            <div className="flex justify-end">
+              <Link 
+                to={`/property/${property.id}`}
+                className="text-care-600 hover:text-care-700 text-sm font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
+                View
+              </Link>
+            </div>
           </div>
         </div>
       </CardContent>
