@@ -17,6 +17,7 @@ interface Property {
   capacity: number;
   city: string;
   state: string;
+  active: boolean;
 }
 
 const OwnerDashboard = () => {
@@ -60,7 +61,8 @@ const OwnerDashboard = () => {
           description: home.description,
           capacity: home.capacity,
           city: home.city,
-          state: home.state
+          state: home.state,
+          active: home.active !== false // If active is null or undefined, treat as true
         })) || [];
 
         setProperties(transformedProperties);
@@ -144,6 +146,11 @@ const OwnerDashboard = () => {
                     ${property.price.toLocaleString()}/month
                   </span>
                 </div>
+                {property.active === false && (
+                  <Badge variant="destructive" className="mt-2">
+                    Inactive
+                  </Badge>
+                )}
               </div>
             </CardContent>
             <CardFooter>
