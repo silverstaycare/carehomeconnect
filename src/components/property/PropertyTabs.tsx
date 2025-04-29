@@ -6,6 +6,9 @@ import ReviewsTab from "./ReviewsTab";
 import InquiriesTab from "./InquiriesTab";
 import PropertyEditButton from "./PropertyEditButton";
 import { Property } from "@/hooks/usePropertyDetails";
+import { useState, useEffect } from "react";
+import { Alert } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyTabsProps {
   property: Property;
@@ -38,13 +41,47 @@ const PropertyTabs = ({
   userRole,
   user
 }: PropertyTabsProps) => {
+  const [hasNewInquiries, setHasNewInquiries] = useState(false);
+
+  useEffect(() => {
+    if (isOwner) {
+      const fetchPendingInquiries = async () => {
+        try {
+          const { count, error } = await supabase
+            .from('inquiries')
+            .select('*', { count: 'exact', head: true })
+            .eq('care_home_id', property.id)
+            .eq('status', 'pending');
+            
+          if (error) {
+            console.error("Error fetching inquiries:", error);
+            return;
+          }
+          
+          setHasNewInquiries(count !== null && count > 0);
+        } catch (error) {
+          console.error("Error checking for new inquiries:", error);
+        }
+      };
+      
+      fetchPendingInquiries();
+    }
+  }, [isOwner, property.id]);
+
   return (
     <Tabs defaultValue="details" className="w-full">
       <div className="flex items-center justify-between">
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          {isOwner && <TabsTrigger value="inquiries">Inquiries</TabsTrigger>}
+          {isOwner && (
+            <TabsTrigger value="inquiries" className="flex items-center">
+              Inquiries
+              {hasNewInquiries && (
+                <Alert className="ml-1 h-4 w-4 text-amber-500" />
+              )}
+            </TabsTrigger>
+          )}
         </TabsList>
         
         {/* Edit Button aligned with tabs */}
