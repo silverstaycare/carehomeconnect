@@ -2,7 +2,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar } from "lucide-react";
+import { Calendar, Edit } from "lucide-react";
+import { useState } from "react";
+import EditPropertyForm from "./EditPropertyForm";
 
 interface PropertyDetailsTabProps {
   description: string;
@@ -15,6 +17,13 @@ interface PropertyDetailsTabProps {
     email: string;
   };
   userRole?: string;
+  isOwner?: boolean;
+  propertyId: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  onPropertyUpdated?: (updatedProperty: Partial<any>) => void;
 }
 
 const PropertyDetailsTab = ({
@@ -23,14 +32,68 @@ const PropertyDetailsTab = ({
   capacity,
   active,
   owner,
-  userRole
+  userRole,
+  isOwner = false,
+  propertyId,
+  address = "",
+  city = "",
+  state = "",
+  zip_code = "",
+  onPropertyUpdated
 }: PropertyDetailsTabProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleSave = (updatedProperty: any) => {
+    setIsEditing(false);
+    if (onPropertyUpdated) {
+      onPropertyUpdated(updatedProperty);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  if (isEditing && isOwner) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="text-xl font-bold mb-4">Edit Property Details</h2>
+          <EditPropertyForm 
+            property={{
+              id: propertyId,
+              name: "",  // This will be filled by the parent component
+              description,
+              location: `${address}, ${city}, ${state} ${zip_code}`,
+              price,
+              capacity,
+              address,
+              city,
+              state,
+              zip_code
+            }}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div className="md:col-span-2">
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4">About This Care Home</h2>
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-bold">About This Care Home</h2>
+              {isOwner && (
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Details
+                </Button>
+              )}
+            </div>
             <p className="text-gray-700 mb-6">
               {description}
             </p>

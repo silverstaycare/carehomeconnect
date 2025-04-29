@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -36,8 +37,13 @@ interface Property {
     date: string;
     rating: number;
     comment: string;
+    reply?: string;
   }[];
   ownerId: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
 }
 
 const PropertyDetails = () => {
@@ -179,7 +185,8 @@ const PropertyDetails = () => {
             author: "Sarah Johnson",
             date: "2023-02-15",
             rating: 5,
-            comment: "My mother has been living at this care home for six months now, and I couldn't be happier with the care she receives. The staff is attentive and kind, and the home is always clean and welcoming."
+            comment: "My mother has been living at this care home for six months now, and I couldn't be happier with the care she receives. The staff is attentive and kind, and the home is always clean and welcoming.",
+            reply: "Thank you for your kind words, Sarah! We're so happy that your mother is enjoying her time with us."
           },
           {
             id: "r2",
@@ -204,7 +211,11 @@ const PropertyDetails = () => {
           active: homeData.active !== false, // If null or undefined, treat as active
           owner: ownerInfo,
           reviews,
-          ownerId: homeData.owner_id
+          ownerId: homeData.owner_id,
+          address: homeData.address,
+          city: homeData.city,
+          state: homeData.state,
+          zip_code: homeData.zip_code
         };
 
         setProperty(propertyData);
@@ -238,6 +249,24 @@ const PropertyDetails = () => {
       toast({
         title: "Property Deactivated",
         description: "This property has been deactivated and is no longer visible to families"
+      });
+    }
+  };
+
+  const handlePropertyUpdated = (updatedProperty: Partial<Property>) => {
+    if (property) {
+      setProperty({
+        ...property,
+        ...updatedProperty
+      });
+    }
+  };
+
+  const handleImageUpdated = (newImageUrl: string) => {
+    if (property) {
+      setProperty({
+        ...property,
+        image: newImageUrl
       });
     }
   };
@@ -284,7 +313,13 @@ const PropertyDetails = () => {
 
       {/* Property Image */}
       <div className="mb-8">
-        <PropertyImage image={property.image} name={property.name} />
+        <PropertyImage 
+          image={property.image} 
+          name={property.name}
+          isOwner={isOwner}
+          propertyId={property.id}
+          onImageUpdated={handleImageUpdated}
+        />
       </div>
 
       {/* Property Tabs */}
@@ -304,6 +339,13 @@ const PropertyDetails = () => {
             active={property.active}
             owner={property.owner}
             userRole={user?.role}
+            isOwner={isOwner}
+            propertyId={property.id}
+            address={property.address}
+            city={property.city}
+            state={property.state}
+            zip_code={property.zip_code}
+            onPropertyUpdated={handlePropertyUpdated}
           />
         </TabsContent>
         
@@ -317,7 +359,11 @@ const PropertyDetails = () => {
         
         {/* Reviews Tab */}
         <TabsContent value="reviews">
-          <ReviewsTab reviews={property.reviews} />
+          <ReviewsTab 
+            reviews={property.reviews}
+            isOwner={isOwner}
+            propertyOwnerId={property.ownerId}
+          />
         </TabsContent>
       </Tabs>
 

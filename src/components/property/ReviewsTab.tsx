@@ -1,5 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
+import ReviewReply from "./ReviewReply";
 
 interface Review {
   id: string;
@@ -7,13 +8,16 @@ interface Review {
   date: string;
   rating: number;
   comment: string;
+  reply?: string;
 }
 
 interface ReviewsTabProps {
   reviews: Review[];
+  isOwner?: boolean;
+  propertyOwnerId?: string;
 }
 
-const ReviewsTab = ({ reviews }: ReviewsTabProps) => {
+const ReviewsTab = ({ reviews, isOwner = false, propertyOwnerId = '' }: ReviewsTabProps) => {
   return (
     <Card>
       <CardContent className="p-6">
@@ -44,6 +48,14 @@ const ReviewsTab = ({ reviews }: ReviewsTabProps) => {
                   ))}
                 </div>
                 <p className="text-gray-700">{review.comment}</p>
+                
+                {isOwner && (
+                  <ReviewReply 
+                    reviewId={review.id}
+                    propertyOwnerId={propertyOwnerId}
+                    existingReply={review.reply}
+                  />
+                )}
               </div>
             ))}
           </div>
