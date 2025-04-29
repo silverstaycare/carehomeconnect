@@ -28,11 +28,8 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 
 const profileFormSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "First name must be at least 2 characters",
-  }),
-  lastName: z.string().min(2, {
-    message: "Last name must be at least 2 characters",
+  displayName: z.string().min(2, {
+    message: "Display name must be at least 2 characters",
   }),
   phone: z.string().optional(),
   email: z.string().email().optional(),
@@ -54,11 +51,13 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
   const { toast } = useToast();
   const { user } = useAuth();
   
+  // Combine first name and last name into a single display name
+  const displayName = [firstName, lastName].filter(Boolean).join(' ');
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      firstName: firstName || "",
-      lastName: lastName || "",
+      displayName: displayName || "",
       phone: phone || "",
       email: user?.email || "",
     },
@@ -67,8 +66,7 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
   // Update form values when props change
   useEffect(() => {
     form.reset({
-      firstName: firstName || "",
-      lastName: lastName || "",
+      displayName: [firstName, lastName].filter(Boolean).join(' ') || "",
       phone: phone || "",
       email: user?.email || "",
     });
@@ -78,11 +76,16 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
     setIsSubmitting(true);
     
     try {
+      // Split display name into first name and last name
+      const nameParts = data.displayName.trim().split(' ');
+      const first_name = nameParts[0] || '';
+      const last_name = nameParts.slice(1).join(' ') || '';
+
       const { error } = await supabase
         .from('profiles')
         .update({
-          first_name: data.firstName,
-          last_name: data.lastName,
+          first_name: first_name,
+          last_name: last_name,
           phone: data.phone || null
         })
         .eq('id', userId);
@@ -153,26 +156,12 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
             
             <FormField
               control={form.control}
-              name="firstName"
+              name="displayName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>First Name</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your first name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Last Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your last name" {...field} />
+                    <Input placeholder="Enter your name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
