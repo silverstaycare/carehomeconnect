@@ -21,7 +21,7 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -63,14 +63,16 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
     },
   });
 
-  // Update form values when props change
+  // Reset form when dialog opens or props change
   useEffect(() => {
-    form.reset({
-      displayName: [firstName, lastName].filter(Boolean).join(' ') || "",
-      phone: phone || "",
-      email: user?.email || "",
-    });
-  }, [firstName, lastName, phone, user?.email, form]);
+    if (isOpen) {
+      form.reset({
+        displayName: [firstName, lastName].filter(Boolean).join(' ') || "",
+        phone: phone || "",
+        email: user?.email || "",
+      });
+    }
+  }, [firstName, lastName, phone, user?.email, form, isOpen]);
 
   async function onSubmit(data: ProfileFormValues) {
     setIsSubmitting(true);
