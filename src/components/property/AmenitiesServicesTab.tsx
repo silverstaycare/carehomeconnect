@@ -13,12 +13,16 @@ const AmenitiesServicesTab = ({ amenities, careServices }: AmenitiesServicesTabP
         <CardContent className="p-6">
           <h2 className="text-xl font-bold mb-4">Amenities</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {amenities.map((amenity, index) => (
-              <div key={index} className="flex items-center">
-                <div className="h-2 w-2 rounded-full bg-care-600 mr-2"></div>
-                <span>{amenity}</span>
-              </div>
-            ))}
+            {amenities.length === 0 ? (
+              <p className="text-gray-600">No amenities listed for this property.</p>
+            ) : (
+              amenities.map((amenity, index) => (
+                <div key={index} className="flex items-center">
+                  <div className="h-2 w-2 rounded-full bg-care-600 mr-2"></div>
+                  <span>{amenity}</span>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
@@ -27,12 +31,16 @@ const AmenitiesServicesTab = ({ amenities, careServices }: AmenitiesServicesTabP
         <CardContent className="p-6">
           <h2 className="text-xl font-bold mb-4">Care Services</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {careServices.map((service, index) => (
-              <div key={index} className="flex items-center">
-                <div className="h-2 w-2 rounded-full bg-care-600 mr-2"></div>
-                <span>{service}</span>
-              </div>
-            ))}
+            {careServices.length === 0 ? (
+              <p className="text-gray-600">No care services listed for this property.</p>
+            ) : (
+              careServices.map((service, index) => (
+                <div key={index} className="flex items-center">
+                  <div className="h-2 w-2 rounded-full bg-care-600 mr-2"></div>
+                  <span>{service}</span>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

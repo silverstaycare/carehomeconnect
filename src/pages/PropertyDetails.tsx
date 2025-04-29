@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -322,39 +321,37 @@ const PropertyDetails = () => {
         />
       </div>
 
-      {/* Property Tabs */}
+      {/* Property Tabs - Updated to have only two tabs */}
       <Tabs defaultValue="details">
         <TabsList className="mb-6">
           <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="amenities">Amenities & Services</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
         </TabsList>
         
-        {/* Details Tab */}
+        {/* Combined Details Tab */}
         <TabsContent value="details">
-          <PropertyDetailsTab
-            description={property.description}
-            price={property.price}
-            capacity={property.capacity}
-            active={property.active}
-            owner={property.owner}
-            userRole={user?.role}
-            isOwner={isOwner}
-            propertyId={property.id}
-            address={property.address}
-            city={property.city}
-            state={property.state}
-            zip_code={property.zip_code}
-            onPropertyUpdated={handlePropertyUpdated}
-          />
-        </TabsContent>
-        
-        {/* Amenities Tab */}
-        <TabsContent value="amenities">
-          <AmenitiesServicesTab
-            amenities={property.amenities}
-            careServices={property.careServices}
-          />
+          <div className="space-y-8">
+            <PropertyDetailsTab
+              description={property.description}
+              price={property.price}
+              capacity={property.capacity}
+              active={property.active}
+              owner={property.owner}
+              userRole={user?.role}
+              isOwner={isOwner}
+              propertyId={property.id}
+              address={property.address}
+              city={property.city}
+              state={property.state}
+              zip_code={property.zip_code}
+              onPropertyUpdated={handlePropertyUpdated}
+            />
+            
+            <AmenitiesServicesTab
+              amenities={property.amenities}
+              careServices={property.careServices}
+            />
+          </div>
         </TabsContent>
         
         {/* Reviews Tab */}

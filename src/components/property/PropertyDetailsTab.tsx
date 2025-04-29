@@ -86,7 +86,7 @@ const PropertyDetailsTab = ({
         <Card>
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold">About This Care Home</h2>
+              <h2 className="text-xl font-bold">Property Information</h2>
               {isOwner && (
                 <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                   <Edit className="mr-2 h-4 w-4" />
