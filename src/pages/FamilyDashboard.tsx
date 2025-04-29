@@ -44,6 +44,22 @@ const FamilyDashboard = () => {
   const [currentBookings, setCurrentBookings] = useState<Booking[]>([]);
   const [savedProperties, setSavedProperties] = useState<SavedProperty[]>([]);
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
+  
+  // Get user's display name from metadata
+  const getUserDisplayName = () => {
+    if (!user) return '';
+    
+    // Check if user has metadata with first_name
+    if (user.user_metadata && 
+        (user.user_metadata.first_name || user.user_metadata.last_name)) {
+      const firstName = user.user_metadata.first_name || '';
+      const lastName = user.user_metadata.last_name || '';
+      return `${firstName} ${lastName}`.trim();
+    }
+    
+    // Fallback to email
+    return user.email || 'User';
+  };
 
   useEffect(() => {
     // Mock data loading - in a real app, this would fetch from an API
@@ -113,7 +129,7 @@ const FamilyDashboard = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Family Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user?.name}</p>
+          <p className="text-gray-600">Welcome back, {getUserDisplayName()}</p>
         </div>
         <div className="mt-4 md:mt-0">
           <Button onClick={() => navigate("/search")}>
