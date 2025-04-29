@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -24,31 +23,22 @@ const LoginPage = () => {
 
   // Redirect if user is already logged in
   useEffect(() => {
-    const checkUserRole = async () => {
-      if (!user) return;
-      
-      // Get user role from profiles table
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-      
-      if (error) {
-        console.error("Error fetching user role:", error);
-        return;
-      }
-      
-      // Redirect based on user role
-      const role = data?.role;
-      if (role === 'owner') {
-        navigate('/owner/dashboard');
-      } else if (role === 'family') {
-        navigate('/family/dashboard');
-      }
-    };
+    if (!user) return;
     
-    checkUserRole();
+    // Get user role directly from user metadata instead of querying the profiles table
+    const role = user.user_metadata?.role;
+    console.log("User role from metadata:", role);
+    
+    // Redirect based on user role
+    if (role === 'owner') {
+      navigate('/owner/dashboard');
+    } else if (role === 'family') {
+      navigate('/family/dashboard');
+    } else {
+      console.log("Unknown role or role not found in metadata:", role);
+      // Default fallback - you can decide what to do if role is not found
+      navigate('/family/dashboard');
+    }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {

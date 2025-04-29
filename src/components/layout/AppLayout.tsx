@@ -1,3 +1,4 @@
+
 import { Outlet, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Home, Info, Shield, FileText } from "lucide-react";
@@ -14,6 +15,7 @@ const AppLayout = () => {
     // Get user role from user metadata if available
     if (user?.user_metadata?.role) {
       setUserRole(user.user_metadata.role);
+      console.log("User role in AppLayout:", user.user_metadata.role);
     }
   }, [user]);
 
@@ -24,6 +26,15 @@ const AppLayout = () => {
     } catch (error) {
       console.error("Logout error:", error);
     }
+  };
+
+  const handleDashboardClick = () => {
+    const dashboardPath = userRole === "owner" 
+      ? "/owner/dashboard" 
+      : "/family/dashboard";
+    
+    console.log("Navigating to dashboard:", dashboardPath);
+    navigate(dashboardPath);
   };
 
   return (
@@ -48,7 +59,7 @@ const AppLayout = () => {
               <>
                 <Button 
                   variant="ghost"
-                  onClick={() => navigate(userRole === "owner" ? "/owner/dashboard" : "/family/dashboard")}
+                  onClick={handleDashboardClick}
                 >
                   Dashboard
                 </Button>
