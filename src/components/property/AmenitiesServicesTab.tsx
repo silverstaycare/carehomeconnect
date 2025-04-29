@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Check, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ interface AmenitiesServicesTabProps {
   isOwner?: boolean;
   propertyId?: string;
   onUpdate?: (updatedData: { amenities?: string[], careServices?: string[] }) => void;
+  isEditing: boolean;
 }
 
 // Define all available amenities and care services
@@ -42,11 +43,10 @@ const AmenitiesServicesTab = ({
   careServices, 
   isOwner = false, 
   propertyId = "", 
-  onUpdate 
+  onUpdate,
+  isEditing
 }: AmenitiesServicesTabProps) => {
   const { toast } = useToast();
-  const [isEditingAmenities, setIsEditingAmenities] = useState(false);
-  const [isEditingServices, setIsEditingServices] = useState(false);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(amenities);
   const [selectedServices, setSelectedServices] = useState<string[]>(careServices);
 
@@ -115,8 +115,6 @@ const AmenitiesServicesTab = ({
         title: "Success",
         description: "Amenities updated successfully",
       });
-      
-      setIsEditingAmenities(false);
     } catch (error) {
       console.error("Error saving amenities:", error);
       toast({
@@ -154,8 +152,6 @@ const AmenitiesServicesTab = ({
         title: "Success",
         description: "Care services updated successfully",
       });
-      
-      setIsEditingServices(false);
     } catch (error) {
       console.error("Error saving care services:", error);
       toast({
@@ -166,35 +162,21 @@ const AmenitiesServicesTab = ({
     }
   };
 
-  const cancelEditingAmenities = () => {
-    setSelectedAmenities(amenities);
-    setIsEditingAmenities(false);
-  };
-
-  const cancelEditingServices = () => {
-    setSelectedServices(careServices);
-    setIsEditingServices(false);
+  // New methods to handle saving both amenities and services at once
+  const saveAll = async () => {
+    await saveAmenities();
+    await saveServices();
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
       <Card>
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-xl font-bold">Amenities</h2>
-            {isOwner && !isEditingAmenities && (
-              <Button variant="outline" size="sm" onClick={() => setIsEditingAmenities(true)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Button>
-            )}
-            {isOwner && isEditingAmenities && (
+            {isOwner && isEditing && (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={cancelEditingAmenities}>
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </Button>
-                <Button size="sm" onClick={saveAmenities}>
+                <Button variant="outline" size="sm" onClick={saveAmenities}>
                   <Check className="mr-2 h-4 w-4" />
                   Save
                 </Button>
@@ -202,7 +184,7 @@ const AmenitiesServicesTab = ({
             )}
           </div>
           
-          {isEditingAmenities ? (
+          {isEditing && isOwner ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {allAmenities.map((amenity) => (
                 <div key={amenity.id} className="flex items-center space-x-2">
@@ -243,19 +225,9 @@ const AmenitiesServicesTab = ({
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-xl font-bold">Care Services</h2>
-            {isOwner && !isEditingServices && (
-              <Button variant="outline" size="sm" onClick={() => setIsEditingServices(true)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </Button>
-            )}
-            {isOwner && isEditingServices && (
+            {isOwner && isEditing && (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={cancelEditingServices}>
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </Button>
-                <Button size="sm" onClick={saveServices}>
+                <Button variant="outline" size="sm" onClick={saveServices}>
                   <Check className="mr-2 h-4 w-4" />
                   Save
                 </Button>
@@ -263,7 +235,7 @@ const AmenitiesServicesTab = ({
             )}
           </div>
           
-          {isEditingServices ? (
+          {isEditing && isOwner ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {allCareServices.map((service) => (
                 <div key={service.id} className="flex items-center space-x-2">

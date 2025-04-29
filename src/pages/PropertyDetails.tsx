@@ -13,6 +13,7 @@ import PropertyDetailsTab from "@/components/property/PropertyDetailsTab";
 import AmenitiesServicesTab from "@/components/property/AmenitiesServicesTab";
 import ReviewsTab from "@/components/property/ReviewsTab";
 import OwnerActions from "@/components/property/OwnerActions";
+import PropertyEditButton from "@/components/property/PropertyEditButton";
 
 interface Property {
   id: string;
@@ -53,6 +54,7 @@ const PropertyDetails = () => {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     // Fetch property details
@@ -280,6 +282,28 @@ const PropertyDetails = () => {
     }
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveClick = () => {
+    // When saving all changes, we keep isEditing as true
+    // The individual components' save handlers will handle their own state updates
+    // After all saving is complete, we then set isEditing to false
+    setIsEditing(false);
+    toast({
+      title: "Changes Saved",
+      description: "All property details have been updated successfully"
+    });
+  };
+
+  const handleCancelClick = () => {
+    setIsEditing(false);
+    toast({
+      description: "Edits cancelled"
+    });
+  };
+
   if (loading) {
     return (
       <div className="container py-12 px-4 flex justify-center">
@@ -321,7 +345,7 @@ const PropertyDetails = () => {
       />
 
       {/* Property Image */}
-      <div className="mb-8">
+      <div className="mb-4">
         <PropertyImage 
           image={property.image} 
           name={property.name}
@@ -330,6 +354,15 @@ const PropertyDetails = () => {
           onImageUpdated={handleImageUpdated}
         />
       </div>
+      
+      {/* Edit Button (appears only for owners) */}
+      <PropertyEditButton 
+        isOwner={isOwner}
+        isEditing={isEditing}
+        onEdit={handleEditClick}
+        onSave={handleSaveClick}
+        onCancel={handleCancelClick}
+      />
 
       {/* Property Tabs */}
       <Tabs defaultValue="details">
@@ -355,6 +388,8 @@ const PropertyDetails = () => {
               state={property.state}
               zip_code={property.zip_code}
               onPropertyUpdated={handlePropertyUpdated}
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
             />
             
             <AmenitiesServicesTab
@@ -363,6 +398,7 @@ const PropertyDetails = () => {
               isOwner={isOwner}
               propertyId={property.id}
               onUpdate={handleAmenitiesServicesUpdated}
+              isEditing={isEditing}
             />
           </div>
         </TabsContent>

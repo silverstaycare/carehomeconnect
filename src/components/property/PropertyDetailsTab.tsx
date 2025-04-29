@@ -2,7 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Edit } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { useState } from "react";
 import EditPropertyForm from "./EditPropertyForm";
 
@@ -24,6 +24,8 @@ interface PropertyDetailsTabProps {
   state?: string;
   zip_code?: string;
   onPropertyUpdated?: (updatedProperty: Partial<any>) => void;
+  isEditing: boolean;
+  setIsEditing: (isEditing: boolean) => void;
 }
 
 const PropertyDetailsTab = ({
@@ -39,9 +41,10 @@ const PropertyDetailsTab = ({
   city = "",
   state = "",
   zip_code = "",
-  onPropertyUpdated
+  onPropertyUpdated,
+  isEditing,
+  setIsEditing
 }: PropertyDetailsTabProps) => {
-  const [isEditing, setIsEditing] = useState(false);
 
   const handleSave = (updatedProperty: any) => {
     setIsEditing(false);
@@ -87,12 +90,6 @@ const PropertyDetailsTab = ({
           <CardContent className="p-6">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-xl font-bold">Property Information</h2>
-              {isOwner && (
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Details
-                </Button>
-              )}
             </div>
             <p className="text-gray-700 mb-6">
               {description}
