@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { BellDot } from "lucide-react";
 
 interface PropertyCardProps {
   property: {
@@ -17,6 +18,7 @@ interface PropertyCardProps {
     state: string;
     active: boolean;
     image?: string;
+    newInquiryCount: number;
   }
 }
 
@@ -40,7 +42,15 @@ export function PropertyCard({ property }: PropertyCardProps) {
         )}
       </div>
       <CardHeader>
-        <CardTitle>{property.name}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>{property.name}</CardTitle>
+          {property.newInquiryCount > 0 && (
+            <div className="flex items-center text-amber-500 font-semibold">
+              <BellDot className="h-4 w-4 mr-1" />
+              <span>{property.newInquiryCount}</span>
+            </div>
+          )}
+        </div>
         <CardDescription>
           {property.city}, {property.state}
         </CardDescription>

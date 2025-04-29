@@ -15,6 +15,7 @@ interface Property {
   state: string;
   active: boolean;
   image?: string;
+  newInquiryCount: number; // Add this field for tracking new inquiries
 }
 
 interface UserProfile {
@@ -74,14 +75,26 @@ export function useOwnerProperties() {
           throw error;
         }
 
-        // Fetch the primary image for each property
-        const propertiesWithImages = await Promise.all(data?.map(async (home) => {
+        // Fetch the primary image and inquiry counts for each property
+        const propertiesWithData = await Promise.all(data?.map(async (home) => {
+          // Get primary image
           const { data: mediaData } = await supabase
             .from('care_home_media')
             .select('photo_url')
             .eq('care_home_id', home.id)
             .eq('is_primary', true)
             .maybeSingle();
+          
+          // Get count of pending inquiries
+          const { count: inquiryCount, error: inquiryError } = await supabase
+            .from('inquiries')
+            .select('id', { count: 'exact', head: true })
+            .eq('care_home_id', home.id)
+            .eq('status', 'pending');
+          
+          if (inquiryError) {
+            console.error("Error fetching inquiries count:", inquiryError);
+          }
           
           return {
             id: home.id,
@@ -93,11 +106,12 @@ export function useOwnerProperties() {
             city: home.city,
             state: home.state,
             active: home.active !== false,
-            image: mediaData?.photo_url || "/placeholder.svg"
+            image: mediaData?.photo_url || "/placeholder.svg",
+            newInquiryCount: inquiryCount || 0
           };
         }) || []);
 
-        setProperties(propertiesWithImages);
+        setProperties(propertiesWithData);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching properties:", error);

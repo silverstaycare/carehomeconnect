@@ -12,6 +12,7 @@ interface Property {
   state: string;
   active: boolean;
   image?: string;
+  newInquiryCount: number;
 }
 
 interface PropertiesGridProps {
