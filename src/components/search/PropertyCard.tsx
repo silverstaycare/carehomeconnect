@@ -61,7 +61,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
         </div>
         {isAuthenticated ? (
           <p className="font-semibold text-lg">
-            ${property.price.toLocaleString()}/month
+            Starting at ${property.price.toLocaleString()}/month
           </p>
         ) : (
           <p className="flex items-center text-amber-600 font-medium">

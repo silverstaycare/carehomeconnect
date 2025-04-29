@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -213,7 +212,7 @@ const PropertyDetailsTab = ({
               <li className="flex justify-between">
                 <span className="text-gray-600">Monthly Price:</span>
                 {isAuthenticated ? (
-                  <span className="font-medium">${price.toLocaleString()}/month</span>
+                  <span className="font-medium">Starting at ${price.toLocaleString()}/month</span>
                 ) : (
                   <span className="flex items-center text-amber-600 font-medium">
                     <Lock className="h-4 w-4 mr-1" /> 

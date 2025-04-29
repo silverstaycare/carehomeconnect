@@ -146,7 +146,7 @@ const FeaturedListings = () => {
                 </div>
                 {isAuthenticated ? (
                   <p className="font-semibold text-lg">
-                    ${home.price.toLocaleString()}/month
+                    Starting at ${home.price.toLocaleString()}/month
                   </p>
                 ) : (
                   <p className="flex items-center text-amber-600 font-medium">
