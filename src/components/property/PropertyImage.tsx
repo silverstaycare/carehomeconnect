@@ -48,16 +48,17 @@ const PropertyImage = ({
 
     setIsUploading(true);
     try {
-      // Upload image to Supabase Storage
+      // Upload image to Supabase Storage - using the correct bucket name "property_media"
+      const fileName = `${Date.now()}-${file.name}`;
       const { data, error } = await supabase.storage
-        .from('property-images')
-        .upload(`${propertyId}/${Date.now()}`, file);
+        .from('property_media')
+        .upload(`photos/${fileName}`, file);
 
       if (error) throw error;
 
       // Get the public URL for the uploaded file
       const { data: urlData } = supabase.storage
-        .from('property-images')
+        .from('property_media')
         .getPublicUrl(data.path);
 
       // Update the property's primary image in the database
@@ -82,7 +83,8 @@ const PropertyImage = ({
 
       toast({
         title: "Image Updated",
-        description: "The property image has been updated successfully"
+        description: "The property image has been updated successfully",
+        duration: 2000
       });
     } catch (error) {
       console.error("Error uploading image:", error);
