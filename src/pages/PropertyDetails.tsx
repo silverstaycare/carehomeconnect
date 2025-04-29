@@ -355,63 +355,67 @@ const PropertyDetails = () => {
         />
       </div>
       
-      {/* Edit Button (appears only for owners) */}
-      <PropertyEditButton 
-        isOwner={isOwner}
-        isEditing={isEditing}
-        onEdit={handleEditClick}
-        onSave={handleSaveClick}
-        onCancel={handleCancelClick}
-      />
-
-      {/* Property Tabs */}
-      <Tabs defaultValue="details">
-        <TabsList className="mb-6">
-          <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
-        </TabsList>
-        
-        {/* Combined Details Tab */}
-        <TabsContent value="details">
-          <div className="space-y-8">
-            <PropertyDetailsTab
-              description={property.description}
-              price={property.price}
-              capacity={property.capacity}
-              active={property.active}
-              owner={property.owner}
-              userRole={user?.role}
-              isOwner={isOwner}
-              propertyId={property.id}
-              address={property.address}
-              city={property.city}
-              state={property.state}
-              zip_code={property.zip_code}
-              onPropertyUpdated={handlePropertyUpdated}
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-            />
+      {/* Property Tabs and Edit Button */}
+      <div className="flex items-center justify-between mb-6">
+        <Tabs defaultValue="details" className="w-full">
+          <div className="flex items-center justify-between">
+            <TabsList>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            </TabsList>
             
-            <AmenitiesServicesTab
-              amenities={property.amenities}
-              careServices={property.careServices}
+            {/* Edit Button aligned with tabs */}
+            <PropertyEditButton 
               isOwner={isOwner}
-              propertyId={property.id}
-              onUpdate={handleAmenitiesServicesUpdated}
               isEditing={isEditing}
+              onEdit={handleEditClick}
+              onSave={handleSaveClick}
+              onCancel={handleCancelClick}
             />
           </div>
-        </TabsContent>
-        
-        {/* Reviews Tab */}
-        <TabsContent value="reviews">
-          <ReviewsTab 
-            reviews={property.reviews}
-            isOwner={isOwner}
-            propertyOwnerId={property.ownerId}
-          />
-        </TabsContent>
-      </Tabs>
+          
+          {/* Combined Details Tab */}
+          <TabsContent value="details">
+            <div className="space-y-8">
+              <PropertyDetailsTab
+                description={property.description}
+                price={property.price}
+                capacity={property.capacity}
+                active={property.active}
+                owner={property.owner}
+                userRole={user?.role}
+                isOwner={isOwner}
+                propertyId={property.id}
+                address={property.address}
+                city={property.city}
+                state={property.state}
+                zip_code={property.zip_code}
+                onPropertyUpdated={handlePropertyUpdated}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+              />
+              
+              <AmenitiesServicesTab
+                amenities={property.amenities}
+                careServices={property.careServices}
+                isOwner={isOwner}
+                propertyId={property.id}
+                onUpdate={handleAmenitiesServicesUpdated}
+                isEditing={isEditing}
+              />
+            </div>
+          </TabsContent>
+          
+          {/* Reviews Tab */}
+          <TabsContent value="reviews">
+            <ReviewsTab 
+              reviews={property.reviews}
+              isOwner={isOwner}
+              propertyOwnerId={property.ownerId}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
 
       {/* Owner Actions */}
       {isOwner && (

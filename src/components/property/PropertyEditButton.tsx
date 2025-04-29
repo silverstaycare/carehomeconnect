@@ -20,20 +20,20 @@ const PropertyEditButton = ({
   if (!isOwner) return null;
 
   return (
-    <div className="flex justify-end mb-4">
+    <div>
       {isEditing ? (
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} size="sm">
             <X className="mr-2 h-4 w-4" />
             Cancel
           </Button>
-          <Button onClick={onSave}>
+          <Button onClick={onSave} size="sm">
             <Save className="mr-2 h-4 w-4" />
             Save All Changes
           </Button>
         </div>
       ) : (
-        <Button variant="outline" onClick={onEdit}>
+        <Button variant="outline" onClick={onEdit} size="sm">
           <Edit className="mr-2 h-4 w-4" />
           Edit Property
         </Button>
