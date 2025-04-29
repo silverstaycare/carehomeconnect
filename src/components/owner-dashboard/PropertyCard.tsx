@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -48,8 +49,8 @@ export const PropertyCard = ({
               <span className="text-sm">{property.capacity || 0}</span>
             </div>
             
-            <div className="flex items-center text-care-600">
-              
+            <div className="flex items-center">
+              <DollarSign className="h-4 w-4 mr-1" />
               <span className="text-sm font-medium">Starting at {formattedPrice}/month</span>
             </div>
             
