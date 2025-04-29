@@ -29,7 +29,7 @@ const PropertyEditButton = ({
           </Button>
           <Button onClick={onSave} size="sm">
             <Save className="mr-2 h-4 w-4" />
-            Save All Changes
+            Save
           </Button>
         </div>
       ) : (
