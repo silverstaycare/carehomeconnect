@@ -95,7 +95,7 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
       toast({
         title: "Profile updated",
         description: "Your profile information has been updated successfully.",
-        duration: 2000,
+        duration: 2000, // Explicitly set to 2 seconds
       });
       
       setIsOpen(false);
@@ -106,7 +106,7 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
         title: "Update failed",
         description: "There was a problem updating your profile. Please try again.",
         variant: "destructive",
-        duration: 2000,
+        duration: 2000, // Explicitly set to 2 seconds
       });
     } finally {
       setIsSubmitting(false);
