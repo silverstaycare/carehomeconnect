@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Property } from "@/hooks/useOwnerProperties";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { DollarSign } from "lucide-react";
+
 interface PropertyCardProps {
   property: Property;
 }
@@ -50,7 +50,6 @@ export const PropertyCard = ({
             </div>
             
             <div className="flex items-center">
-              <DollarSign className="h-4 w-4 mr-1" />
               <span className="text-sm font-medium">Starting at {formattedPrice}/month</span>
             </div>
             
