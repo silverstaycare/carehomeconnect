@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Home } from "lucide-react";
+import { Home, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -143,15 +143,23 @@ const OwnerDashboard = () => {
   // If no properties, show empty state
   if (properties.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4 bg-muted/40 rounded-lg text-center">
-        <Home className="h-16 w-16 text-muted-foreground mb-6" />
-        <h2 className="text-2xl font-semibold mb-4">No Properties Listed Yet</h2>
-        <p className="text-gray-600 mb-8 max-w-md">
-          List your first property on Care Home Connect to start connecting with potential residents and their families.
-        </p>
-        <Button size="lg" onClick={handleListProperty}>
-          List Your First Property
-        </Button>
+      <div className="container py-8 px-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Owner Dashboard</h1>
+            <p className="text-gray-600">Welcome to your dashboard</p>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16 px-4 bg-muted/40 rounded-lg text-center">
+          <Home className="h-16 w-16 text-muted-foreground mb-6" />
+          <h2 className="text-2xl font-semibold mb-4">No Properties Listed Yet</h2>
+          <p className="text-gray-600 mb-8 max-w-md">
+            List your first property on Care Home Connect to start connecting with potential residents and their families.
+          </p>
+          <Button size="lg" onClick={handleListProperty}>
+            List Your First Property
+          </Button>
+        </div>
       </div>
     );
   }
@@ -165,17 +173,14 @@ const OwnerDashboard = () => {
           <h1 className="text-3xl font-bold">Owner Dashboard</h1>
           <p className="text-gray-600">Welcome back, {displayName}</p>
         </div>
-        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+        <div className="mt-4 md:mt-0 flex gap-3">
           {profile && (
-            <EditProfileDialog 
-              userId={profile.id}
-              firstName={profile.first_name || ""}
-              lastName={profile.last_name || ""}
-              phone={profile.phone || ""}
-              onProfileUpdated={handleProfileUpdated}
-            />
+            <Button variant="outline" onClick={() => {}} className="flex items-center gap-2">
+              <Pencil className="h-4 w-4" />
+              Edit Profile
+            </Button>
           )}
-          <Button onClick={() => navigate("/owner/list-property")}>
+          <Button onClick={handleListProperty} className="bg-care-500 hover:bg-care-600">
             <Home className="mr-2 h-4 w-4" />
             List New Property
           </Button>

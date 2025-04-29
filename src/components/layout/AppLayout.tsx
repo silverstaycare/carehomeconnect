@@ -1,4 +1,3 @@
-
 import { Outlet, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Home, Info, Shield, FileText } from "lucide-react";
@@ -63,14 +62,6 @@ const AppLayout = () => {
                 >
                   Dashboard
                 </Button>
-                {userRole === "owner" && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => navigate("/owner/list-property")}
-                  >
-                    List your property
-                  </Button>
-                )}
                 <Button onClick={handleLogout}>Logout</Button>
               </>
             ) : (
