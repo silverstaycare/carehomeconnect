@@ -1,14 +1,10 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Calendar, Lock } from "lucide-react";
-import { useState, useEffect } from "react";
-import EditPropertyForm from "./EditPropertyForm";
-import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
-import { supabase } from "@/integrations/supabase/client";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import ContactTourDialog from "./ContactTourDialog";
+import { useState } from "react";
+import PropertyInformation from "./PropertyInformation";
+import PropertyContactInfo from "./PropertyContactInfo";
+import PropertyMediaThumbnails from "./PropertyMediaThumbnails";
+import PropertyEditForm from "./PropertyEditForm";
+import { usePropertyMedia } from "@/hooks/usePropertyMedia";
 
 interface PropertyDetailsTabProps {
   description: string;
@@ -60,10 +56,6 @@ const PropertyDetailsTab = ({
   isAuthenticated = false,
   user
 }: PropertyDetailsTabProps) => {
-  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
-  const [existingVideo, setExistingVideo] = useState<string | null>(null);
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
-
   // User data to prepopulate the contact form
   const userData = {
     name: user?.user_metadata?.first_name && user?.user_metadata?.last_name 
@@ -72,81 +64,8 @@ const PropertyDetailsTab = ({
     email: user?.email || '',
   };
 
-  // Fetch existing media when in edit mode
-  useEffect(() => {
-    if (isEditing && propertyId) {
-      const fetchMedia = async () => {
-        const {
-          data,
-          error
-        } = await supabase.from('care_home_media').select('*').eq('care_home_id', propertyId);
-        if (error) {
-          console.error('Error fetching media:', error);
-          return;
-        }
-        if (data) {
-          // Sort so primary image comes first
-          const sortedData = [...data].sort((a, b) => {
-            if (a.is_primary) return -1;
-            if (b.is_primary) return 1;
-            return 0;
-          });
-          const photos: string[] = [];
-          let video: string | null = null;
-          sortedData.forEach(item => {
-            if (item.video_url) {
-              // If it has a video_url, treat it as a video
-              video = item.video_url;
-            } else if (item.photo_url) {
-              // Otherwise treat it as a photo
-              photos.push(item.photo_url);
-            }
-          });
-          setExistingPhotos(photos);
-          setExistingVideo(video);
-        }
-      };
-      fetchMedia();
-    }
-  }, [isEditing, propertyId]);
-
-  // Always fetch media for thumbnails, regardless of edit mode
-  useEffect(() => {
-    if (propertyId) {
-      const fetchMedia = async () => {
-        const {
-          data,
-          error
-        } = await supabase.from('care_home_media').select('*').eq('care_home_id', propertyId);
-        if (error) {
-          console.error('Error fetching media:', error);
-          return;
-        }
-        if (data) {
-          // Sort so primary image comes first
-          const sortedData = [...data].sort((a, b) => {
-            if (a.is_primary) return -1;
-            if (b.is_primary) return 1;
-            return 0;
-          });
-          const photos: string[] = [];
-          let video: string | null = null;
-          sortedData.forEach(item => {
-            if (item.video_url) {
-              // If it has a video_url, treat it as a video
-              video = item.video_url;
-            } else if (item.photo_url) {
-              // Otherwise treat it as a photo
-              photos.push(item.photo_url);
-            }
-          });
-          setExistingPhotos(photos);
-          setExistingVideo(video);
-        }
-      };
-      fetchMedia();
-    }
-  }, [propertyId]);
+  // Use the hook to fetch media
+  const { existingPhotos, existingVideo } = usePropertyMedia(propertyId);
   
   const handleSave = (updatedProperty: any) => {
     setIsEditing(false);
@@ -169,139 +88,60 @@ const PropertyDetailsTab = ({
   };
   
   if (isEditing && isOwner) {
-    return <Card>
-        <CardContent className="p-6">
-          <h2 className="text-xl font-bold mb-4">Edit Property Details</h2>
-          <EditPropertyForm property={{
-          id: propertyId,
-          name: propertyName,
-          description,
-          location: `${address}, ${city}, ${state} ${zip_code}`,
-          price,
-          capacity,
-          address,
-          city,
-          state,
-          zip_code
-        }} onSave={handleSave} onCancel={handleCancel} />
-          
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4">Property Media</h3>
-            <PropertyMediaUpload onUploadComplete={handleMediaUploadComplete} propertyId={propertyId} existingPhotos={existingPhotos} existingVideo={existingVideo} />
-          </div>
-        </CardContent>
-      </Card>;
+    return (
+      <PropertyEditForm
+        propertyId={propertyId}
+        propertyName={propertyName}
+        description={description}
+        address={address}
+        city={city}
+        state={state}
+        zip_code={zip_code}
+        price={price}
+        capacity={capacity}
+        existingPhotos={existingPhotos}
+        existingVideo={existingVideo}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        onMediaUploadComplete={handleMediaUploadComplete}
+      />
+    );
   }
   
-  return <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div className="md:col-span-2">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold">Property Information</h2>
-            </div>
-            <p className="text-gray-700 mb-6">
-              {description}
-            </p>
-            
-            <h3 className="text-lg font-semibold mb-3">Care Home Details</h3>
-            <ul className="space-y-2 mb-6">
-              <li className="flex justify-between">
-                <span className="text-gray-600">Monthly Price:</span>
-                {isAuthenticated ? <span className="font-medium">Starting at ${price.toLocaleString()}/month</span> : <span className="flex items-center text-amber-600 font-medium">
-                    <Lock className="h-4 w-4 mr-1" /> 
-                    <span>Login to view price</span>
-                  </span>}
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">Capacity:</span>
-                <span className="font-medium">{capacity} residents</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">Type:</span>
-                <span className="font-medium">Senior Group Home</span>
-              </li>
-              <li className="flex justify-between">
-                <span className="text-gray-600">Status:</span>
-                <span className={`font-medium ${active ? 'text-green-600' : 'text-red-600'}`}>
-                  {active ? 'Active' : 'Inactive'}
-                </span>
-              </li>
-            </ul>
-            
-            {/* Property Media Thumbnails */}
-            {(existingPhotos.length > 0 || existingVideo) && <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-3">Media</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {existingPhotos.map((photo, index) => <div key={photo} className="relative">
-                      <AspectRatio ratio={4 / 3} className="bg-gray-100 rounded-md overflow-hidden">
-                        <img src={photo} alt={`Property photo ${index + 1}`} className="w-full h-full object-cover rounded-md hover:opacity-90 transition-opacity cursor-pointer" onClick={() => window.open(photo, "_blank")} />
-                      </AspectRatio>
-                      {index === 0 && <div className="absolute top-2 right-2 bg-primary text-white text-xs px-2 py-1 rounded">
-                          Primary
-                        </div>}
-                    </div>)}
-                  
-                  {existingVideo && <div className="relative">
-                      <AspectRatio ratio={4 / 3} className="bg-gray-100 rounded-md overflow-hidden">
-                        <video src={existingVideo} className="w-full h-full object-cover rounded-md hover:opacity-90 transition-opacity cursor-pointer" onClick={() => window.open(existingVideo!, "_blank")} poster={existingPhotos[0] || undefined} />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="rounded-full bg-black/50 p-3">
-                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z"></path>
-                            </svg>
-                          </div>
-                        </div>
-                      </AspectRatio>
-                      <div className="absolute top-2 right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                        Video
-                      </div>
-                    </div>}
-                </div>
-              </div>}
-          </CardContent>
-        </Card>
+        <PropertyInformation
+          description={description}
+          price={price}
+          capacity={capacity}
+          active={active}
+          isAuthenticated={isAuthenticated}
+        />
+        
+        {/* Property Media Thumbnails */}
+        {(existingPhotos.length > 0 || existingVideo) && (
+          <div className="mt-6">
+            <PropertyMediaThumbnails 
+              photos={existingPhotos} 
+              video={existingVideo} 
+            />
+          </div>
+        )}
       </div>
       
       <div>
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-4">Contact Information</h2>
-            <ul className="space-y-4">
-              <li>
-                <p className="font-medium">{owner.name}</p>
-                <p className="text-gray-600">Care Home Owner</p>
-              </li>
-              <Separator />
-              <li>
-                <p className="font-medium">{owner.phone}</p>
-                <p className="text-gray-600">Phone</p>
-              </li>
-              <li>
-                <p className="font-medium">{owner.email}</p>
-                <p className="text-gray-600">Email</p>
-              </li>
-            </ul>
-            {userRole === "family" && active && <Button 
-                className="w-full mt-6"
-                onClick={() => setContactDialogOpen(true)}
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                Contact for Tour
-              </Button>}
-              
-            {/* Contact Dialog */}
-            <ContactTourDialog
-              open={contactDialogOpen}
-              onOpenChange={setContactDialogOpen}
-              propertyId={propertyId}
-              propertyName={propertyName}
-              userData={userData}
-            />
-          </CardContent>
-        </Card>
+        <PropertyContactInfo
+          owner={owner}
+          userRole={userRole}
+          active={active}
+          propertyId={propertyId}
+          propertyName={propertyName}
+          userData={userData}
+        />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default PropertyDetailsTab;
