@@ -24,6 +24,16 @@ interface PropertyContactInfoProps {
   };
 }
 
+interface Inquiry {
+  id: string;
+  created_at: string;
+  message?: string;
+  status?: string;
+  name: string;
+  email: string;
+  phone?: string;
+}
+
 const PropertyContactInfo = ({
   owner,
   userRole,
@@ -34,8 +44,8 @@ const PropertyContactInfo = ({
 }: PropertyContactInfoProps) => {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [lastInquiryDialogOpen, setLastInquiryDialogOpen] = useState(false);
-  const [lastInquiry, setLastInquiry] = useState<any>(null);
-  const [inquiriesCount, setInquiriesCount] = useState(0);
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
+  const [userInquiries, setUserInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,11 +67,11 @@ const PropertyContactInfo = ({
             
           if (error) throw error;
           
-          setInquiriesCount(inquiries?.length || 0);
+          setUserInquiries(inquiries || []);
           
-          // Set the most recent inquiry if available
+          // Set the most recent inquiry if available for backward compatibility
           if (inquiries && inquiries.length > 0) {
-            setLastInquiry(inquiries[0]);
+            setSelectedInquiry(inquiries[0]);
           }
         }
       } catch (error) {
@@ -73,6 +83,11 @@ const PropertyContactInfo = ({
 
     fetchUserInquiries();
   }, [propertyId, userRole]);
+
+  const handleInquiryClick = (inquiry: Inquiry) => {
+    setSelectedInquiry(inquiry);
+    setLastInquiryDialogOpen(true);
+  };
 
   return (
     <Card>
@@ -96,27 +111,36 @@ const PropertyContactInfo = ({
         
         {userRole === "family" && active && (
           <div className="mt-6 space-y-3">
-            {lastInquiry && (
-              <div className="bg-muted/40 p-3 rounded-md text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <span className="font-medium">Inquiry Sent On:</span> {format(new Date(lastInquiry.created_at), 'MMM d, yyyy')}
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setLastInquiryDialogOpen(true)}
-                >
-                  Show
-                </Button>
+            {/* Display all inquiries if they exist */}
+            {userInquiries.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold">Your Inquiries</h3>
+                {userInquiries.map((inquiry) => (
+                  <div 
+                    key={inquiry.id} 
+                    className="bg-muted/40 p-3 rounded-md text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+                  >
+                    <div>
+                      <span className="font-medium">Inquiry Sent On:</span> {format(new Date(inquiry.created_at), 'MMM d, yyyy')}
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleInquiryClick(inquiry)}
+                    >
+                      Show
+                    </Button>
+                  </div>
+                ))}
               </div>
             )}
             
             <Button 
               className="w-full"
               onClick={() => setContactDialogOpen(true)}
-              disabled={loading || inquiriesCount >= 3}
+              disabled={loading || userInquiries.length >= 3}
             >
-              {inquiriesCount >= 3 ? "Maximum Inquiries Sent (3)" : "Inquiry"}
+              {userInquiries.length >= 3 ? "Maximum Inquiries Sent (3)" : "Inquiry"}
             </Button>
           </div>
         )}
@@ -130,22 +154,25 @@ const PropertyContactInfo = ({
           userData={userData}
           onSuccess={() => {
             // Refresh the inquiries count and last inquiry
-            setInquiriesCount(prev => prev + 1);
             // We set a temporary object until the page refreshes
-            setLastInquiry({
+            const newInquiry: Inquiry = {
+              id: Date.now().toString(), // temporary ID
               created_at: new Date().toISOString(),
               name: userData.name,
-              email: userData.email
-            });
+              email: userData.email,
+              status: 'pending'
+            };
+            
+            setUserInquiries(prev => [newInquiry, ...prev]);
           }}
         />
 
-        {/* Last Inquiry Dialog */}
-        {lastInquiry && (
+        {/* Inquiry Dialog */}
+        {selectedInquiry && (
           <LastInquiryDialog
             open={lastInquiryDialogOpen}
             onOpenChange={setLastInquiryDialogOpen}
-            inquiry={lastInquiry}
+            inquiry={selectedInquiry}
             propertyName={propertyName}
           />
         )}
