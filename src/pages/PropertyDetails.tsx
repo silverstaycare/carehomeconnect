@@ -99,6 +99,7 @@ const PropertyDetails = () => {
           onAmenitiesServicesUpdated={handleAmenitiesServicesUpdated}
           setIsEditing={setIsEditing}
           userRole={user?.user_metadata?.role}
+          user={user}
         />
       </div>
 

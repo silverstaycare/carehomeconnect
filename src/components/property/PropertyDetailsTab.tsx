@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -7,6 +8,7 @@ import EditPropertyForm from "./EditPropertyForm";
 import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import ContactTourDialog from "./ContactTourDialog";
 
 interface PropertyDetailsTabProps {
   description: string;
@@ -21,6 +23,7 @@ interface PropertyDetailsTabProps {
   userRole?: string;
   isOwner?: boolean;
   propertyId: string;
+  propertyName?: string;
   address?: string;
   city?: string;
   state?: string;
@@ -33,6 +36,7 @@ interface PropertyDetailsTabProps {
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
   isAuthenticated?: boolean;
+  user?: any;
 }
 
 const PropertyDetailsTab = ({
@@ -44,6 +48,7 @@ const PropertyDetailsTab = ({
   userRole,
   isOwner = false,
   propertyId,
+  propertyName = "",
   address = "",
   city = "",
   state = "",
@@ -52,10 +57,20 @@ const PropertyDetailsTab = ({
   onMediaUpdated,
   isEditing,
   setIsEditing,
-  isAuthenticated = false
+  isAuthenticated = false,
+  user
 }: PropertyDetailsTabProps) => {
   const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
   const [existingVideo, setExistingVideo] = useState<string | null>(null);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+
+  // User data to prepopulate the contact form
+  const userData = {
+    name: user?.user_metadata?.first_name && user?.user_metadata?.last_name 
+      ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+      : '',
+    email: user?.email || '',
+  };
 
   // Fetch existing media when in edit mode
   useEffect(() => {
@@ -132,15 +147,18 @@ const PropertyDetailsTab = ({
       fetchMedia();
     }
   }, [propertyId]);
+  
   const handleSave = (updatedProperty: any) => {
     setIsEditing(false);
     if (onPropertyUpdated) {
       onPropertyUpdated(updatedProperty);
     }
   };
+  
   const handleCancel = () => {
     setIsEditing(false);
   };
+  
   const handleMediaUploadComplete = (urls: {
     photos: string[];
     video: string | null;
@@ -149,14 +167,14 @@ const PropertyDetailsTab = ({
       onMediaUpdated(urls);
     }
   };
+  
   if (isEditing && isOwner) {
     return <Card>
         <CardContent className="p-6">
           <h2 className="text-xl font-bold mb-4">Edit Property Details</h2>
           <EditPropertyForm property={{
           id: propertyId,
-          name: "",
-          // This will be filled by the parent component
+          name: propertyName,
           description,
           location: `${address}, ${city}, ${state} ${zip_code}`,
           price,
@@ -174,6 +192,7 @@ const PropertyDetailsTab = ({
         </CardContent>
       </Card>;
   }
+  
   return <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div className="md:col-span-2">
         <Card>
@@ -263,10 +282,22 @@ const PropertyDetailsTab = ({
                 <p className="text-gray-600">Email</p>
               </li>
             </ul>
-            {userRole === "family" && active && <Button className="w-full mt-6">
+            {userRole === "family" && active && <Button 
+                className="w-full mt-6"
+                onClick={() => setContactDialogOpen(true)}
+              >
                 <Calendar className="mr-2 h-4 w-4" />
                 Contact for Tour
               </Button>}
+              
+            {/* Contact Dialog */}
+            <ContactTourDialog
+              open={contactDialogOpen}
+              onOpenChange={setContactDialogOpen}
+              propertyId={propertyId}
+              propertyName={propertyName}
+              userData={userData}
+            />
           </CardContent>
         </Card>
       </div>

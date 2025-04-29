@@ -20,6 +20,7 @@ interface PropertyTabsProps {
   onAmenitiesServicesUpdated: (updatedData: { amenities?: string[], careServices?: string[] }) => void;
   setIsEditing: (isEditing: boolean) => void;
   userRole?: string;
+  user?: any;
 }
 
 const PropertyTabs = ({
@@ -34,7 +35,8 @@ const PropertyTabs = ({
   onMediaUpdated,
   onAmenitiesServicesUpdated,
   setIsEditing,
-  userRole
+  userRole,
+  user
 }: PropertyTabsProps) => {
   return (
     <Tabs defaultValue="details" className="w-full">
@@ -67,6 +69,7 @@ const PropertyTabs = ({
             userRole={userRole}
             isOwner={isOwner}
             propertyId={property.id}
+            propertyName={property.name}
             address={property.address}
             city={property.city}
             state={property.state}
@@ -76,6 +79,7 @@ const PropertyTabs = ({
             isEditing={isEditing}
             setIsEditing={setIsEditing}
             isAuthenticated={isAuthenticated}
+            user={user}
           />
           
           <AmenitiesServicesTab
