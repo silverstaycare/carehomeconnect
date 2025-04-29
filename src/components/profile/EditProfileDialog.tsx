@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "../ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const profileFormSchema = z.object({
   firstName: z.string().min(2, {
@@ -34,6 +35,7 @@ const profileFormSchema = z.object({
     message: "Last name must be at least 2 characters",
   }),
   phone: z.string().optional(),
+  email: z.string().email().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -50,6 +52,7 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -57,8 +60,19 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
       firstName: firstName || "",
       lastName: lastName || "",
       phone: phone || "",
+      email: user?.email || "",
     },
   });
+
+  // Update form values when props change
+  useEffect(() => {
+    form.reset({
+      firstName: firstName || "",
+      lastName: lastName || "",
+      phone: phone || "",
+      email: user?.email || "",
+    });
+  }, [firstName, lastName, phone, user?.email, form]);
 
   async function onSubmit(data: ProfileFormValues) {
     setIsSubmitting(true);
@@ -118,6 +132,25 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email (Login)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Email address" 
+                      {...field} 
+                      disabled 
+                      className="bg-muted cursor-not-allowed" 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="firstName"
