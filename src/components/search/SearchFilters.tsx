@@ -43,10 +43,11 @@ const SearchFilters = ({
               <div className="px-2">
                 <Slider
                   defaultValue={priceRange}
-                  min={1000}
+                  min={5000}
                   max={10000}
                   step={100}
                   onValueChange={setPriceRange}
+                  className="my-4"
                 />
                 <div className="flex justify-between mt-2 text-sm text-gray-600">
                   <span>${priceRange[0].toLocaleString()}</span>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,7 @@ const SearchResults = () => {
   
   const [searchLocation, setSearchLocation] = useState(initialLocation);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState([2000, 5000]);
+  const [priceRange, setPriceRange] = useState([5000, 7500]);
   const [loading, setLoading] = useState(true);
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
@@ -125,7 +124,7 @@ const SearchResults = () => {
 
   const handleReset = () => {
     setSearchLocation("");
-    setPriceRange([1000, 10000]);
+    setPriceRange([5000, 10000]);
     setSelectedAmenities([]);
     setFilteredProperties(properties);
   };
@@ -146,7 +145,13 @@ const SearchResults = () => {
             priceRange={priceRange}
             setPriceRange={setPriceRange}
             selectedAmenities={selectedAmenities}
-            toggleAmenity={() => {}} // Placeholder since we're not using amenities filtering yet
+            toggleAmenity={(amenity) => {
+              setSelectedAmenities(prev => 
+                prev.includes(amenity) 
+                  ? prev.filter(a => a !== amenity)
+                  : [...prev, amenity]
+              );
+            }}
             amenitiesList={amenitiesList}
             filterOpen={filterOpen}
             setFilterOpen={setFilterOpen}
