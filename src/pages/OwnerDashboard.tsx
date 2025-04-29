@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface Property {
   id: string;
@@ -19,6 +20,7 @@ interface Property {
   city: string;
   state: string;
   active: boolean;
+  image?: string;
 }
 
 interface UserProfile {
@@ -77,22 +79,30 @@ const OwnerDashboard = () => {
           throw error;
         }
 
-        console.log("Fetched properties:", data);
+        // Fetch the primary image for each property
+        const propertiesWithImages = await Promise.all(data?.map(async (home) => {
+          const { data: mediaData } = await supabase
+            .from('care_home_media')
+            .select('photo_url')
+            .eq('care_home_id', home.id)
+            .eq('is_primary', true)
+            .maybeSingle();
+          
+          return {
+            id: home.id,
+            name: home.name,
+            location: `${home.city}, ${home.state}`,
+            price: home.price,
+            description: home.description,
+            capacity: home.capacity,
+            city: home.city,
+            state: home.state,
+            active: home.active !== false,
+            image: mediaData?.photo_url || "/placeholder.svg"
+          };
+        }) || []);
 
-        // Transform the data to match the Property interface
-        const transformedProperties: Property[] = data?.map(home => ({
-          id: home.id,
-          name: home.name,
-          location: `${home.city}, ${home.state}`, // Create the location field
-          price: home.price,
-          description: home.description,
-          capacity: home.capacity,
-          city: home.city,
-          state: home.state,
-          active: home.active !== false // If active is null or undefined, treat as true
-        })) || [];
-
-        setProperties(transformedProperties);
+        setProperties(propertiesWithImages);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching properties:", error);
@@ -175,6 +185,20 @@ const OwnerDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {properties.map((property) => (
           <Card key={property.id} className="overflow-hidden">
+            <div className="relative">
+              <AspectRatio ratio={16 / 9}>
+                <img
+                  src={property.image}
+                  alt={property.name}
+                  className="object-cover w-full h-full"
+                />
+              </AspectRatio>
+              {property.active === false && (
+                <Badge variant="destructive" className="absolute top-2 right-2">
+                  Inactive
+                </Badge>
+              )}
+            </div>
             <CardHeader>
               <CardTitle>{property.name}</CardTitle>
               <CardDescription>
@@ -183,7 +207,7 @@ const OwnerDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="text-sm text-gray-600">{property.description}</p>
+                <p className="text-sm text-gray-600 line-clamp-2">{property.description}</p>
                 <div className="flex items-center justify-between">
                   <Badge variant="secondary">
                     Capacity: {property.capacity} residents
@@ -192,11 +216,6 @@ const OwnerDashboard = () => {
                     ${property.price.toLocaleString()}/month
                   </span>
                 </div>
-                {property.active === false && (
-                  <Badge variant="destructive" className="mt-2">
-                    Inactive
-                  </Badge>
-                )}
               </div>
             </CardContent>
             <CardFooter>
