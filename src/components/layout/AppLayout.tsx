@@ -1,35 +1,29 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Home, Info, Shield, FileText } from "lucide-react";
 import Logo from "@/components/common/Logo";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
-import { Session } from "@supabase/supabase-js";
 
 const AppLayout = () => {
-  const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        setSession(currentSession);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-    });
-
-    // Cleanup subscription
-    return () => subscription.unsubscribe();
-  }, []);
+    // Get user role from user metadata if available
+    if (user?.user_metadata?.role) {
+      setUserRole(user.user_metadata.role);
+    }
+  }, [user]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
@@ -50,15 +44,15 @@ const AppLayout = () => {
               Find homes
             </Button>
             
-            {session ? (
+            {user ? (
               <>
                 <Button 
                   variant="ghost"
-                  onClick={() => navigate(session.user.user_metadata.role === "owner" ? "/owner/dashboard" : "/family/dashboard")}
+                  onClick={() => navigate(userRole === "owner" ? "/owner/dashboard" : "/family/dashboard")}
                 >
                   Dashboard
                 </Button>
-                {session.user.user_metadata.role === "owner" && (
+                {userRole === "owner" && (
                   <Button 
                     variant="outline"
                     onClick={() => navigate("/owner/list-property")}

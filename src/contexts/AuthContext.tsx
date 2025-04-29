@@ -1,20 +1,16 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User, Session } from "@supabase/supabase-js";
 
 // Define types for our context
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: "owner" | "family" | null;
-}
-
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, role: "owner" | "family") => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 // Create the context
@@ -32,38 +28,42 @@ export const useAuth = () => {
 // Auth Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing user session on mount
+  // Set up auth state listener and check for existing session
   useEffect(() => {
-    const storedUser = localStorage.getItem("careHomeUser");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setIsLoading(false);
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Mock login function - would connect to Supabase in a real implementation
+  // Login function
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
       
-      // Mock validation - in real app, this would verify against database
-      if (email === "owner@example.com" && password === "password") {
-        const userData = { id: "1", email, name: "John Owner", role: "owner" as const };
-        setUser(userData);
-        localStorage.setItem("careHomeUser", JSON.stringify(userData));
-      } 
-      else if (email === "family@example.com" && password === "password") {
-        const userData = { id: "2", email, name: "Jane Family", role: "family" as const };
-        setUser(userData);
-        localStorage.setItem("careHomeUser", JSON.stringify(userData));
-      } 
-      else {
-        throw new Error("Invalid credentials");
-      }
+      return;
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -72,23 +72,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Mock register function
+  // Register function
   const register = async (email: string, password: string, name: string, role: "owner" | "family") => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Split name into first and last name
+      const nameParts = name.split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            role: role
+          }
+        }
+      });
+
+      if (error) throw error;
       
-      // In a real app, this would create a new user in the database
-      const userData = { 
-        id: Math.random().toString(36).substr(2, 9), 
-        email, 
-        name, 
-        role 
-      };
-      
-      setUser(userData);
-      localStorage.setItem("careHomeUser", JSON.stringify(userData));
+      return;
     } catch (error) {
       console.error("Registration error:", error);
       throw error;
@@ -98,13 +105,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Logout function
-  const logout = () => {
-    localStorage.removeItem("careHomeUser");
-    setUser(null);
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (error) {
+      console.error("Logout error:", error);
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, session, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

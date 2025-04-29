@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +9,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { toast } = useToast();
   
   const [email, setEmail] = useState("");
@@ -20,6 +22,35 @@ const LoginPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Redirect if user is already logged in
+  useEffect(() => {
+    const checkUserRole = async () => {
+      if (!user) return;
+      
+      // Get user role from profiles table
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching user role:", error);
+        return;
+      }
+      
+      // Redirect based on user role
+      const role = data?.role;
+      if (role === 'owner') {
+        navigate('/owner/dashboard');
+      } else if (role === 'family') {
+        navigate('/family/dashboard');
+      }
+    };
+    
+    checkUserRole();
+  }, [user, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -27,13 +58,15 @@ const LoginPage = () => {
 
     try {
       await login(email, password);
+      
       toast({
         title: "Login successful",
         description: "Welcome back to Care Home Connect!",
       });
-      navigate("/");
-    } catch (error) {
-      setError("Invalid email or password. Please try again.");
+      
+      // Redirection will be handled by the useEffect above
+    } catch (error: any) {
+      setError(error.message || "Invalid email or password. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -113,17 +146,19 @@ const LoginPage = () => {
           
           <div className="mt-6 text-center text-sm">
             <p>
-              For demo purposes, use:<br />
-              <strong>Owner:</strong> owner@example.com / password<br />
-              <strong>Family:</strong> family@example.com / password
+              Don't have an account yet? <Link to="/register" className="text-care-600 hover:underline font-medium">Sign up</Link>
             </p>
           </div>
         </CardContent>
         <CardFooter className="flex justify-center border-t p-4">
           <p className="text-sm text-gray-600">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-care-600 hover:underline font-medium">
-              Sign up
+            By logging in, you agree to our{" "}
+            <Link to="/terms" className="text-care-600 hover:underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy" className="text-care-600 hover:underline">
+              Privacy Policy
             </Link>
           </p>
         </CardFooter>
