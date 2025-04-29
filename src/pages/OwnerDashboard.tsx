@@ -4,9 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Home, DollarSign, Calendar } from "lucide-react";
+import { Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Property {
@@ -40,6 +39,7 @@ const OwnerDashboard = () => {
           return;
         }
 
+        // Get properties with the current user's ID
         const { data, error } = await supabase
           .from('care_homes')
           .select('*')
@@ -48,6 +48,8 @@ const OwnerDashboard = () => {
         if (error) {
           throw error;
         }
+
+        console.log("Fetched properties:", data);
 
         // Transform the data to match the Property interface
         const transformedProperties: Property[] = data?.map(home => ({
@@ -98,7 +100,7 @@ const OwnerDashboard = () => {
         <Home className="h-16 w-16 text-muted-foreground mb-6" />
         <h2 className="text-2xl font-semibold mb-4">No Properties Listed Yet</h2>
         <p className="text-gray-600 mb-8 max-w-md">
-          List your first property on Silver Stay to start connecting with potential residents and their families.
+          List your first property on Care Home Connect to start connecting with potential residents and their families.
         </p>
         <Button size="lg" onClick={handleListProperty}>
           List Your First Property

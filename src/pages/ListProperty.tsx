@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,11 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 const ListProperty = () => {
   const navigate = useNavigate();
@@ -91,8 +92,99 @@ const ListProperty = () => {
         }
       }
 
-      // In a real app, this would be an API call to save the property data
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to list a property",
+          variant: "destructive"
+        });
+        navigate("/login");
+        return;
+      }
+
+      // Insert into Supabase care_homes table
+      const { data: careHome, error: careHomeError } = await supabase
+        .from('care_homes')
+        .insert([
+          {
+            name: formData.name,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zip_code: formData.zipCode,
+            description: formData.description,
+            capacity: parseInt(formData.capacity),
+            price: parseFloat(formData.price),
+            owner_id: user.id
+          }
+        ])
+        .select();
+
+      if (careHomeError) throw careHomeError;
+      
+      if (!careHome || careHome.length === 0) {
+        throw new Error("Failed to create property record");
+      }
+
+      const careHomeId = careHome[0].id;
+
+      // Insert amenities
+      const { error: amenitiesError } = await supabase
+        .from('care_home_amenities')
+        .insert([{
+          care_home_id: careHomeId,
+          private_rooms: amenities.privateRooms,
+          ensuite_rooms: amenities.ensuiteRooms,
+          garden: amenities.garden,
+          communal_dining: amenities.communalDining,
+          entertainment_area: amenities.entertainmentArea,
+          housekeeping: amenities.housekeeping,
+          laundry: amenities.laundry,
+          transportation: amenities.transportation
+        }]);
+
+      if (amenitiesError) throw amenitiesError;
+
+      // Insert services
+      const { error: servicesError } = await supabase
+        .from('care_home_services')
+        .insert([{
+          care_home_id: careHomeId,
+          twenty_four_hour_staff: careServices.twentyFourHourStaff,
+          medication_management: careServices.medicationManagement,
+          personal_care: careServices.personalCare,
+          mobility_assistance: careServices.mobilityAssistance,
+          meal_preparation: careServices.mealPreparation,
+          memory_care: careServices.memoryCare,
+          social_activities: careServices.socialActivities
+        }]);
+
+      if (servicesError) throw servicesError;
+
+      // Insert media if available
+      if (mediaUrls.photos.length > 0 || mediaUrls.video) {
+        const mediaEntries = mediaUrls.photos.map((photo, index) => ({
+          care_home_id: careHomeId,
+          photo_url: photo,
+          is_primary: index === 0 // First photo is primary
+        }));
+
+        if (mediaUrls.video) {
+          mediaEntries.push({
+            care_home_id: careHomeId,
+            video_url: mediaUrls.video,
+            is_primary: false
+          });
+        }
+
+        const { error: mediaError } = await supabase
+          .from('care_home_media')
+          .insert(mediaEntries);
+
+        if (mediaError) throw mediaError;
+      }
       
       toast({
         title: "Property Listed Successfully",
