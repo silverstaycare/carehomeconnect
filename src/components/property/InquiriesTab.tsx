@@ -16,6 +16,18 @@ interface Inquiry {
   status: string | null;
 }
 
+// Define a type for grouped inquiries
+interface GroupedInquiry {
+  name: string;
+  phone: string | null;
+  email: string;
+  messages: Array<{
+    id: string;
+    message: string;
+    created_at: string;
+  }>;
+}
+
 interface InquiriesTabProps {
   propertyId: string;
   isOwner: boolean;
@@ -24,8 +36,43 @@ interface InquiriesTabProps {
 
 const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [groupedInquiries, setGroupedInquiries] = useState<GroupedInquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  // Group inquiries by email
+  const groupInquiriesByUser = (inquiries: Inquiry[]) => {
+    const grouped: Record<string, GroupedInquiry> = {};
+    
+    inquiries.forEach(inquiry => {
+      if (!grouped[inquiry.email]) {
+        grouped[inquiry.email] = {
+          name: inquiry.name,
+          phone: inquiry.phone,
+          email: inquiry.email,
+          messages: []
+        };
+      }
+      
+      grouped[inquiry.email].messages.push({
+        id: inquiry.id,
+        message: inquiry.message,
+        created_at: inquiry.created_at
+      });
+    });
+    
+    // Sort messages by date (newest first)
+    Object.values(grouped).forEach(group => {
+      group.messages.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
+    
+    // Convert to array and sort by the latest message date (newest inquiry first)
+    return Object.values(grouped).sort((a, b) => 
+      new Date(a.messages[0].created_at).getTime() - new Date(b.messages[0].created_at).getTime()
+    ).reverse();
+  };
 
   // Fetch inquiries when the component mounts or when activeTab changes to "inquiries"
   useEffect(() => {
@@ -44,6 +91,7 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
         }
         
         setInquiries(data || []);
+        setGroupedInquiries(groupInquiriesByUser(data || []));
         
         // Mark inquiries as viewed if owner is viewing them and the inquiries tab is active
         if (isOwner && activeTab === "inquiries") {
@@ -93,7 +141,11 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
       }, (payload) => {
         // Add the new inquiry to the state
         const newInquiry = payload.new as Inquiry;
-        setInquiries(prev => [newInquiry, ...prev]); // Add to the beginning to maintain sort order
+        setInquiries(prev => {
+          const updated = [newInquiry, ...prev];
+          setGroupedInquiries(groupInquiriesByUser(updated));
+          return updated;
+        });
         
         // Show a toast notification
         if (activeTab !== 'inquiries') {
@@ -148,24 +200,33 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
       <CardContent className="p-6">
         <h2 className="text-xl font-bold mb-6">Property Inquiries</h2>
         <div className="space-y-6">
-          {inquiries.map((inquiry) => (
-            <div key={inquiry.id} className="border rounded-md p-4 bg-card">
+          {groupedInquiries.map((inquiry) => (
+            <div key={inquiry.email} className="border rounded-md p-4 bg-card">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-semibold text-lg">{inquiry.name}</h3>
-                <span className="text-xs text-muted-foreground">
-                  {format(new Date(inquiry.created_at), 'MMM d, yyyy - h:mm a')}
-                </span>
               </div>
               <div className="space-y-2 text-sm mb-3">
                 <p><span className="font-medium">Phone:</span> {inquiry.phone || 'Not provided'}</p>
                 <p><span className="font-medium">Email:</span> {inquiry.email}</p>
               </div>
-              <div className="mt-2">
-                <Textarea 
-                  value={inquiry.message} 
-                  readOnly
-                  className="bg-muted/30 resize-none"
-                />
+              <div className="mb-2">
+                <p className="font-medium text-sm mb-1">Messages:</p>
+                <div className="space-y-4">
+                  {inquiry.messages.map((message) => (
+                    <div key={message.id} className="border-t pt-3">
+                      <div className="flex justify-between items-baseline mb-2">
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(message.created_at), 'MMM d, yyyy - h:mm a')}
+                        </span>
+                      </div>
+                      <Textarea 
+                        value={message.message} 
+                        readOnly
+                        className="bg-muted/30 resize-none"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
