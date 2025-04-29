@@ -7,7 +7,7 @@ import InquiriesTab from "./InquiriesTab";
 import PropertyEditButton from "./PropertyEditButton";
 import { Property } from "@/hooks/usePropertyDetails";
 import { useState, useEffect } from "react";
-import { Alert } from "lucide-react";
+import { BellAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyTabsProps {
@@ -78,7 +78,7 @@ const PropertyTabs = ({
             <TabsTrigger value="inquiries" className="flex items-center">
               Inquiries
               {hasNewInquiries && (
-                <Alert className="ml-1 h-4 w-4 text-amber-500" />
+                <BellAlert className="ml-1 h-4 w-4 text-amber-500" />
               )}
             </TabsTrigger>
           )}
