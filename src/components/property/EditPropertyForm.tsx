@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,6 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Check, X } from "lucide-react";
-
 interface Property {
   id: string;
   name: string;
@@ -24,7 +22,6 @@ interface Property {
   state: string;
   zip_code: string;
 }
-
 interface EditPropertyFormProps {
   property: Property;
   onSave: (updatedProperty: Partial<Property>) => void;
@@ -33,23 +30,43 @@ interface EditPropertyFormProps {
 
 // Form validation schema
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters long" }),
-  description: z.string().min(10, { message: "Description must be at least 10 characters long" }),
-  price: z.coerce.number().positive({ message: "Price must be a positive number" }),
-  capacity: z.coerce.number().int().positive({ message: "Capacity must be a positive integer" }),
-  address: z.string().min(3, { message: "Address is required" }),
-  city: z.string().min(2, { message: "City is required" }),
-  state: z.string().min(2, { message: "State is required" }),
-  zip_code: z.string().min(5, { message: "Valid zip code is required" }),
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters long"
+  }),
+  description: z.string().min(10, {
+    message: "Description must be at least 10 characters long"
+  }),
+  price: z.coerce.number().positive({
+    message: "Price must be a positive number"
+  }),
+  capacity: z.coerce.number().int().positive({
+    message: "Capacity must be a positive integer"
+  }),
+  address: z.string().min(3, {
+    message: "Address is required"
+  }),
+  city: z.string().min(2, {
+    message: "City is required"
+  }),
+  state: z.string().min(2, {
+    message: "State is required"
+  }),
+  zip_code: z.string().min(5, {
+    message: "Valid zip code is required"
+  })
 });
-
-const EditPropertyForm = ({ property, onSave, onCancel }: EditPropertyFormProps) => {
-  const { toast } = useToast();
+const EditPropertyForm = ({
+  property,
+  onSave,
+  onCancel
+}: EditPropertyFormProps) => {
+  const {
+    toast
+  } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Split the location into components if available
   const addressParts = property.location.split(", ");
-  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,13 +77,11 @@ const EditPropertyForm = ({ property, onSave, onCancel }: EditPropertyFormProps)
       address: property.address || addressParts[0] || "",
       city: property.city || (addressParts.length > 1 ? addressParts[1] : ""),
       state: property.state || (addressParts.length > 2 ? addressParts[2].split(" ")[0] : ""),
-      zip_code: property.zip_code || (addressParts.length > 2 ? addressParts[2].split(" ")[1] : ""),
-    },
+      zip_code: property.zip_code || (addressParts.length > 2 ? addressParts[2].split(" ")[1] : "")
+    }
   });
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
-    
     try {
       // Format for database update
       const propertyUpdate = {
@@ -81,11 +96,9 @@ const EditPropertyForm = ({ property, onSave, onCancel }: EditPropertyFormProps)
       };
 
       // Update the database
-      const { error } = await supabase
-        .from('care_homes')
-        .update(propertyUpdate)
-        .eq('id', property.id);
-
+      const {
+        error
+      } = await supabase.from('care_homes').update(propertyUpdate).eq('id', property.id);
       if (error) throw error;
 
       // Call the onSave prop with the new values
@@ -93,10 +106,9 @@ const EditPropertyForm = ({ property, onSave, onCancel }: EditPropertyFormProps)
         ...propertyUpdate,
         location: `${values.address}, ${values.city}, ${values.state} ${values.zip_code}`
       });
-      
       toast({
         title: "Property Updated",
-        description: "Your property details have been successfully updated",
+        description: "Your property details have been successfully updated"
       });
     } catch (error) {
       console.error("Error updating property:", error);
@@ -109,151 +121,94 @@ const EditPropertyForm = ({ property, onSave, onCancel }: EditPropertyFormProps)
       setIsSubmitting(false);
     }
   };
-
-  return (
-    <Form {...form}>
+  return <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
+        <FormField control={form.control} name="name" render={({
+        field
+      }) => <FormItem>
               <FormLabel>Property Name</FormLabel>
               <FormControl>
                 <Input placeholder="Enter property name" {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
+            </FormItem>} />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
+        <FormField control={form.control} name="description" render={({
+        field
+      }) => <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Describe your property" 
-                  className="min-h-[150px]"
-                  {...field} 
-                />
+                <Textarea placeholder="Describe your property" className="min-h-[150px]" {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
+            </FormItem>} />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="price" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Monthly Price ($)</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
 
-          <FormField
-            control={form.control}
-            name="capacity"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="capacity" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Capacity (residents)</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
         </div>
 
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
+        <FormField control={form.control} name="address" render={({
+        field
+      }) => <FormItem>
               <FormLabel>Street Address</FormLabel>
               <FormControl>
                 <Input placeholder="123 Main St" {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
+            </FormItem>} />
 
         <div className="grid grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="city"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="city" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>City</FormLabel>
                 <FormControl>
                   <Input placeholder="City" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
 
-          <FormField
-            control={form.control}
-            name="state"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="state" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>State</FormLabel>
                 <FormControl>
                   <Input placeholder="State" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
 
-          <FormField
-            control={form.control}
-            name="zip_code"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="zip_code" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Zip Code</FormLabel>
                 <FormControl>
                   <Input placeholder="12345" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
         </div>
 
-        <div className="flex justify-end space-x-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            <X className="mr-2 h-4 w-4" />
-            Cancel
-          </Button>
-          <Button 
-            type="submit"
-            disabled={isSubmitting}
-          >
-            <Check className="mr-2 h-4 w-4" />
-            Save Changes
-          </Button>
-        </div>
+        
       </form>
-    </Form>
-  );
+    </Form>;
 };
-
 export default EditPropertyForm;
