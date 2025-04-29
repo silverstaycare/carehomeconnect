@@ -270,6 +270,16 @@ const PropertyDetails = () => {
     }
   };
 
+  const handleAmenitiesServicesUpdated = (updatedData: { amenities?: string[], careServices?: string[] }) => {
+    if (property) {
+      setProperty({
+        ...property,
+        ...(updatedData.amenities && { amenities: updatedData.amenities }),
+        ...(updatedData.careServices && { careServices: updatedData.careServices })
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container py-12 px-4 flex justify-center">
@@ -321,7 +331,7 @@ const PropertyDetails = () => {
         />
       </div>
 
-      {/* Property Tabs - Updated to have only two tabs */}
+      {/* Property Tabs */}
       <Tabs defaultValue="details">
         <TabsList className="mb-6">
           <TabsTrigger value="details">Details</TabsTrigger>
@@ -350,6 +360,9 @@ const PropertyDetails = () => {
             <AmenitiesServicesTab
               amenities={property.amenities}
               careServices={property.careServices}
+              isOwner={isOwner}
+              propertyId={property.id}
+              onUpdate={handleAmenitiesServicesUpdated}
             />
           </div>
         </TabsContent>
