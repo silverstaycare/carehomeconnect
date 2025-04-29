@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -175,10 +174,13 @@ const OwnerDashboard = () => {
         </div>
         <div className="mt-4 md:mt-0 flex gap-3">
           {profile && (
-            <Button variant="outline" onClick={() => {}} className="flex items-center gap-2">
-              <Pencil className="h-4 w-4" />
-              Edit Profile
-            </Button>
+            <EditProfileDialog 
+              userId={profile.id}
+              firstName={profile.first_name || ""}
+              lastName={profile.last_name || ""}
+              phone={profile.phone || ""}
+              onProfileUpdated={handleProfileUpdated}
+            />
           )}
           <Button onClick={handleListProperty} className="bg-care-500 hover:bg-care-600">
             <Home className="mr-2 h-4 w-4" />

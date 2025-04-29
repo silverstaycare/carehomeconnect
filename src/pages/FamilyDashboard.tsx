@@ -7,6 +7,18 @@ import SavedProperties from "@/components/dashboard/SavedProperties";
 import PaymentHistory from "@/components/dashboard/PaymentHistory";
 import useFamilyDashboardData from "@/hooks/useFamilyDashboardData";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useState, useEffect } from "react";
+import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
+import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface UserProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+}
 
 const FamilyDashboard = () => {
   const { user } = useAuth();
@@ -19,9 +31,51 @@ const FamilyDashboard = () => {
     loading 
   } = useFamilyDashboardData();
   const isMobile = useIsMobile();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) throw error;
+        setProfile(data);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
+  // Handle profile update
+  const handleProfileUpdated = async () => {
+    if (user) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (!error && data) {
+        setProfile(data);
+      }
+    }
+  };
   
-  // Get user's display name from metadata
+  // Get user's display name from metadata or profile
   const getUserDisplayName = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    
     if (!user) return '';
     
     // Check if user has metadata with first_name
@@ -41,7 +95,29 @@ const FamilyDashboard = () => {
 
   return (
     <div className="container py-6 px-3 md:py-8 md:px-4">
-      <DashboardHeader displayName={getUserDisplayName()} />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold">Family Dashboard</h1>
+          <p className="text-gray-600">Welcome back, {getUserDisplayName()}</p>
+        </div>
+        <div className="mt-4 md:mt-0 flex gap-3 items-center">
+          {profile && (
+            <EditProfileDialog 
+              userId={profile.id}
+              firstName={profile.first_name || ""}
+              lastName={profile.last_name || ""}
+              phone={profile.phone || ""}
+              onProfileUpdated={handleProfileUpdated}
+            />
+          )}
+          <Button 
+            onClick={() => window.location.href = "/search"} 
+            className="w-full md:w-auto"
+          >
+            Find Care Homes
+          </Button>
+        </div>
+      </div>
 
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="mb-6 w-full md:w-auto flex">
