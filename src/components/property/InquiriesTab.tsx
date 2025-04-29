@@ -113,9 +113,9 @@ const InquiriesTab = ({ propertyId, isOwner }: InquiriesTabProps) => {
                   </span>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-3">
-                <p><span className="font-medium">Email:</span> {inquiry.email}</p>
+              <div className="space-y-2 text-sm mb-3">
                 <p><span className="font-medium">Phone:</span> {inquiry.phone || 'Not provided'}</p>
+                <p><span className="font-medium">Email:</span> {inquiry.email}</p>
               </div>
               <div className="mb-2">
                 <p className="font-medium text-sm mb-1">Message:</p>
