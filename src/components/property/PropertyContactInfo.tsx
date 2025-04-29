@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Calendar } from "lucide-react";
 import { useState } from "react";
 import ContactTourDialog from "./ContactTourDialog";
 
@@ -56,7 +55,6 @@ const PropertyContactInfo = ({
             className="w-full mt-6"
             onClick={() => setContactDialogOpen(true)}
           >
-            <Calendar className="mr-2 h-4 w-4" />
             Inquiry
           </Button>
         )}
