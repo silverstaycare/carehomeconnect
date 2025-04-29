@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-interface Property {
+export interface Property {
   id: string;
   name: string;
   location: string;
@@ -15,7 +15,8 @@ interface Property {
   state: string;
   active: boolean;
   image?: string;
-  newInquiryCount: number; // Add this field for tracking new inquiries
+  photos?: string[];
+  newInquiryCount: number;
 }
 
 interface UserProfile {
