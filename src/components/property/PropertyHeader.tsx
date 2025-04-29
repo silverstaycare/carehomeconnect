@@ -52,7 +52,7 @@ const PropertyHeader = ({
     navigate(`/payment/${id}`);
   };
 
-  const toggleSave = async () => {
+  const handleSaveProperty = async () => {
     if (saved) {
       // Removing is handled in SavedProperties component
       toast({
@@ -72,6 +72,10 @@ const PropertyHeader = ({
       const success = await saveProperty(propertyData);
       if (success) {
         setSaved(true);
+        toast({
+          title: "Property saved",
+          description: "Added to your saved properties list"
+        });
       }
     }
   };
@@ -114,8 +118,9 @@ const PropertyHeader = ({
               Make Payment
             </Button>
             <Button 
-              variant={saved ? "default" : "outline"} 
-              onClick={toggleSave}
+              variant={saved ? "default" : "outline"}
+              onClick={handleSaveProperty}
+              className="flex items-center"
             >
               <Heart className={`mr-2 h-4 w-4 ${saved ? 'fill-current' : ''}`} />
               {saved ? "Saved" : "Save Property"}

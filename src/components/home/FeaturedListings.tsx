@@ -1,12 +1,15 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Lock } from 'lucide-react';
+import { Heart, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
+import useFamilyDashboardData from '@/hooks/useFamilyDashboardData';
 
 interface CareHome {
   id: string;
@@ -24,6 +27,8 @@ const FeaturedListings = () => {
   const [recentHomes, setRecentHomes] = useState<CareHome[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const isAuthenticated = !!user;
+  const { toast } = useToast();
+  const { saveProperty, savedProperties } = useFamilyDashboardData();
   
   useEffect(() => {
     const fetchRecentHomes = async () => {
@@ -98,6 +103,48 @@ const FeaturedListings = () => {
     fetchRecentHomes();
   }, []);
   
+  const isPropertySaved = (id: string) => {
+    return savedProperties.some(property => property.id === id);
+  };
+
+  const handleSaveProperty = async (e: React.MouseEvent, home: CareHome) => {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to save properties",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (isPropertySaved(home.id)) {
+      toast({
+        title: "Already saved",
+        description: "This property is already in your saved list"
+      });
+      return;
+    }
+    
+    const propertyData = {
+      id: home.id,
+      name: home.name,
+      location: `${home.city}, ${home.state}`,
+      price: home.price,
+      image: home.photo_url || '/placeholder.svg'
+    };
+    
+    const success = await saveProperty(propertyData);
+    if (success) {
+      toast({
+        title: "Property saved",
+        description: "Added to your saved properties"
+      });
+    }
+  };
+  
   // If still loading or no homes were found, don't render the section
   if (loading || recentHomes.length === 0) {
     return null;
@@ -124,10 +171,23 @@ const FeaturedListings = () => {
                     className="w-full h-full object-cover"
                   />
                 </AspectRatio>
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 flex gap-2">
                   <Badge className="bg-white text-care-700">
                     New
                   </Badge>
+                  {isAuthenticated && (
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full bg-white"
+                      onClick={(e) => handleSaveProperty(e, home)}
+                    >
+                      <Heart 
+                        className={`h-4 w-4 ${isPropertySaved(home.id) ? 'fill-current text-care-700' : ''}`} 
+                      />
+                      <span className="sr-only">Save property</span>
+                    </Button>
+                  )}
                 </div>
               </div>
               
