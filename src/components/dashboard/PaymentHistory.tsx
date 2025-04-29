@@ -16,6 +16,18 @@ interface PaymentHistoryProps {
 }
 
 const PaymentHistory = ({ payments }: PaymentHistoryProps) => {
+  // Check if there are no payments
+  if (payments.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 bg-muted/40 rounded-lg">
+        <h2 className="text-xl font-semibold mb-4">No Payment History</h2>
+        <p className="text-gray-600 mb-6 text-center max-w-md">
+          Your payment history will appear here once you make payments for care home bookings.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>

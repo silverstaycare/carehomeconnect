@@ -12,55 +12,10 @@ const useFamilyDashboardData = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data loading - in a real app, this would fetch from an API
-    setCurrentBookings([
-      {
-        id: "b1",
-        propertyId: "1",
-        propertyName: "Sunshine Senior Care",
-        location: "San Francisco, CA",
-        image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
-        startDate: "2023-01-15",
-        monthlyPayment: 2800,
-        nextPaymentDate: "2023-05-01",
-        resident: "Martha Johnson"
-      }
-    ]);
-
-    setSavedProperties([
-      {
-        id: "2",
-        name: "Golden Years Manor",
-        location: "Los Angeles, CA",
-        price: 3200,
-        image: "https://images.unsplash.com/photo-1570129477492-45c003edd2be"
-      },
-      {
-        id: "3",
-        name: "Serenity Care Home",
-        location: "Seattle, WA",
-        price: 2950,
-        image: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09"
-      }
-    ]);
-
-    setRecentPayments([
-      {
-        id: "p1",
-        amount: 2800,
-        date: "2023-04-01",
-        property: "Sunshine Senior Care",
-        status: "successful"
-      },
-      {
-        id: "p2",
-        amount: 2800,
-        date: "2023-03-01",
-        property: "Sunshine Senior Care",
-        status: "successful"
-      }
-    ]);
-
+    // Initialize with empty arrays instead of mock data
+    setCurrentBookings([]);
+    setSavedProperties([]);
+    setRecentPayments([]);
     setLoading(false);
   }, []);
 
