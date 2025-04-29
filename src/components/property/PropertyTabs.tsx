@@ -7,7 +7,6 @@ import InquiriesTab from "./InquiriesTab";
 import PropertyEditButton from "./PropertyEditButton";
 import { Property } from "@/hooks/usePropertyDetails";
 import { useState, useEffect } from "react";
-import { Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyTabsProps {
@@ -41,62 +40,10 @@ const PropertyTabs = ({
   userRole,
   user
 }: PropertyTabsProps) => {
-  const [hasNewInquiries, setHasNewInquiries] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
-
-  // Check for pending inquiries on component mount and when new inquiries arrive
-  useEffect(() => {
-    if (isOwner) {
-      const fetchPendingInquiries = async () => {
-        try {
-          const { count, error } = await supabase
-            .from('inquiries')
-            .select('*', { count: 'exact', head: true })
-            .eq('care_home_id', property.id)
-            .eq('status', 'pending');
-            
-          if (error) {
-            console.error("Error fetching inquiries:", error);
-            return;
-          }
-          
-          setHasNewInquiries(count !== null && count > 0);
-        } catch (error) {
-          console.error("Error checking for new inquiries:", error);
-        }
-      };
-      
-      fetchPendingInquiries();
-      
-      // Set up a real-time subscription to listen for new inquiries
-      const channel = supabase
-        .channel('inquiry-notifications')
-        .on('postgres_changes', { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'inquiries',
-          filter: `care_home_id=eq.${property.id}`
-        }, () => {
-          // When a new inquiry is inserted, update the hasNewInquiries state
-          setHasNewInquiries(true);
-        })
-        .subscribe();
-        
-      // Clean up the subscription when the component unmounts
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [isOwner, property.id]);
-
-  // Hide bell icon when inquiries tab is active
-  const shouldShowBell = hasNewInquiries && activeTab !== "inquiries";
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    
-    // If switching to the inquiries tab and there are new inquiries,
-    // they will be marked as viewed by the InquiriesTab component
   };
 
   return (
@@ -106,11 +53,8 @@ const PropertyTabs = ({
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
           {isOwner && (
-            <TabsTrigger value="inquiries" className="flex items-center">
+            <TabsTrigger value="inquiries">
               Inquiries
-              {shouldShowBell && (
-                <Bell className="ml-1 h-4 w-4 text-amber-500" />
-              )}
             </TabsTrigger>
           )}
         </TabsList>

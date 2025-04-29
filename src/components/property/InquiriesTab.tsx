@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
@@ -154,9 +153,6 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-semibold text-lg">{inquiry.name}</h3>
                 <div className="flex gap-2 items-center">
-                  {inquiry.status === 'pending' && (
-                    <Badge variant="default" className="bg-amber-500">New</Badge>
-                  )}
                   <span className="text-sm text-muted-foreground">
                     {format(new Date(inquiry.created_at), 'MMM d, yyyy - h:mm a')}
                   </span>
