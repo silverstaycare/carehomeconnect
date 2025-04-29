@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -77,6 +76,19 @@ const ListProperty = () => {
     setCareServices(prev => ({ ...prev, [service]: checked }));
   };
 
+  // Validation helper functions
+  const hasAtLeastOneAmenity = () => {
+    return Object.values(amenities).some(value => value === true);
+  };
+
+  const hasAtLeastOneCareService = () => {
+    return Object.values(careServices).some(value => value === true);
+  };
+
+  const hasAtLeastOnePhoto = () => {
+    return mediaUrls.photos.length > 0;
+  };
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +102,21 @@ const ListProperty = () => {
         if (!formData[field as keyof typeof formData]) {
           throw new Error(`Please provide the ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
         }
+      }
+
+      // Validate at least one amenity is selected
+      if (!hasAtLeastOneAmenity()) {
+        throw new Error("Please select at least one amenity");
+      }
+
+      // Validate at least one care service is selected
+      if (!hasAtLeastOneCareService()) {
+        throw new Error("Please select at least one care service");
+      }
+
+      // Validate at least one photo is uploaded
+      if (!hasAtLeastOnePhoto()) {
+        throw new Error("Please upload at least one photo of your care home");
       }
 
       // Check if user is authenticated
@@ -163,31 +190,27 @@ const ListProperty = () => {
 
       if (servicesError) throw servicesError;
 
-      // Insert media if available
-      if (mediaUrls.photos.length > 0 || mediaUrls.video) {
-        // Handle photo entries
-        const mediaEntries = mediaUrls.photos.map((photo, index) => ({
+      // Insert media
+      const mediaEntries = mediaUrls.photos.map((photo, index) => ({
+        care_home_id: careHomeId,
+        photo_url: photo,
+        is_primary: index === 0 // First photo is primary
+      }));
+
+      // Add video as a separate entry if available
+      if (mediaUrls.video) {
+        mediaEntries.push({
           care_home_id: careHomeId,
-          photo_url: photo,
-          is_primary: index === 0 // First photo is primary
-        }));
-
-        // Add video as a separate entry if available
-        if (mediaUrls.video) {
-          // Modified: Use photo_url for videos as well, but prefix with "video:" to distinguish
-          mediaEntries.push({
-            care_home_id: careHomeId,
-            photo_url: mediaUrls.video, // Store video URL in photo_url field
-            is_primary: false
-          });
-        }
-
-        const { error: mediaError } = await supabase
-          .from('care_home_media')
-          .insert(mediaEntries);
-
-        if (mediaError) throw mediaError;
+          photo_url: mediaUrls.video,
+          is_primary: false
+        });
       }
+
+      const { error: mediaError } = await supabase
+        .from('care_home_media')
+        .insert(mediaEntries);
+
+      if (mediaError) throw mediaError;
       
       toast({
         title: "Property Listed Successfully",
@@ -330,7 +353,7 @@ const ListProperty = () => {
           <CardHeader>
             <CardTitle>Amenities</CardTitle>
             <CardDescription>
-              Select the amenities available at your care home.
+              Select the amenities available at your care home. At least one amenity is required.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -408,7 +431,7 @@ const ListProperty = () => {
           <CardHeader>
             <CardTitle>Care Services</CardTitle>
             <CardDescription>
-              Select the care services you provide to residents.
+              Select the care services you provide to residents. At least one service is required.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -478,7 +501,7 @@ const ListProperty = () => {
           <CardHeader>
             <CardTitle>Property Media</CardTitle>
             <CardDescription>
-              Add photos and a video of your care home to help families get a better view.
+              Add photos and a video of your care home to help families get a better view. At least one photo is required.
             </CardDescription>
           </CardHeader>
           <CardContent>
