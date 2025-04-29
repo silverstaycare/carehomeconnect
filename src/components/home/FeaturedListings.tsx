@@ -104,7 +104,7 @@ const FeaturedListings = () => {
     <section className="py-16 px-4 bg-white">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Recent Care Homes</h2>
+          <h2 className="text-3xl font-bold mb-4">Newly Listed Care Homes</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Explore our most recently added care homes with excellent amenities and services for your loved ones.
           </p>
