@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -92,7 +93,7 @@ const ContactTourDialog = ({
       
       toast({
         title: "Inquiry Submitted Successfully",
-        description: `Your tour request for ${propertyName} has been sent to the owner.`,
+        description: `Your inquiry for ${propertyName} has been sent to the owner.`,
       });
       
       // Close the dialog

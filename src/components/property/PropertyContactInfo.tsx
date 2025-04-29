@@ -57,7 +57,7 @@ const PropertyContactInfo = ({
             onClick={() => setContactDialogOpen(true)}
           >
             <Calendar className="mr-2 h-4 w-4" />
-            Contact for Tour
+            Inquiry
           </Button>
         )}
           
