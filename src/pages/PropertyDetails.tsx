@@ -55,6 +55,7 @@ const PropertyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const isAuthenticated = !!user;
 
   useEffect(() => {
     // Fetch property details
@@ -356,7 +357,7 @@ const PropertyDetails = () => {
         active={property.active}
         reviews={property.reviews}
         capacity={property.capacity}
-        userRole={user?.role}
+        userRole={user?.user_metadata?.role}
       />
 
       {/* Property Image */}
@@ -399,7 +400,7 @@ const PropertyDetails = () => {
                 capacity={property.capacity}
                 active={property.active}
                 owner={property.owner}
-                userRole={user?.role}
+                userRole={user?.user_metadata?.role}
                 isOwner={isOwner}
                 propertyId={property.id}
                 address={property.address}
@@ -410,6 +411,7 @@ const PropertyDetails = () => {
                 onMediaUpdated={handleMediaUpdated}
                 isEditing={isEditing}
                 setIsEditing={setIsEditing}
+                isAuthenticated={isAuthenticated}
               />
               
               <AmenitiesServicesTab

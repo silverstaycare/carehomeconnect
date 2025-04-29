@@ -4,6 +4,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Lock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Property {
   id: string;
@@ -22,6 +24,8 @@ interface PropertyCardProps {
 
 const PropertyCard = ({ property }: PropertyCardProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   return (
     <Card className="overflow-hidden care-card">
@@ -55,9 +59,16 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
             </span>
           )}
         </div>
-        <p className="font-semibold text-lg">
-          ${property.price.toLocaleString()}/month
-        </p>
+        {isAuthenticated ? (
+          <p className="font-semibold text-lg">
+            ${property.price.toLocaleString()}/month
+          </p>
+        ) : (
+          <p className="flex items-center text-amber-600 font-medium">
+            <Lock className="h-4 w-4 mr-1" />
+            <span>Login to view price</span>
+          </p>
+        )}
       </CardContent>
       
       <CardFooter className="border-t pt-4">

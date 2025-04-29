@@ -1,7 +1,8 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Calendar } from "lucide-react";
+import { Calendar, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
 import EditPropertyForm from "./EditPropertyForm";
 import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
@@ -29,6 +30,7 @@ interface PropertyDetailsTabProps {
   onMediaUpdated?: (urls: { photos: string[], video: string | null }) => void;
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
+  isAuthenticated?: boolean;
 }
 
 const PropertyDetailsTab = ({
@@ -47,7 +49,8 @@ const PropertyDetailsTab = ({
   onPropertyUpdated,
   onMediaUpdated,
   isEditing,
-  setIsEditing
+  setIsEditing,
+  isAuthenticated = false
 }: PropertyDetailsTabProps) => {
   const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
   const [existingVideo, setExistingVideo] = useState<string | null>(null);
@@ -209,7 +212,14 @@ const PropertyDetailsTab = ({
             <ul className="space-y-2 mb-6">
               <li className="flex justify-between">
                 <span className="text-gray-600">Monthly Price:</span>
-                <span className="font-medium">${price.toLocaleString()}/month</span>
+                {isAuthenticated ? (
+                  <span className="font-medium">${price.toLocaleString()}/month</span>
+                ) : (
+                  <span className="flex items-center text-amber-600 font-medium">
+                    <Lock className="h-4 w-4 mr-1" /> 
+                    <span>Login to view price</span>
+                  </span>
+                )}
               </li>
               <li className="flex justify-between">
                 <span className="text-gray-600">Capacity:</span>

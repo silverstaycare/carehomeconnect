@@ -1,11 +1,12 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CareHome {
   id: string;
@@ -19,8 +20,10 @@ interface CareHome {
 
 const FeaturedListings = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [recentHomes, setRecentHomes] = useState<CareHome[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const isAuthenticated = !!user;
   
   useEffect(() => {
     const fetchRecentHomes = async () => {
@@ -141,9 +144,16 @@ const FeaturedListings = () => {
                     <span className="amenity-badge">+{home.amenities.length - 3} more</span>
                   )}
                 </div>
-                <p className="font-semibold text-lg">
-                  ${home.price.toLocaleString()}/month
-                </p>
+                {isAuthenticated ? (
+                  <p className="font-semibold text-lg">
+                    ${home.price.toLocaleString()}/month
+                  </p>
+                ) : (
+                  <p className="flex items-center text-amber-600 font-medium">
+                    <Lock className="h-4 w-4 mr-1" />
+                    <span>Login to view price</span>
+                  </p>
+                )}
               </CardContent>
               
               <CardFooter className="border-t pt-4">
