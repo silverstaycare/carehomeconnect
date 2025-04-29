@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
 
 interface Property {
   id: string;
@@ -20,11 +21,34 @@ interface Property {
   active: boolean;
 }
 
+interface UserProfile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+}
+
 const OwnerDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -39,6 +63,9 @@ const OwnerDashboard = () => {
           navigate("/login");
           return;
         }
+
+        // Get user profile
+        await fetchUserProfile(user.id);
 
         // Get properties with the current user's ID
         const { data, error } = await supabase
@@ -81,6 +108,14 @@ const OwnerDashboard = () => {
     fetchProperties();
   }, [navigate, toast]);
 
+  // Handle profile update
+  const handleProfileUpdated = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await fetchUserProfile(user.id);
+    }
+  };
+
   // Redirect to list property page if no properties exist
   const handleListProperty = () => {
     navigate("/owner/list-property");
@@ -111,14 +146,25 @@ const OwnerDashboard = () => {
     );
   }
 
+  const displayName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : "Owner";
+
   return (
     <div className="container py-8 px-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold">Owner Dashboard</h1>
-          <p className="text-gray-600">Manage your care homes</p>
+          <p className="text-gray-600">Welcome back, {displayName}</p>
         </div>
         <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+          {profile && (
+            <EditProfileDialog 
+              userId={profile.id}
+              firstName={profile.first_name || ""}
+              lastName={profile.last_name || ""}
+              phone={profile.phone || ""}
+              onProfileUpdated={handleProfileUpdated}
+            />
+          )}
           <Button onClick={() => navigate("/owner/list-property")}>
             <Home className="mr-2 h-4 w-4" />
             List New Property
