@@ -12,6 +12,7 @@ import PropertyImage from "@/components/property/PropertyImage";
 import PropertyDetailsTab from "@/components/property/PropertyDetailsTab";
 import AmenitiesServicesTab from "@/components/property/AmenitiesServicesTab";
 import ReviewsTab from "@/components/property/ReviewsTab";
+import InquiriesTab from "@/components/property/InquiriesTab";
 import OwnerActions from "@/components/property/OwnerActions";
 import PropertyEditButton from "@/components/property/PropertyEditButton";
 
@@ -381,6 +382,7 @@ const PropertyDetails = () => {
             <TabsList>
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
+              {isOwner && <TabsTrigger value="inquiries">Inquiries</TabsTrigger>}
             </TabsList>
             
             {/* Edit Button aligned with tabs */}
@@ -433,6 +435,14 @@ const PropertyDetails = () => {
               reviews={property.reviews}
               isOwner={isOwner}
               propertyOwnerId={property.ownerId}
+            />
+          </TabsContent>
+          
+          {/* Inquiries Tab - Only shown to property owners */}
+          <TabsContent value="inquiries">
+            <InquiriesTab
+              propertyId={property.id}
+              isOwner={isOwner}
             />
           </TabsContent>
         </Tabs>
