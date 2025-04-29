@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -184,27 +183,26 @@ const ContactTourDialog = ({
             />
 
             <DialogFooter className="pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Calendar className="mr-2 h-4 w-4" /> 
-                    Submit
-                  </>
-                )}
-              </Button>
+              <div className="flex w-full gap-2 justify-end">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => onOpenChange(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </Form>
