@@ -40,7 +40,7 @@ export function DashboardHeader({ profile, onProfileUpdated }: DashboardHeaderPr
             onProfileUpdated={onProfileUpdated}
           />
         )}
-        <Button onClick={handleListProperty} className="bg-care-500 hover:bg-care-600">
+        <Button onClick={handleListProperty} className="bg-care-500 hover:bg-care-600" size="sm">
           <Home className="mr-2 h-4 w-4" />
           List New Property
         </Button>
