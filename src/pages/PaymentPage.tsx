@@ -1,6 +1,6 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
 import LoadingSpinner from '@/components/payment/LoadingSpinner';
 import PropertyNotFound from '@/components/payment/PropertyNotFound';
 import PaymentSummary from '@/components/payment/PaymentSummary';
@@ -16,7 +16,6 @@ interface PropertyDetails {
 const PaymentPage = () => {
   const { propertyId } = useParams<{ propertyId: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [cardName, setCardName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
@@ -41,18 +40,13 @@ const PaymentPage = () => {
         });
       } catch (error) {
         console.error('Error fetching property details:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load property details',
-          variant: 'destructive'
-        });
       } finally {
         setLoadingProperty(false);
       }
     };
 
     fetchPropertyDetails();
-  }, [propertyId, toast]);
+  }, [propertyId]);
 
   const formatCardNumber = (value: string) => {
     const val = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
@@ -91,12 +85,6 @@ const PaymentPage = () => {
       if (cvc.length < 3) throw new Error('Please enter a valid CVC');
 
       await new Promise(resolve => setTimeout(resolve, 2000));
-
-      toast({
-        title: 'Payment Successful',
-        description: `Your payment of $${property?.monthlyRate} to ${property?.name} has been processed.`,
-      });
-
       navigate('/family/dashboard');
     } catch (error) {
       console.error('Payment error:', error);

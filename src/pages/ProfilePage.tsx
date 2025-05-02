@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -32,7 +31,6 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export default function ProfilePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<{
     id: string;
@@ -105,19 +103,10 @@ export default function ProfilePage() {
       
       if (error) throw error;
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been updated successfully.",
-        duration: 2000,
-      });
+      // Success message removed
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({
-        title: "Update failed",
-        description: "There was a problem updating your profile. Please try again.",
-        variant: "destructive",
-        duration: 2000,
-      });
+      // Error toast removed
     } finally {
       setIsSubmitting(false);
     }

@@ -8,13 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login, user } = useAuth();
-  const { toast } = useToast();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,14 +47,7 @@ const LoginPage = () => {
 
     try {
       await login(email, password);
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back to Care Home Connect!",
-        duration: 2000, // Explicitly set to 2 seconds
-      });
-      
-      // Redirection will be handled by the useEffect above
+      // Redirect will be handled by the useEffect above
     } catch (error: any) {
       setError(error.message || "Invalid email or password. Please try again.");
     } finally {

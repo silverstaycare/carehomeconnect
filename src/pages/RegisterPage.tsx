@@ -9,11 +9,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -50,12 +48,6 @@ const RegisterPage = () => {
       });
 
       if (error) throw error;
-
-      toast({
-        title: "Registration successful",
-        description: "Welcome to Silver Stay!",
-        duration: 5000
-      });
       
       if (role === "owner") {
         navigate("/owner/dashboard");

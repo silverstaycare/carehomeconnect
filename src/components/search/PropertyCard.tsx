@@ -8,7 +8,6 @@ import { Heart, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import useFamilyDashboardData from "@/hooks/useFamilyDashboardData";
-import { useToast } from "@/components/ui/use-toast";
 
 interface Property {
   id: string;
@@ -30,8 +29,8 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
   const { user } = useAuth();
   const isAuthenticated = !!user;
   const { saveProperty, savedProperties } = useFamilyDashboardData();
-  const { toast } = useToast();
   const [saved, setSaved] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
 
   // Check if property is saved
   useEffect(() => {
@@ -44,19 +43,12 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     e.stopPropagation(); // Prevent navigation when saving
     
     if (!isAuthenticated) {
-      toast({
-        title: "Authentication required",
-        description: "Please login to save properties",
-        variant: "destructive"
-      });
+      // Notification removed
       return;
     }
 
     if (saved) {
-      toast({
-        title: "Already saved",
-        description: "This property is already in your saved list"
-      });
+      // Notification removed
       return;
     }
 
@@ -71,10 +63,7 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     const success = await saveProperty(propertyData);
     if (success) {
       setSaved(true);
-      toast({
-        title: "Property saved",
-        description: "Added to your saved properties"
-      });
+      // Notification removed
     }
   };
 

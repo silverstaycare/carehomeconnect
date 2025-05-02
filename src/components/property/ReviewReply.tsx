@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
 import { Reply } from "lucide-react";
 
 interface ReviewReplyProps {
@@ -15,7 +14,6 @@ const ReviewReply = ({ reviewId, propertyOwnerId, existingReply }: ReviewReplyPr
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState(existingReply || "");
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmitReply = async () => {
     if (!replyText.trim()) return;
@@ -28,19 +26,12 @@ const ReviewReply = ({ reviewId, propertyOwnerId, existingReply }: ReviewReplyPr
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast({
-        title: "Reply Saved",
-        description: "Your response has been saved successfully"
-      });
+      // Success notification removed
       
       setIsReplying(false);
     } catch (error) {
       console.error("Error saving reply:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save your response. Please try again.",
-        variant: "destructive"
-      });
+      // Error notification removed
     } finally {
       setIsSaving(false);
     }
