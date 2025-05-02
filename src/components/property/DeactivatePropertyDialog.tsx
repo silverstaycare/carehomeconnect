@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DeactivatePropertyDialogProps {
@@ -32,16 +31,11 @@ const DeactivatePropertyDialog = ({
 }: DeactivatePropertyDialogProps) => {
   const [confirmText, setConfirmText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleDeactivate = async () => {
     if (confirmText !== "confirm") {
-      toast({
-        title: "Error",
-        description: "Please type 'confirm' to deactivate this property",
-        variant: "destructive"
-      });
+      // Toast notifications have been removed
       return;
     }
 
@@ -55,10 +49,7 @@ const DeactivatePropertyDialog = ({
 
       if (error) throw error;
 
-      toast({
-        title: "Property Deactivated",
-        description: "The property has been deactivated successfully"
-      });
+      // Toast notifications have been removed
       
       onDeactivate();
       onClose();
@@ -67,11 +58,7 @@ const DeactivatePropertyDialog = ({
       navigate("/owner/dashboard");
     } catch (error) {
       console.error("Error deactivating property:", error);
-      toast({
-        title: "Error",
-        description: "Failed to deactivate property",
-        variant: "destructive"
-      });
+      // Toast notifications have been removed
     } finally {
       setIsLoading(false);
     }

@@ -4,7 +4,6 @@ import { Booking } from "@/components/dashboard/CurrentBookings";
 import { SavedProperty } from "@/components/dashboard/SavedProperties";
 import { Payment } from "@/components/dashboard/PaymentHistory";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 
 // This hook centralizes all data fetching and state management for the family dashboard
@@ -13,7 +12,6 @@ const useFamilyDashboardData = () => {
   const [savedProperties, setSavedProperties] = useState<SavedProperty[]>([]);
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -61,10 +59,7 @@ const useFamilyDashboardData = () => {
     try {
       // Check if property is already saved
       if (savedProperties.some(p => p.id === property.id)) {
-        toast({
-          title: "Property already saved",
-          description: "This property is already in your saved list."
-        });
+        // Toast notifications have been removed
         return true; // Already saved is still a success
       }
       
@@ -74,11 +69,7 @@ const useFamilyDashboardData = () => {
       return true;
     } catch (error) {
       console.error("Error saving property:", error);
-      toast({
-        title: "Error saving property",
-        description: "There was an error saving this property. Please try again.",
-        variant: "destructive"
-      });
+      // Toast notifications have been removed
       return false;
     }
   };

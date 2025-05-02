@@ -2,7 +2,6 @@
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 
 export interface SavedProperty {
   id: string;
@@ -19,14 +18,10 @@ interface SavedPropertiesProps {
 
 const SavedProperties = ({ properties, onRemoveProperty }: SavedPropertiesProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleRemoveProperty = (id: string) => {
     onRemoveProperty(id);
-    toast({
-      title: "Property removed",
-      description: "The property has been removed from your saved list.",
-    });
+    // Toast notifications have been removed
   };
 
   if (properties.length === 0) {

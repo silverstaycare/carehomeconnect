@@ -26,12 +26,12 @@ const ReviewReply = ({ reviewId, propertyOwnerId, existingReply }: ReviewReplyPr
       // Simulate network delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Success notification removed
+      // Toast notifications have been removed
       
       setIsReplying(false);
     } catch (error) {
       console.error("Error saving reply:", error);
-      // Error notification removed
+      // Toast notifications have been removed
     } finally {
       setIsSaving(false);
     }

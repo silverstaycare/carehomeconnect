@@ -8,13 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/components/ui/use-toast";
 import { PropertyMediaUpload } from "@/components/PropertyMediaUpload";
 import { supabase } from "@/integrations/supabase/client";
 
 const ListProperty = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   
   // Form state
   const [formData, setFormData] = useState({
@@ -122,11 +120,6 @@ const ListProperty = () => {
       // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast({
-          title: "Authentication Error",
-          description: "You must be logged in to list a property",
-          variant: "destructive"
-        });
         navigate("/login");
         return;
       }
@@ -212,12 +205,6 @@ const ListProperty = () => {
 
       if (mediaError) throw mediaError;
       
-      toast({
-        title: "Property Listed Successfully",
-        description: "Your care home has been added to our platform.",
-      });
-      
-      // Redirect to owner dashboard
       navigate("/owner/dashboard");
     } catch (error) {
       console.error("Error submitting property:", error);

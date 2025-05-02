@@ -8,7 +8,6 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Heart, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/components/ui/use-toast';
 import useFamilyDashboardData from '@/hooks/useFamilyDashboardData';
 
 interface CareHome {
@@ -27,7 +26,6 @@ const FeaturedListings = () => {
   const [recentHomes, setRecentHomes] = useState<CareHome[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const isAuthenticated = !!user;
-  const { toast } = useToast();
   const { saveProperty, savedProperties } = useFamilyDashboardData();
   
   useEffect(() => {
@@ -112,19 +110,12 @@ const FeaturedListings = () => {
     e.preventDefault();
     
     if (!isAuthenticated) {
-      toast({
-        title: "Authentication required",
-        description: "Please login to save properties",
-        variant: "destructive"
-      });
+      // Toast notifications have been removed
       return;
     }
     
     if (isPropertySaved(home.id)) {
-      toast({
-        title: "Already saved",
-        description: "This property is already in your saved list"
-      });
+      // Toast notifications have been removed
       return;
     }
     
@@ -138,10 +129,7 @@ const FeaturedListings = () => {
     
     const success = await saveProperty(propertyData);
     if (success) {
-      toast({
-        title: "Property saved",
-        description: "Added to your saved properties"
-      });
+      // Toast notifications have been removed
     }
   };
   

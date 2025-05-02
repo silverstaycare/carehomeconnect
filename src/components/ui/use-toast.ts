@@ -4,9 +4,9 @@
 
 export const useToast = () => {
   return {
-    toast: () => {},
+    toast: (props: any) => {}, // Accept arguments but do nothing with them
     toasts: []
   };
 };
 
-export const toast = () => {};
+export const toast = (props: any) => {}; // Accept arguments but do nothing with them

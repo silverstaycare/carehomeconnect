@@ -6,7 +6,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Files, Upload, Trash2, Image, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { useToast } from "@/components/ui/use-toast";
 
 interface PropertyMediaUploadProps {
   onUploadComplete: (urls: { photos: string[], video: string | null }) => void;
@@ -26,7 +25,6 @@ export const PropertyMediaUpload = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   // Make sure we update our local state when props change
   useEffect(() => {
@@ -149,21 +147,14 @@ export const PropertyMediaUpload = ({
       setPhotos(newPhotos);
       onUploadComplete({ photos: newPhotos, video });
       
-      toast({
-        title: "Photo deleted",
-        description: "The photo has been successfully removed.",
-      });
+      // Toast notifications have been removed
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error deleting photo");
-      toast({
-        title: "Deletion failed",
-        description: "There was a problem removing the photo. Please try again.",
-        variant: "destructive"
-      });
+      // Toast notifications have been removed
     } finally {
       setIsDeleting(false);
     }
-  }, [photos, video, propertyId, onUploadComplete, toast]);
+  }, [photos, video, propertyId, onUploadComplete]);
 
   const handleVideoDelete = useCallback(async () => {
     if (!video) return;
@@ -194,21 +185,14 @@ export const PropertyMediaUpload = ({
       setVideo(null);
       onUploadComplete({ photos, video: null });
       
-      toast({
-        title: "Video deleted",
-        description: "The video has been successfully removed.",
-      });
+      // Toast notifications have been removed
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error deleting video");
-      toast({
-        title: "Deletion failed",
-        description: "There was a problem removing the video. Please try again.",
-        variant: "destructive"
-      });
+      // Toast notifications have been removed
     } finally {
       setIsDeleting(false);
     }
-  }, [video, propertyId, photos, onUploadComplete, toast]);
+  }, [video, propertyId, photos, onUploadComplete]);
 
   return (
     <div className="space-y-4">

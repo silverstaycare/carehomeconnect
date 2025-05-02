@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
 interface AmenitiesServicesTabProps {
   amenities: string[];
   careServices: string[];
@@ -43,6 +44,7 @@ const allAmenities = [{
   id: "transportation",
   label: "Transportation"
 }];
+
 const allCareServices = [{
   id: "twenty_four_hour_staff",
   label: "24/7 Staff"
@@ -65,6 +67,7 @@ const allCareServices = [{
   id: "social_activities",
   label: "Social Activities"
 }];
+
 const AmenitiesServicesTab = ({
   amenities,
   careServices,
@@ -73,11 +76,9 @@ const AmenitiesServicesTab = ({
   onUpdate,
   isEditing
 }: AmenitiesServicesTabProps) => {
-  const {
-    toast
-  } = useToast();
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(amenities);
   const [selectedServices, setSelectedServices] = useState<string[]>(careServices);
+
   const handleAmenityChange = (amenityId: string, checked: boolean) => {
     if (checked) {
       const amenityLabel = allAmenities.find(a => a.id === amenityId)?.label;
@@ -91,6 +92,7 @@ const AmenitiesServicesTab = ({
       }));
     }
   };
+
   const handleServiceChange = (serviceId: string, checked: boolean) => {
     if (checked) {
       const serviceLabel = allCareServices.find(s => s.id === serviceId)?.label;
@@ -104,14 +106,17 @@ const AmenitiesServicesTab = ({
       }));
     }
   };
+
   const isAmenitySelected = (amenityId: string) => {
     const amenity = allAmenities.find(a => a.id === amenityId);
     return amenity ? selectedAmenities.includes(amenity.label) : false;
   };
+
   const isServiceSelected = (serviceId: string) => {
     const service = allCareServices.find(s => s.id === serviceId);
     return service ? selectedServices.includes(service.label) : false;
   };
+
   const saveAmenities = async () => {
     if (!propertyId) return;
     try {
@@ -122,9 +127,11 @@ const AmenitiesServicesTab = ({
       });
 
       // Update amenities in database
-      const {
-        error
-      } = await supabase.from("care_home_amenities").update(amenitiesData).eq("care_home_id", propertyId);
+      const { error } = await supabase
+        .from("care_home_amenities")
+        .update(amenitiesData)
+        .eq("care_home_id", propertyId);
+      
       if (error) throw error;
 
       // Update UI
@@ -133,19 +140,14 @@ const AmenitiesServicesTab = ({
           amenities: selectedAmenities
         });
       }
-      toast({
-        title: "Success",
-        description: "Amenities updated successfully"
-      });
+      
+      // Toast notifications have been removed
     } catch (error) {
       console.error("Error saving amenities:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update amenities",
-        variant: "destructive"
-      });
+      // Toast notifications have been removed
     }
   };
+
   const saveServices = async () => {
     if (!propertyId) return;
     try {
@@ -156,9 +158,11 @@ const AmenitiesServicesTab = ({
       });
 
       // Update services in database
-      const {
-        error
-      } = await supabase.from("care_home_services").update(servicesData).eq("care_home_id", propertyId);
+      const { error } = await supabase
+        .from("care_home_services")
+        .update(servicesData)
+        .eq("care_home_id", propertyId);
+      
       if (error) throw error;
 
       // Update UI
@@ -167,17 +171,11 @@ const AmenitiesServicesTab = ({
           careServices: selectedServices
         });
       }
-      toast({
-        title: "Success",
-        description: "Care services updated successfully"
-      });
+      
+      // Toast notifications have been removed
     } catch (error) {
       console.error("Error saving care services:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update care services",
-        variant: "destructive"
-      });
+      // Toast notifications have been removed
     }
   };
 
@@ -186,29 +184,52 @@ const AmenitiesServicesTab = ({
     await saveAmenities();
     await saveServices();
   };
-  return <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
       <Card>
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-xl font-bold">Amenities</h2>
-            {isOwner && isEditing && <div className="flex gap-2">
+            {isOwner && isEditing && (
+              <div className="flex gap-2">
                 
-              </div>}
+              </div>
+            )}
           </div>
           
-          {isEditing && isOwner ? <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {allAmenities.map(amenity => <div key={amenity.id} className="flex items-center space-x-2">
-                  <Checkbox id={`amenity-${amenity.id}`} checked={isAmenitySelected(amenity.id)} onCheckedChange={checked => handleAmenityChange(amenity.id, checked === true)} />
-                  <label htmlFor={`amenity-${amenity.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {isEditing && isOwner ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {allAmenities.map(amenity => (
+                <div key={amenity.id} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`amenity-${amenity.id}`} 
+                    checked={isAmenitySelected(amenity.id)} 
+                    onCheckedChange={checked => handleAmenityChange(amenity.id, checked === true)} 
+                  />
+                  <label 
+                    htmlFor={`amenity-${amenity.id}`} 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
                     {amenity.label}
                   </label>
-                </div>)}
-            </div> : <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {selectedAmenities.length === 0 ? <p className="text-gray-600">No amenities listed for this property.</p> : selectedAmenities.map((amenity, index) => <div key={index} className="flex items-center">
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {selectedAmenities.length === 0 ? (
+                <p className="text-gray-600">No amenities listed for this property.</p>
+              ) : (
+                selectedAmenities.map((amenity, index) => (
+                  <div key={index} className="flex items-center">
                     <div className="h-2 w-2 rounded-full bg-care-600 mr-2"></div>
                     <span>{amenity}</span>
-                  </div>)}
-            </div>}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
       
@@ -216,26 +237,49 @@ const AmenitiesServicesTab = ({
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-xl font-bold">Care Services</h2>
-            {isOwner && isEditing && <div className="flex gap-2">
+            {isOwner && isEditing && (
+              <div className="flex gap-2">
                 
-              </div>}
+              </div>
+            )}
           </div>
           
-          {isEditing && isOwner ? <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {allCareServices.map(service => <div key={service.id} className="flex items-center space-x-2">
-                  <Checkbox id={`service-${service.id}`} checked={isServiceSelected(service.id)} onCheckedChange={checked => handleServiceChange(service.id, checked === true)} />
-                  <label htmlFor={`service-${service.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {isEditing && isOwner ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {allCareServices.map(service => (
+                <div key={service.id} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`service-${service.id}`} 
+                    checked={isServiceSelected(service.id)} 
+                    onCheckedChange={checked => handleServiceChange(service.id, checked === true)} 
+                  />
+                  <label 
+                    htmlFor={`service-${service.id}`} 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
                     {service.label}
                   </label>
-                </div>)}
-            </div> : <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {selectedServices.length === 0 ? <p className="text-gray-600">No care services listed for this property.</p> : selectedServices.map((service, index) => <div key={index} className="flex items-center">
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {selectedServices.length === 0 ? (
+                <p className="text-gray-600">No care services listed for this property.</p>
+              ) : (
+                selectedServices.map((service, index) => (
+                  <div key={index} className="flex items-center">
                     <div className="h-2 w-2 rounded-full bg-care-600 mr-2"></div>
                     <span>{service}</span>
-                  </div>)}
-            </div>}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 };
+
 export default AmenitiesServicesTab;
