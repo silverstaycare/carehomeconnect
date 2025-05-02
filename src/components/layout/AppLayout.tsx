@@ -1,20 +1,40 @@
+
 import { Outlet, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Users, Home, Info, Shield, FileText } from "lucide-react";
+import { Search, Users, Home, Info, Shield, FileText, User, Settings, LogOut } from "lucide-react";
 import Logo from "@/components/common/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const AppLayout = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userInitials, setUserInitials] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
     // Get user role from user metadata if available
     if (user?.user_metadata?.role) {
       setUserRole(user.user_metadata.role);
       console.log("User role in AppLayout:", user.user_metadata.role);
+    }
+
+    // Get user profile data for avatar initials
+    if (user) {
+      const firstName = user.user_metadata?.first_name || "";
+      const lastName = user.user_metadata?.last_name || "";
+      setUserInitials(`${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase());
+      setUserName(`${firstName} ${lastName}`.trim());
     }
   }, [user]);
 
@@ -34,6 +54,10 @@ const AppLayout = () => {
     
     console.log("Navigating to dashboard:", dashboardPath);
     navigate(dashboardPath);
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
   };
 
   return (
@@ -62,7 +86,36 @@ const AppLayout = () => {
                 >
                   Dashboard
                 </Button>
-                <Button onClick={handleLogout}>Logout</Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="p-0 h-9 w-9 rounded-full" aria-label="User menu">
+                      <Avatar className="h-9 w-9">
+                        <AvatarFallback className="bg-care-100 text-care-700 text-sm">
+                          {userInitials || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{userName || "User"}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleProfileClick}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>

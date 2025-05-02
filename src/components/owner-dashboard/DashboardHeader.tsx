@@ -1,8 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, Pencil } from "lucide-react";
-import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
+import { Home, User } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -16,12 +15,16 @@ interface DashboardHeaderProps {
   onProfileUpdated: () => void;
 }
 
-export function DashboardHeader({ profile, onProfileUpdated }: DashboardHeaderProps) {
+export function DashboardHeader({ profile }: DashboardHeaderProps) {
   const navigate = useNavigate();
   const displayName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : "Owner";
   
   const handleListProperty = () => {
     navigate("/owner/list-property");
+  };
+  
+  const handleProfileClick = () => {
+    navigate("/profile");
   };
   
   return (
@@ -31,15 +34,10 @@ export function DashboardHeader({ profile, onProfileUpdated }: DashboardHeaderPr
         <p className="text-gray-600">Welcome back, {displayName}</p>
       </div>
       <div className="mt-4 md:mt-0 flex gap-3">
-        {profile && (
-          <EditProfileDialog 
-            userId={profile.id}
-            firstName={profile.first_name || ""}
-            lastName={profile.last_name || ""}
-            phone={profile.phone || ""}
-            onProfileUpdated={onProfileUpdated}
-          />
-        )}
+        <Button onClick={handleProfileClick} variant="outline" size="sm" className="gap-2">
+          <User size={16} />
+          Manage Profile
+        </Button>
         <Button onClick={handleListProperty} className="bg-care-500 hover:bg-care-600" size="sm">
           <Home className="mr-2 h-4 w-4" />
           List New Property

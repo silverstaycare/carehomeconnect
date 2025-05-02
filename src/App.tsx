@@ -17,6 +17,7 @@ import ListProperty from "./pages/ListProperty";
 import SearchResults from "./pages/SearchResults";
 import SubscriptionPage from "./pages/SubscriptionPage";
 import PaymentPage from "./pages/PaymentPage";
+import ProfilePage from "./pages/ProfilePage";
 
 // Context providers
 import { AuthProvider } from "./contexts/AuthContext";
@@ -36,6 +37,7 @@ const App = () => (
               <Route index element={<HomePage />} />
               <Route path="login" element={<LoginPage />} />
               <Route path="register" element={<RegisterPage />} />
+              <Route path="profile" element={<ProfilePage />} />
               <Route path="owner/dashboard" element={<OwnerDashboard />} />
               <Route path="owner/list-property" element={<ListProperty />} />
               <Route path="owner/subscription" element={<SubscriptionPage />} />
