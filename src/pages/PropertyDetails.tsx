@@ -189,6 +189,9 @@ function renderFallbackProperty() {
           onEdit={() => {}}
           onSave={() => {}}
           onCancel={() => {}}
+          onPropertyUpdated={() => {}}
+          onMediaUpdated={() => {}}
+          onAmenitiesServicesUpdated={() => {}}
           setIsEditing={() => {}}
         />
       </div>
