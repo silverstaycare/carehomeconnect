@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -42,9 +41,9 @@ export interface Property {
 export const usePropertyDetails = (propertyId: string | undefined) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const isAuthenticated = !!user;
@@ -54,16 +53,12 @@ export const usePropertyDetails = (propertyId: string | undefined) => {
     const fetchProperty = async () => {
       try {
         if (!propertyId) {
-          toast({
-            title: "Error",
-            description: "Property ID is missing",
-            variant: "destructive"
-          });
           navigate("/search");
           return;
         }
         
         setLoading(true);
+        setError(null);
         
         // Get property details from supabase
         const { data: homeData, error: homeError } = await supabase
@@ -77,11 +72,6 @@ export const usePropertyDetails = (propertyId: string | undefined) => {
         }
         
         if (!homeData) {
-          toast({
-            title: "Property Not Found",
-            description: "The property you're looking for doesn't exist",
-            variant: "destructive"
-          });
           navigate("/search");
           return;
         }
@@ -220,29 +210,20 @@ export const usePropertyDetails = (propertyId: string | undefined) => {
         
       } catch (error) {
         console.error("Error fetching property:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load property details",
-          variant: "destructive"
-        });
+        setError(error as Error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProperty();
-  }, [propertyId, navigate, toast]);
+  }, [propertyId, navigate]);
 
   const handlePropertyDeactivated = () => {
     if (property) {
       setProperty({
         ...property,
         active: false
-      });
-      
-      toast({
-        title: "Property Deactivated",
-        description: "This property has been deactivated and is no longer visible to families"
       });
     }
   };
@@ -272,11 +253,6 @@ export const usePropertyDetails = (propertyId: string | undefined) => {
         ...property,
         image: urls.photos[0] // Use the first photo as primary
       });
-      
-      toast({
-        title: "Media Updated",
-        description: "Property media has been updated successfully"
-      });
     }
   };
 
@@ -293,6 +269,7 @@ export const usePropertyDetails = (propertyId: string | undefined) => {
   return {
     property,
     loading,
+    error,
     isOwner,
     isEditing,
     isAuthenticated,
