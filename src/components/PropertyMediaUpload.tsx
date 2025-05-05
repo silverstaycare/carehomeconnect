@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Files, Upload, Trash2, Image, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useToast } from "@/hooks/use-toast";
 
 interface PropertyMediaUploadProps {
   onUploadComplete: (urls: { photos: string[], video: string | null }) => void;
@@ -25,6 +26,7 @@ export const PropertyMediaUpload = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Make sure we update our local state when props change
   useEffect(() => {
@@ -33,7 +35,7 @@ export const PropertyMediaUpload = ({
   }, [existingPhotos, existingVideo]);
 
   const handlePhotoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
+    if (!e.target.files || e.target.files.length === 0) return;
     
     setIsUploading(true);
     setError(null);
@@ -44,27 +46,50 @@ export const PropertyMediaUpload = ({
         throw new Error("Maximum 10 photos allowed");
       }
 
+      // Create the bucket if it doesn't exist yet
+      const { data: buckets } = await supabase.storage.listBuckets();
+      if (!buckets?.find(bucket => bucket.name === 'property_media')) {
+        await supabase.storage.createBucket('property_media', {
+          public: true
+        });
+      }
+
       const uploadedUrls = await Promise.all(
         files.map(async (file) => {
-          const fileName = `${Date.now()}-${file.name}`;
-          const { data, error } = await supabase.storage
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+          const filePath = `photos/${fileName}`;
+          
+          const { data, error: uploadError } = await supabase.storage
             .from('property_media')
-            .upload(`photos/${fileName}`, file);
+            .upload(filePath, file);
 
-          if (error) throw error;
+          if (uploadError) {
+            console.error("Upload error:", uploadError);
+            throw new Error(`Upload error: ${uploadError.message}`);
+          }
+
+          if (!data?.path) {
+            throw new Error("Upload failed - no path returned");
+          }
 
           const { data: { publicUrl } } = supabase.storage
             .from('property_media')
-            .getPublicUrl(`photos/${fileName}`);
+            .getPublicUrl(data.path);
 
           // If this is a property with an ID, save this to the database
           if (propertyId) {
             const isPrimary = photos.length === 0 && existingPhotos.length === 0;
-            await supabase.from('care_home_media').insert({
+            const { error: dbError } = await supabase.from('care_home_media').insert({
               care_home_id: propertyId,
               photo_url: publicUrl,
               is_primary: isPrimary
             });
+
+            if (dbError) {
+              console.error("Database error:", dbError);
+              throw new Error(`Database error: ${dbError.message}`);
+            }
           }
 
           return publicUrl;
@@ -74,12 +99,24 @@ export const PropertyMediaUpload = ({
       const newPhotos = [...photos, ...uploadedUrls];
       setPhotos(newPhotos);
       onUploadComplete({ photos: newPhotos, video });
+      
+      toast({
+        title: "Photos uploaded",
+        description: `${uploadedUrls.length} photo(s) uploaded successfully`,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error uploading photos");
+      const errorMessage = err instanceof Error ? err.message : "Error uploading photos";
+      setError(errorMessage);
+      toast({
+        title: "Upload Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      console.error("Photo upload error:", err);
     } finally {
       setIsUploading(false);
     }
-  }, [photos, video, propertyId, onUploadComplete, existingPhotos]);
+  }, [photos, video, propertyId, onUploadComplete, existingPhotos, toast]);
 
   const handleVideoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -88,35 +125,70 @@ export const PropertyMediaUpload = ({
     setError(null);
 
     try {
-      const file = e.target.files[0];
-      const fileName = `${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage
-        .from('property_media')
-        .upload(`videos/${fileName}`, file);
+      // Create the bucket if it doesn't exist yet
+      const { data: buckets } = await supabase.storage.listBuckets();
+      if (!buckets?.find(bucket => bucket.name === 'property_media')) {
+        await supabase.storage.createBucket('property_media', {
+          public: true
+        });
+      }
 
-      if (error) throw error;
+      const file = e.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `videos/${fileName}`;
+      
+      const { data, error: uploadError } = await supabase.storage
+        .from('property_media')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw new Error(`Upload error: ${uploadError.message}`);
+      }
+
+      if (!data?.path) {
+        throw new Error("Upload failed - no path returned");
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('property_media')
-        .getPublicUrl(`videos/${fileName}`);
+        .getPublicUrl(data.path);
         
       // If this is a property with an ID, save this to the database
       if (propertyId) {
-        await supabase.from('care_home_media').insert({
+        const { error: dbError } = await supabase.from('care_home_media').insert({
           care_home_id: propertyId,
           photo_url: publicUrl,
           video_url: publicUrl // Store video URL in both fields to identify it as a video
         });
+
+        if (dbError) {
+          console.error("Database error:", dbError);
+          throw new Error(`Database error: ${dbError.message}`);
+        }
       }
 
       setVideo(publicUrl);
       onUploadComplete({ photos, video: publicUrl });
+      
+      toast({
+        title: "Video uploaded",
+        description: "Your video was uploaded successfully",
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error uploading video");
+      const errorMessage = err instanceof Error ? err.message : "Error uploading video";
+      setError(errorMessage);
+      toast({
+        title: "Upload Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      console.error("Video upload error:", err);
     } finally {
       setIsUploading(false);
     }
-  }, [photos, propertyId, onUploadComplete]);
+  }, [photos, propertyId, onUploadComplete, toast]);
 
   const handlePhotoDelete = useCallback(async (urlToDelete: string) => {
     setIsDeleting(true);
@@ -134,11 +206,16 @@ export const PropertyMediaUpload = ({
       
       // Delete from Supabase storage if it's stored there
       if (urlToDelete.includes('property_media')) {
-        const path = urlToDelete.split('property_media/')[1];
-        if (path) {
-          await supabase.storage
-            .from('property_media')
-            .remove([path]);
+        try {
+          const path = urlToDelete.split('property_media/')[1];
+          if (path) {
+            await supabase.storage
+              .from('property_media')
+              .remove([path]);
+          }
+        } catch (storageError) {
+          // Log the error but don't stop the process
+          console.error("Storage deletion error:", storageError);
         }
       }
 
@@ -147,14 +224,23 @@ export const PropertyMediaUpload = ({
       setPhotos(newPhotos);
       onUploadComplete({ photos: newPhotos, video });
       
-      // Toast notifications have been removed
+      toast({
+        title: "Photo deleted",
+        description: "The photo has been removed successfully",
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error deleting photo");
-      // Toast notifications have been removed
+      const errorMessage = err instanceof Error ? err.message : "Error deleting photo";
+      setError(errorMessage);
+      toast({
+        title: "Delete Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      console.error("Photo deletion error:", err);
     } finally {
       setIsDeleting(false);
     }
-  }, [photos, video, propertyId, onUploadComplete]);
+  }, [photos, video, propertyId, onUploadComplete, toast]);
 
   const handleVideoDelete = useCallback(async () => {
     if (!video) return;
@@ -173,11 +259,16 @@ export const PropertyMediaUpload = ({
       
       // Delete from Supabase storage if it's stored there
       if (video.includes('property_media')) {
-        const path = video.split('property_media/')[1];
-        if (path) {
-          await supabase.storage
-            .from('property_media')
-            .remove([path]);
+        try {
+          const path = video.split('property_media/')[1];
+          if (path) {
+            await supabase.storage
+              .from('property_media')
+              .remove([path]);
+          }
+        } catch (storageError) {
+          // Log the error but don't stop the process
+          console.error("Storage deletion error:", storageError);
         }
       }
       
@@ -185,14 +276,23 @@ export const PropertyMediaUpload = ({
       setVideo(null);
       onUploadComplete({ photos, video: null });
       
-      // Toast notifications have been removed
+      toast({
+        title: "Video deleted",
+        description: "The video has been removed successfully",
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error deleting video");
-      // Toast notifications have been removed
+      const errorMessage = err instanceof Error ? err.message : "Error deleting video";
+      setError(errorMessage);
+      toast({
+        title: "Delete Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      console.error("Video deletion error:", err);
     } finally {
       setIsDeleting(false);
     }
-  }, [video, propertyId, photos, onUploadComplete]);
+  }, [video, propertyId, photos, onUploadComplete, toast]);
 
   return (
     <div className="space-y-4">
