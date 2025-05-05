@@ -41,14 +41,20 @@ export const PropertyMediaUpload = ({
     setError(null);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("You must be logged in to upload photos");
+      }
+
       const files = Array.from(e.target.files);
       if (photos.length + files.length > 10) {
         throw new Error("Maximum 10 photos allowed");
       }
 
-      // Create the bucket if it doesn't exist yet
+      // Create the bucket if it doesn't exist yet (this shouldn't be needed anymore since we did it via SQL)
       const { data: buckets } = await supabase.storage.listBuckets();
       if (!buckets?.find(bucket => bucket.name === 'property_media')) {
+        console.log("Bucket not found, creating it now");
         await supabase.storage.createBucket('property_media', {
           public: true
         });
@@ -59,6 +65,8 @@ export const PropertyMediaUpload = ({
           const fileExt = file.name.split('.').pop();
           const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
           const filePath = `photos/${fileName}`;
+          
+          console.log("Uploading file to path:", filePath);
           
           const { data, error: uploadError } = await supabase.storage
             .from('property_media')
@@ -79,6 +87,7 @@ export const PropertyMediaUpload = ({
 
           // If this is a property with an ID, save this to the database
           if (propertyId) {
+            console.log("Adding media to database for property:", propertyId);
             const isPrimary = photos.length === 0 && existingPhotos.length === 0;
             const { error: dbError } = await supabase.from('care_home_media').insert({
               care_home_id: propertyId,
@@ -125,9 +134,15 @@ export const PropertyMediaUpload = ({
     setError(null);
 
     try {
-      // Create the bucket if it doesn't exist yet
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("You must be logged in to upload videos");
+      }
+
+      // Create the bucket if it doesn't exist yet (this shouldn't be needed anymore since we did it via SQL)
       const { data: buckets } = await supabase.storage.listBuckets();
       if (!buckets?.find(bucket => bucket.name === 'property_media')) {
+        console.log("Bucket not found, creating it now");
         await supabase.storage.createBucket('property_media', {
           public: true
         });
@@ -137,6 +152,8 @@ export const PropertyMediaUpload = ({
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `videos/${fileName}`;
+      
+      console.log("Uploading video to path:", filePath);
       
       const { data, error: uploadError } = await supabase.storage
         .from('property_media')
@@ -157,6 +174,7 @@ export const PropertyMediaUpload = ({
         
       // If this is a property with an ID, save this to the database
       if (propertyId) {
+        console.log("Adding video to database for property:", propertyId);
         const { error: dbError } = await supabase.from('care_home_media').insert({
           care_home_id: propertyId,
           photo_url: publicUrl,
