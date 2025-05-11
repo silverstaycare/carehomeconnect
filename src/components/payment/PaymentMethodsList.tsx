@@ -70,31 +70,22 @@ export function PaymentMethodsList({
                   <p className="text-sm text-gray-500">
                     Expires {method.exp_month}/{method.exp_year}
                   </p>
-                </div>
-                <div className="flex gap-2">
-                  {onEdit && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onEdit(method.id)}
-                    >
-                      Edit
-                    </Button>
+                  {method.isDefault && (
+                    <p className="text-xs text-green-600 font-medium mt-1 flex items-center">
+                      <Check className="mr-1 h-3 w-3" />
+                      Default
+                    </p>
                   )}
-                  <Button 
-                    variant={method.isDefault ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => onSetDefault(method.id)}
-                    className={method.isDefault ? "bg-green-500 hover:bg-green-600" : ""}
-                  >
-                    {method.isDefault ? (
-                      <>
-                        <Check className="mr-1 h-3 w-3" />
-                        Default
-                      </>
-                    ) : "Set Default"}
-                  </Button>
                 </div>
+                {onEdit && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => onEdit(method.id)}
+                  >
+                    Edit
+                  </Button>
+                )}
               </div>
             </div>
           ))}
@@ -129,31 +120,22 @@ export function PaymentMethodsList({
                   <p className="text-sm text-gray-500">
                     {method.name} • Account ending in {method.last4}
                   </p>
-                </div>
-                <div className="flex gap-2">
-                  {onEdit && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onEdit(method.id)}
-                    >
-                      Edit
-                    </Button>
+                  {method.isDefault && (
+                    <p className="text-xs text-green-600 font-medium mt-1 flex items-center">
+                      <Check className="mr-1 h-3 w-3" />
+                      Default
+                    </p>
                   )}
-                  <Button 
-                    variant={method.isDefault ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => onSetDefault(method.id)}
-                    className={method.isDefault ? "bg-green-500 hover:bg-green-600" : ""}
-                  >
-                    {method.isDefault ? (
-                      <>
-                        <Check className="mr-1 h-3 w-3" />
-                        Default
-                      </>
-                    ) : "Set Default"}
-                  </Button>
                 </div>
+                {onEdit && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => onEdit(method.id)}
+                  >
+                    Edit
+                  </Button>
+                )}
               </div>
             </div>
           ))}
