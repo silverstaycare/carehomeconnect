@@ -69,7 +69,7 @@ export const PlanCard = ({
         <div className="mb-6">
           <p className="text-3xl font-bold">
             ${totalPrice}
-            <span className="text-lg font-normal text-gray-600">/month/bed</span>
+            <span className="text-lg font-normal text-gray-600">/bed/month</span>
           </p>
         </div>
         <ul className="space-y-3">
