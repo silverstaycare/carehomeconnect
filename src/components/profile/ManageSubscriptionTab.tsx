@@ -29,6 +29,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
   const [totalBeds, setTotalBeds] = useState(0);
   const [propertiesData, setPropertiesData] = useState<PropertyData[]>([]);
   const [isLoadingProperties, setIsLoadingProperties] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -38,6 +39,8 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
       if (!user) return;
 
       setIsLoadingProperties(true);
+      setFetchError(null);
+      
       try {
         const { data, error } = await supabase
           .from('care_homes')
@@ -64,11 +67,8 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
         }
       } catch (error) {
         console.error("Error fetching properties:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch your properties data",
-          variant: "destructive",
-        });
+        setFetchError("Failed to load property data. Using default values instead.");
+        
         // Set defaults on error
         setNumberOfProperties(1);
         setNumberOfBedsPerProperty(1);
@@ -87,6 +87,8 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     
     try {
       setIsCheckingSubscription(true);
+      setFetchError(null);
+      
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
       if (error) throw error;
@@ -100,10 +102,15 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
       }
     } catch (error) {
       console.error("Error checking subscription:", error);
-      toast({
-        title: "Error",
-        description: "Failed to check subscription status",
-        variant: "destructive",
+      setFetchError("Failed to check subscription status. Some features may be limited.");
+      
+      // Create a minimal subscription object with default values
+      setSubscription({
+        subscribed: false,
+        subscription: {
+          planId: 'basic',
+          hasBoost: false
+        }
       });
     } finally {
       setIsCheckingSubscription(false);
@@ -191,16 +198,34 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     }
   };
 
-  return (
-    <div className="bg-white p-6 rounded-lg border shadow-sm">
-      <h2 className="text-2xl font-bold mb-4">Manage Subscription</h2>
-      
-      {(isCheckingSubscription || isLoadingProperties) ? (
+  // Show a loading state or error state while initializing
+  if (isCheckingSubscription || isLoadingProperties) {
+    return (
+      <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <h2 className="text-2xl font-bold mb-4">Manage Subscription</h2>
         <div className="flex items-center justify-center p-8">
           <Spinner size="lg" />
           <p className="ml-3 text-gray-600">Loading subscription information...</p>
         </div>
-      ) : subscription?.subscribed ? (
+      </div>
+    );
+  }
+
+  // Regular content view
+  return (
+    <div className="bg-white p-6 rounded-lg border shadow-sm">
+      <h2 className="text-2xl font-bold mb-4">Manage Subscription</h2>
+      
+      {fetchError && (
+        <div className="mb-4 p-3 border border-amber-200 bg-amber-50 rounded-md">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800">{fetchError}</p>
+          </div>
+        </div>
+      )}
+      
+      {subscription?.subscribed ? (
         <div className="space-y-6">
           <Card>
             <CardHeader>
