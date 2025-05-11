@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -54,7 +53,7 @@ const SubscriptionPage = () => {
       {
         id: 'basic',
         name: 'Starter',
-        pricePerBed: 9.99,
+        pricePerBed: 59.99,
         billingCycle: 'monthly',
         features: [
           'Get online.',
@@ -67,7 +66,7 @@ const SubscriptionPage = () => {
       {
         id: 'pro',
         name: 'Pro',
-        pricePerBed: 14.99,
+        pricePerBed: 79.99,
         billingCycle: 'monthly',
         features: [
           'Grow faster, more leads.',

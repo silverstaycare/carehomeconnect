@@ -48,11 +48,11 @@ serve(async (req) => {
     let planName;
     switch (planId) {
       case 'basic':
-        unitAmount = 999; // $9.99 per bed in cents
+        unitAmount = 5999; // $59.99 per bed in cents
         planName = 'Starter Plan';
         break;
       case 'pro':
-        unitAmount = 1499; // $14.99 per bed in cents
+        unitAmount = 7999; // $79.99 per bed in cents
         planName = 'Pro Plan';
         break;
       default:
