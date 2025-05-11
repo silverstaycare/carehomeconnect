@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +24,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const cardSchema = z.object({
   cardholderName: z.string().min(2, { message: "Name is required" }),
@@ -62,6 +63,7 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
     }
   ]);
   const [bankDetails, setBankDetails] = useState<any>(null);
+  const [useForBoth, setUseForBoth] = useState(false);
   const { toast } = useToast();
 
   // Form for credit card
@@ -111,9 +113,9 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
   };
 
   // Load bank details when component mounts
-  useState(() => {
+  useEffect(() => {
     fetchBankDetails();
-  });
+  }, [user]);
 
   // Handle form submission
   const onSubmit = async (data: CardFormValues) => {
@@ -161,18 +163,22 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
         throw checkError; 
       }
       
+      // Setup payload with the useForBoth flag
+      const bankPayload = {
+        account_name: data.accountName,
+        account_number: data.accountNumber,
+        routing_number: data.routingNumber,
+        bank_name: data.bankName,
+        use_for_both: useForBoth
+      };
+      
       let updateError;
       
       if (existingData?.id) {
         // Update existing record
         const { error } = await (supabase
           .from("bank_details" as any)
-          .update({
-            account_name: data.accountName,
-            account_number: data.accountNumber,
-            routing_number: data.routingNumber,
-            bank_name: data.bankName
-          })
+          .update(bankPayload)
           .eq("user_id", user.id) as any);
           
         updateError = error;
@@ -182,10 +188,7 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
           .from("bank_details" as any)
           .insert({
             user_id: user.id,
-            account_name: data.accountName,
-            account_number: data.accountNumber,
-            routing_number: data.routingNumber,
-            bank_name: data.bankName
+            ...bankPayload
           }) as any);
           
         updateError = error;
@@ -263,6 +266,11 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
               <p className="text-sm text-gray-500">
                 {bankDetails.account_name} • Account ending in {bankDetails.account_number?.slice(-4)}
               </p>
+              {bankDetails.use_for_both && (
+                <div className="mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded inline-block">
+                  Used for both subscription and rent deposits
+                </div>
+              )}
             </div>
             <Button 
               variant="outline" 
@@ -489,6 +497,22 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
                     </FormItem>
                   )}
                 />
+              </div>
+              
+              <div className="flex items-center space-x-2 mt-4">
+                <Checkbox 
+                  id="useForBoth" 
+                  checked={useForBoth} 
+                  onCheckedChange={(checked) => {
+                    setUseForBoth(checked as boolean);
+                  }}
+                />
+                <label
+                  htmlFor="useForBoth"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Use this account for both subscription payments and rent deposits
+                </label>
               </div>
               
               <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4">

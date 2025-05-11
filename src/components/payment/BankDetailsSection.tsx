@@ -24,6 +24,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const bankSchema = z.object({
   accountName: z.string().min(2, { message: "Account name is required" }),
@@ -42,6 +43,7 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const [isProcessingBank, setIsProcessingBank] = useState(false);
   const [bankDetails, setBankDetails] = useState<any>(null);
+  const [useForBoth, setUseForBoth] = useState(false);
   const { toast } = useToast();
   
   const bankForm = useForm<BankFormValues>({
@@ -72,6 +74,7 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
 
       if (data) {
         setBankDetails(data);
+        setUseForBoth(data.use_for_both || false);
         
         // Pre-fill the form if we're editing
         bankForm.reset({
@@ -109,18 +112,22 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
         throw checkError; 
       }
       
+      // Setup payload with the useForBoth flag
+      const bankPayload = {
+        account_name: data.accountName,
+        account_number: data.accountNumber,
+        routing_number: data.routingNumber,
+        bank_name: data.bankName,
+        use_for_both: useForBoth
+      };
+      
       let updateError;
       
       if (existingData?.id) {
         // Update existing record
         const { error } = await (supabase
           .from("bank_details" as any)
-          .update({
-            account_name: data.accountName,
-            account_number: data.accountNumber,
-            routing_number: data.routingNumber,
-            bank_name: data.bankName
-          })
+          .update(bankPayload)
           .eq("user_id", user.id) as any);
           
         updateError = error;
@@ -130,10 +137,7 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
           .from("bank_details" as any)
           .insert({
             user_id: user.id,
-            account_name: data.accountName,
-            account_number: data.accountNumber,
-            routing_number: data.routingNumber,
-            bank_name: data.bankName
+            ...bankPayload
           }) as any);
           
         updateError = error;
@@ -162,6 +166,43 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
       setIsProcessingBank(false);
     }
   };
+
+  // Check if we should show the bank details section
+  // Only show if there are bank details and they're not marked for both purposes
+  const shouldShowBankSection = !bankDetails?.use_for_both || !bankDetails;
+
+  if (!shouldShowBankSection) {
+    return (
+      <div>
+        <h3 className="text-xl font-medium mb-3 border-b pb-2">Receive Payment Methods</h3>
+        <p className="text-gray-600 mb-4">Same bank account is being used for both payments and deposits</p>
+        
+        <div className="border rounded-md p-4">
+          <div className="flex items-center">
+            <div className="bg-green-50 p-2 rounded mr-4">
+              <Banknote className="h-5 w-5 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium">{bankDetails.bank_name}</p>
+              <p className="text-sm text-gray-500">
+                {bankDetails.account_name} • Account ending in {bankDetails.account_number?.slice(-4)}
+              </p>
+              <div className="mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded inline-block">
+                Used for both subscription and rent deposits
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsAddBankOpen(true)}
+            >
+              Edit
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -280,6 +321,22 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="flex items-center space-x-2 mt-4">
+                <Checkbox 
+                  id="useForBoth" 
+                  checked={useForBoth} 
+                  onCheckedChange={(checked) => {
+                    setUseForBoth(checked as boolean);
+                  }}
+                />
+                <label
+                  htmlFor="useForBoth"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Use this account for both subscription payments and rent deposits
+                </label>
               </div>
               
               <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4">
