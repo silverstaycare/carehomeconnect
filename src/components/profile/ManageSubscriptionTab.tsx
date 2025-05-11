@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -136,6 +135,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     checkSubscriptionStatus();
   }, [user, loadAttempt]); // Also refetch when loadAttempt changes
 
+  // Calculate total monthly payment based on subscription and property data
   const calculateTotalMonthly = () => {
     if (!subscription?.subscription) return "0.00";
     
@@ -147,6 +147,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     return total.toFixed(2);
   };
 
+  // Handle updating the subscription
   const handleUpdateSubscription = async () => {
     try {
       setIsUpdating(true);
@@ -171,10 +172,12 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     }
   };
   
+  // Handle navigating to subscription page
   const handleNavigateToSubscriptions = () => {
     navigate("/owner/subscription");
   };
 
+  // Handle managing the subscription
   const handleManageSubscription = async () => {
     if (!user) {
       toast({
@@ -212,6 +215,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     }
   };
 
+  // Handle retrying to reload subscription data
   const handleRetry = () => {
     setLoadAttempt(prev => prev + 1);
     setFetchError(null);
