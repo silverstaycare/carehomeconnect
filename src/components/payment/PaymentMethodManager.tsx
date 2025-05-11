@@ -6,10 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { PaymentMethodsList } from "@/components/payment/PaymentMethodsList";
 import { AddCardForm } from "@/components/payment/AddCardForm";
 import { PaymentMethodSelect } from "@/components/payment/PaymentMethodSelect";
-import { BankDetailsSection } from "@/components/payment/BankDetailsSection";
 import { BankDetails } from "@/types/bank";
 
-// Mock data types
+// Define the PaymentMethod interface to match what's expected
 interface PaymentMethod {
   id: string;
   type: "card" | "bank";
@@ -36,6 +35,7 @@ export function PaymentMethodManager({
 }: PaymentMethodManagerProps) {
   // State
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [defaultPaymentId, setDefaultPaymentId] = useState<string | null>(null);
   const [selectedRentBankId, setSelectedRentBankId] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export function PaymentMethodManager({
   // Mock data for demo purposes
   useEffect(() => {
     // This would normally be fetched from an API
-    const mockMethods = [
+    const mockMethods: PaymentMethod[] = [
       { 
         id: "card_1", 
         type: "card", 
@@ -67,13 +67,16 @@ export function PaymentMethodManager({
     
     // If we have bank details, add them to the mock payment methods
     if (bankDetails) {
-      const bankMethod = {
+      const bankMethod: PaymentMethod = {
         id: "bank_1",
-        type: "bank" as const,
+        type: "bank",
         name: bankDetails.account_name,
         last4: bankDetails.account_number?.slice(-4),
         bank_name: bankDetails.bank_name,
-        isDefault: false
+        isDefault: false,
+        // Add dummy values for exp_month and exp_year to satisfy the type
+        exp_month: undefined,
+        exp_year: undefined
       };
       
       mockMethods.push(bankMethod);
@@ -103,6 +106,11 @@ export function PaymentMethodManager({
     // This would normally be an API call
     console.log("Adding payment method:", data);
     // Close the dialog
+    setIsAddPaymentOpen(false);
+  };
+
+  // Handle cancel action for the add payment form
+  const handleCancel = () => {
     setIsAddPaymentOpen(false);
   };
 
@@ -143,7 +151,11 @@ export function PaymentMethodManager({
               <DialogTitle>Add Payment Method</DialogTitle>
             </DialogHeader>
             
-            <AddCardForm onSubmit={handleAddPaymentMethod} />
+            <AddCardForm 
+              onSubmit={handleAddPaymentMethod}
+              isProcessing={isProcessing}
+              onCancel={handleCancel}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -177,3 +189,4 @@ export function PaymentMethodManager({
     </div>
   );
 }
+

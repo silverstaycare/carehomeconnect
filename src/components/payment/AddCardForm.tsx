@@ -41,7 +41,7 @@ const cardSchema = z.object({
 
 export type CardFormValues = z.infer<typeof cardSchema>;
 
-interface AddCardFormProps {
+export interface AddCardFormProps {
   onSubmit: (data: CardFormValues) => void;
   isProcessing: boolean;
   onCancel: () => void;
