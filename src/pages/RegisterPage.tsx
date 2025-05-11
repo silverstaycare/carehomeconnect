@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -35,6 +34,8 @@ const RegisterPage = () => {
     }
 
     try {
+      console.log("Registering user with role:", role);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,

@@ -32,6 +32,9 @@ export function useProfileData(userId: string) {
     setIsLoading(true);
     
     try {
+      // Log for debugging
+      console.log("Fetching profile for user ID:", userId);
+      
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -48,6 +51,7 @@ export function useProfileData(userId: string) {
         return;
       }
 
+      console.log("Profile data retrieved:", data);
       setProfile(data);
     } catch (error) {
       console.error("Error fetching profile:", error);

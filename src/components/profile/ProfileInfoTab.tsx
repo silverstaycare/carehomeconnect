@@ -46,6 +46,8 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
     return "U";
   };
 
+  console.log("Current profile in ProfileInfoTab:", profile);
+
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
       <Card className="border-0 shadow-none">
