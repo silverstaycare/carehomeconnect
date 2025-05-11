@@ -245,11 +245,11 @@ export function PaymentMethodManager({
         }}
       />
       
-      {/* Payment Method Selection - Moved below the cards/bank list */}
-      <div className="mt-8 space-y-4 pt-4 border-t">
+      {/* Payment Method Selection - Now moved completely out of the border-t section */}
+      <div className="mt-8 pt-6 border-t">
         <h3 className="text-lg font-medium">Default Payment Methods</h3>
         
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 mt-4">
           <PaymentMethodSelect 
             methods={paymentMethods}
             selectedId={selectedPaymentMethod}
