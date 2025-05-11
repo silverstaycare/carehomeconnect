@@ -36,10 +36,7 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
     <div className="space-y-6">
       {/* Subscription Payment Section */}
       <Card>
-        <CardHeader>
-          <CardTitle>Payment Methods</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <CardPaymentSection 
             user={user} 
             sharedBankAccount={sharedBankAccount} 
