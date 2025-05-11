@@ -101,7 +101,6 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
         </CardContent>
       </Card>
 
-      {/* Fixed EditProfileDialog props to match the component's interface */}
       {profile && (
         <EditProfileDialog 
           userId={profile.id}
@@ -109,6 +108,8 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
           lastName={profile.last_name || ""}
           phone={profile.phone || ""}
           onProfileUpdated={() => onProfileUpdated && onProfileUpdated()}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
         />
       )}
     </div>

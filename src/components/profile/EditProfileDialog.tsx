@@ -8,8 +8,7 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogFooter,
-  DialogTrigger
+  DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,10 +41,19 @@ interface EditProfileDialogProps {
   lastName: string;
   phone?: string;
   onProfileUpdated: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function EditProfileDialog({ userId, firstName, lastName, phone, onProfileUpdated }: EditProfileDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function EditProfileDialog({ 
+  userId, 
+  firstName, 
+  lastName, 
+  phone, 
+  onProfileUpdated,
+  open,
+  onOpenChange
+}: EditProfileDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -65,14 +72,14 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
 
   // Reset form when dialog opens or props change
   useEffect(() => {
-    if (isOpen) {
+    if (open) {
       form.reset({
         displayName: [firstName, lastName].filter(Boolean).join(' ') || "",
         phone: phone || "",
         email: user?.email || "",
       });
     }
-  }, [firstName, lastName, phone, user?.email, form, isOpen]);
+  }, [firstName, lastName, phone, user?.email, form, open]);
 
   async function onSubmit(data: ProfileFormValues) {
     setIsSubmitting(true);
@@ -100,7 +107,7 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
         duration: 2000, // Explicitly set to 2 seconds
       });
       
-      setIsOpen(false);
+      onOpenChange(false);
       onProfileUpdated();
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -118,13 +125,7 @@ export function EditProfileDialog({ userId, firstName, lastName, phone, onProfil
   const userInitials = `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Pencil size={16} />
-          Edit Profile
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
