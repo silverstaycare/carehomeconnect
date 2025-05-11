@@ -172,6 +172,13 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
                     <span className="font-medium text-green-600">Active</span>
                   </div>
                 )}
+                
+                <div className="flex justify-between mt-3 pt-3 border-t border-gray-200">
+                  <span className="text-gray-600 font-medium">Total monthly payment:</span>
+                  <span className="font-bold text-care-600">
+                    ${calculateTotalMonthly(subscription.subscription)}
+                  </span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -216,4 +223,15 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
       )}
     </div>
   );
+  
+  function calculateTotalMonthly(subscriptionData: any): string {
+    if (!subscriptionData) return "0.00";
+    
+    const pricePerBed = subscriptionData.planId === 'basic' ? 59.99 : 79.99;
+    const numberOfBeds = subscriptionData.numberOfBeds || 1;
+    const boostPrice = subscriptionData.hasBoost ? 49.99 : 0;
+    
+    const total = (pricePerBed * numberOfBeds) + boostPrice;
+    return total.toFixed(2);
+  }
 }
