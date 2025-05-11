@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowUp, Home, Building, AlertCircle, RefreshCw } from "lucide-react";
+import { Check, ArrowUp, Home, Building, AlertCircle } from "lucide-react";
 import { InputWithLabel } from "@/components/ui/InputWithLabel";
 
 interface ManageSubscriptionTabProps {
@@ -406,18 +405,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
               </div>
             </CardContent>
           </Card>
-          
-          <div className="flex justify-between items-center mt-6">
-            <Button 
-              variant="outline" 
-              onClick={handleRetry}
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh Status
-            </Button>
-          </div>
         </div>
       ) : (
         <div className="space-y-6">
@@ -430,13 +417,11 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
           
           <div className="flex justify-between items-center">
             <Button 
-              variant="outline" 
               onClick={handleRetry}
               size="sm"
               className="flex items-center gap-2"
             >
-              <RefreshCw className="h-4 w-4" />
-              Refresh Status
+              Retry loading data
             </Button>
             
             <Button onClick={handleNavigateToSubscriptions}>
