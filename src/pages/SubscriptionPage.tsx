@@ -25,7 +25,7 @@ const SubscriptionPage = () => {
     <div className="container py-8 px-4 max-w-6xl">
       <div className="mb-6">
         <Button 
-          variant="ghost" 
+          variant="default" 
           onClick={handleBackToProfile} 
           className="flex items-center gap-2 mb-4"
         >
