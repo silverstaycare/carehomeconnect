@@ -1,6 +1,7 @@
 
-import { CreditCard, Banknote, PlusCircle } from "lucide-react";
+import { CreditCard, Banknote, PlusCircle, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 interface PaymentMethod {
   id: string;
@@ -72,15 +73,17 @@ export function PaymentMethodsList({
                   </p>
                   {/* Removed Default indicator */}
                 </div>
-                {onEdit && (
+                <div className="flex items-center gap-2">
                   <Button 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm"
-                    onClick={() => onEdit(method.id)}
+                    onClick={() => onEdit && onEdit(method.id)}
+                    className="p-1 h-auto"
                   >
-                    Edit
+                    <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                    <span className="sr-only">Edit</span>
                   </Button>
-                )}
+                </div>
               </div>
             </div>
           ))}
@@ -117,15 +120,17 @@ export function PaymentMethodsList({
                   </p>
                   {/* Removed Default indicator */}
                 </div>
-                {onEdit && (
+                <div className="flex items-center gap-2">
                   <Button 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm"
-                    onClick={() => onEdit(method.id)}
+                    onClick={() => onEdit && onEdit(method.id)}
+                    className="p-1 h-auto"
                   >
-                    Edit
+                    <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                    <span className="sr-only">Edit</span>
                   </Button>
-                )}
+                </div>
               </div>
             </div>
           ))}
