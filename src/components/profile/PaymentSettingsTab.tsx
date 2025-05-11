@@ -460,12 +460,19 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
                   <div className="bg-green-50 p-2 rounded mr-4">
                     <Banknote className="h-5 w-5 text-green-600" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium">{bankDetails.bank_name}</p>
                     <p className="text-sm text-gray-500">
                       {bankDetails.account_name} • Account ending in {bankDetails.account_number?.slice(-4)}
                     </p>
                   </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsAddBankOpen(true)}
+                  >
+                    Edit
+                  </Button>
                 </div>
               </div>
             </div>
@@ -589,7 +596,7 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
       <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Bank Details</DialogTitle>
+            <DialogTitle>{bankDetails ? "Edit Bank Details" : "Add Bank Details"}</DialogTitle>
           </DialogHeader>
           
           <Form {...bankForm}>
@@ -680,7 +687,7 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
                       Saving...
                     </>
                   ) : (
-                    "Save Bank Details"
+                    bankDetails ? "Update Bank Details" : "Save Bank Details"
                   )}
                 </Button>
               </DialogFooter>
