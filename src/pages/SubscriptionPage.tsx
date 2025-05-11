@@ -1,6 +1,6 @@
 
-import { useEffect, useSearchParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import SubscriptionManager from '@/components/subscription/SubscriptionManager';
 
 const SubscriptionPage = () => {
