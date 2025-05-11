@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -11,7 +11,12 @@ import { BankDetailsTab } from "@/components/profile/BankDetailsTab";
 import { ManageSubscriptionTab } from "@/components/profile/ManageSubscriptionTab";
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState("profile");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(() => {
+    // Check if we have a tab parameter in the location state
+    return location.state?.activeTab || "profile";
+  });
+  
   const { user } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<{

@@ -18,7 +18,8 @@ const SubscriptionPage = () => {
   }, [searchParams, navigate]);
 
   const handleBackToProfile = () => {
-    navigate('/profile');
+    // Navigate to profile page with the manage tab active
+    navigate('/profile', { state: { activeTab: 'manage' } });
   };
 
   return (
@@ -30,7 +31,7 @@ const SubscriptionPage = () => {
           className="flex items-center gap-2 mb-4"
         >
           <ArrowLeft size={16} />
-          Back to Profile
+          Back to Subscription Settings
         </Button>
       </div>
       <SubscriptionManager />
