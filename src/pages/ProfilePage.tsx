@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { CreditCard, Banknote } from "lucide-react";
+import { CreditCard, Banknote, Home } from "lucide-react";
 import { ProfileInfoTab } from "@/components/profile/ProfileInfoTab";
 import { PaymentSettingsTab } from "@/components/profile/PaymentSettingsTab";
 import { BankDetailsTab } from "@/components/profile/BankDetailsTab";
+import { ManageSubscriptionTab } from "@/components/profile/ManageSubscriptionTab";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -71,8 +72,12 @@ export default function ProfilePage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile Settings</TabsTrigger>
+          <TabsTrigger value="manage" className="flex items-center gap-2">
+            <Home className="h-4 w-4" />
+            <span>Manage Subscription</span>
+          </TabsTrigger>
           <TabsTrigger value="payment" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
             <span>Payment Settings</span>
@@ -93,6 +98,10 @@ export default function ProfilePage() {
           />
         </TabsContent>
         
+        <TabsContent value="manage" className="pt-4">
+          <ManageSubscriptionTab user={user} />
+        </TabsContent>
+
         <TabsContent value="payment" className="pt-4">
           <PaymentSettingsTab user={user} />
         </TabsContent>
