@@ -1,5 +1,4 @@
-
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -50,9 +49,6 @@ export function SubscriptionDetails({
     <Card className={`border-2 ${isPro ? 'border-care-500' : 'border-blue-400'}`}>
       <CardHeader>
         <CardTitle>Current Plan: {isPro ? 'Pro' : 'Starter'}</CardTitle>
-        <CardDescription>
-          Subscription details and management
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
