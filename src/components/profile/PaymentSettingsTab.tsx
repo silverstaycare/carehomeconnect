@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowUp } from "lucide-react";
+import { Check, ArrowUp, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Subscription } from "@/types/subscription";
 
@@ -17,6 +17,7 @@ interface PaymentSettingsTabProps {
 export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
+  const [isManagingSubscription, setIsManagingSubscription] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -50,19 +51,43 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
 
   const handleManageSubscription = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
-      if (error) throw error;
+      setIsManagingSubscription(true);
       
-      if (data.url) {
+      // First try customer portal
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) {
+        console.error("Error accessing customer portal:", error);
+        
+        // If customer portal fails, redirect to subscription page instead as fallback
+        navigate("/owner/subscription");
+        
+        toast({
+          title: "Redirecting",
+          description: "Opening subscription management page",
+        });
+        
+        return;
+      }
+      
+      if (data?.url) {
         window.location.href = data.url;
+      } else {
+        // If no URL was returned, use fallback
+        navigate("/owner/subscription");
       }
     } catch (error) {
       console.error("Error accessing customer portal:", error);
+      
+      // Fallback to subscription page if anything fails
+      navigate("/owner/subscription");
+      
       toast({
-        title: "Error",
-        description: "Failed to access subscription management portal",
-        variant: "destructive",
+        title: "Redirecting",
+        description: "Opening subscription management page",
       });
+    } finally {
+      setIsManagingSubscription(false);
     }
   };
 
@@ -212,8 +237,18 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
               Refresh Status
             </Button>
             
-            <Button onClick={handleManageSubscription}>
-              Manage Subscription
+            <Button 
+              onClick={handleManageSubscription}
+              disabled={isManagingSubscription}
+            >
+              {isManagingSubscription ? (
+                <>
+                  <Spinner size="sm" className="mr-2" />
+                  Please wait...
+                </>
+              ) : (
+                "Manage Subscription"
+              )}
             </Button>
           </div>
         </div>
@@ -255,3 +290,4 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
     return total.toFixed(2);
   }
 }
+
