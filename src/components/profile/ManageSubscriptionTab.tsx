@@ -4,7 +4,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { useSubscriptionData } from "@/hooks/useSubscriptionData";
 import { useProfileData } from "@/hooks/useProfileData";
 import { NoActiveSubscription } from "./subscription/NoActiveSubscription";
-import { UpgradePrompt } from "./subscription/UpgradePrompt";
 import { SubscriptionDetails } from "./subscription/SubscriptionDetails";
 
 interface ManageSubscriptionTabProps {
@@ -62,8 +61,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
         />
       ) : (
         <div className="space-y-6">
-          {subscription?.planId === 'basic' && <UpgradePrompt />}
-          
           <SubscriptionDetails
             subscription={subscription}
             profile={profile}
