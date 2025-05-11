@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,6 +43,7 @@ export function PaymentMethodManager({
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(null);
   const [bankMethods, setBankMethods] = useState<PaymentMethod[]>([]);
   const [useForBoth, setUseForBoth] = useState(false);
+  const [onEdit, setOnEdit] = useState<((id: string) => void) | undefined>(undefined);
   
   // Mock data for demo purposes
   useEffect(() => {
@@ -162,15 +162,13 @@ export function PaymentMethodManager({
       {/* Subscription Payment Methods Section */}
       <div>
         <h3 className="text-lg font-medium mb-4">Payment Methods</h3>
-        <p className="text-gray-600 mb-4">
-          Manage your payment methods for subscription payments
-        </p>
         
         <PaymentMethodsList 
           methods={paymentMethods}
           onSetDefault={handleSetDefault}
           onAddCard={handleAddCardClick}
           onAddBank={handleAddBankClick}
+          onEdit={onEdit}
         />
         
         {/* Add Payment Method Dialog */}
