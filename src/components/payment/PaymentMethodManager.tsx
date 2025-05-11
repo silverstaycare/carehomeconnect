@@ -41,6 +41,7 @@ export function PaymentMethodManager({
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [defaultPaymentId, setDefaultPaymentId] = useState<string | null>(null);
   const [selectedRentBankId, setSelectedRentBankId] = useState<string | null>(null);
+  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(null);
   const [bankMethods, setBankMethods] = useState<PaymentMethod[]>([]);
   const [useForBoth, setUseForBoth] = useState(false);
   
@@ -91,7 +92,9 @@ export function PaymentMethodManager({
     }
     
     setPaymentMethods(mockMethods);
-    setDefaultPaymentId(mockMethods.find(m => m.isDefault)?.id || null);
+    const defaultMethod = mockMethods.find(m => m.isDefault);
+    setDefaultPaymentId(defaultMethod?.id || null);
+    setSelectedSubscriptionId(defaultMethod?.id || null);
   }, [bankDetails, sharedBankAccount]);
   
   // Handle setting default payment method
@@ -123,6 +126,13 @@ export function PaymentMethodManager({
     setSelectedRentBankId(id);
     // This would normally update a setting in the backend
     console.log("Selected bank account for rent payments:", id);
+  };
+  
+  // Select payment method for subscription
+  const handleSelectSubscription = (id: string) => {
+    setSelectedSubscriptionId(id);
+    // This would normally update a setting in the backend
+    console.log("Selected payment method for subscription:", id);
   };
 
   // Open add card dialog
@@ -200,6 +210,27 @@ export function PaymentMethodManager({
             />
           </DialogContent>
         </Dialog>
+      </div>
+      
+      {/* Pay for Subscription Section */}
+      <div className="border-t border-gray-200 pt-6">
+        <h3 className="text-lg font-medium mb-4">Pay for Subscription</h3>
+        <p className="text-gray-600 mb-4">
+          Select payment method for subscription
+        </p>
+        
+        {paymentMethods.length > 0 ? (
+          <PaymentMethodSelect
+            methods={paymentMethods}
+            selectedId={selectedSubscriptionId}
+            onSelect={handleSelectSubscription}
+            label=""
+          />
+        ) : (
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
+            <p className="text-gray-600">No payment methods added yet</p>
+          </div>
+        )}
       </div>
       
       {/* Separator for visual distinction */}
