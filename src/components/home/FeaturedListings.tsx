@@ -182,14 +182,14 @@ const FeaturedListings = () => {
               <CardContent className="pt-6">
                 <h3 className="font-bold text-xl mb-1">{home.name}</h3>
                 <p className="text-gray-600 mb-4">{home.city}, {home.state}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {home.amenities.slice(0, 3).map(amenity => (
-                    <span key={amenity} className="amenity-badge">
-                      {amenity}
+                <div className="flex flex-wrap gap-2 mb-4 h-8 overflow-hidden">
+                  {home.amenities.length > 0 ? (
+                    <span className="amenity-badge">
+                      {home.amenities[0]}
+                      {home.amenities.length > 1 && ` +${home.amenities.length - 1} more`}
                     </span>
-                  ))}
-                  {home.amenities.length > 3 && (
-                    <span className="amenity-badge">+{home.amenities.length - 3} more</span>
+                  ) : (
+                    <span className="amenity-badge">No amenities listed</span>
                   )}
                 </div>
                 {isAuthenticated ? (

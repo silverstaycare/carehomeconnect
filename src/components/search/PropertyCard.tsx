@@ -98,16 +98,14 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
       <CardContent className="pt-6">
         <h3 className="font-bold text-xl mb-1">{property.name}</h3>
         <p className="text-gray-600 mb-4">{property.location}</p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {property.amenities.slice(0, 3).map(amenity => (
-            <span key={amenity} className="amenity-badge">
-              {amenity}
-            </span>
-          ))}
-          {property.amenities.length > 3 && (
+        <div className="flex flex-wrap gap-2 mb-4 h-8 overflow-hidden">
+          {property.amenities.length > 0 ? (
             <span className="amenity-badge">
-              +{property.amenities.length - 3} more
+              {property.amenities[0]}
+              {property.amenities.length > 1 && ` +${property.amenities.length - 1} more`}
             </span>
+          ) : (
+            <span className="amenity-badge">No amenities listed</span>
           )}
         </div>
         {isAuthenticated ? (

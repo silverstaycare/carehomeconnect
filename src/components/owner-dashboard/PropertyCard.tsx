@@ -22,9 +22,11 @@ export const PropertyCard = ({
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
   }).format(property.price || 0);
+  
   const handleCardClick = () => {
     navigate(`/property/${property.id}`);
   };
+  
   return <Card className="h-full cursor-pointer transition-all duration-300 hover:shadow-lg" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onClick={handleCardClick}>
       <CardContent className="p-0 flex flex-col h-full">
         <div className="relative">
@@ -52,8 +54,6 @@ export const PropertyCard = ({
             <div className="flex items-center">
               <span className="text-sm font-medium">Starting at {formattedPrice}/month</span>
             </div>
-            
-            
           </div>
         </div>
       </CardContent>
