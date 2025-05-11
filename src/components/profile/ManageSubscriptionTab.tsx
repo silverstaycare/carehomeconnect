@@ -229,7 +229,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
   if (isCheckingSubscription || isLoadingProperties) {
     return (
       <div className="bg-white p-6 rounded-lg border shadow-sm">
-        <h2 className="text-2xl font-bold mb-4">Subscription Management</h2>
         <div className="flex items-center justify-center p-8">
           <Spinner size="lg" />
           <p className="ml-3 text-gray-600">Loading subscription information...</p>
@@ -242,7 +241,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
   if (!subscription && fetchError) {
     return (
       <div className="bg-white p-6 rounded-lg border shadow-sm">
-        <h2 className="text-2xl font-bold mb-4">Subscription Management</h2>
         <div className="p-6 border border-red-200 bg-red-50 rounded-md mb-4">
           <div className="flex items-start gap-3">
             <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
@@ -267,8 +265,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
   // Regular content view
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
-      <h2 className="text-2xl font-bold mb-4">Subscription Management</h2>
-      
       {fetchError && (
         <div className="mb-4 p-3 border border-amber-200 bg-amber-50 rounded-md">
           <div className="flex items-start gap-2">
