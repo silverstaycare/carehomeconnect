@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -140,7 +141,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     if (!subscription?.subscription) return "0.00";
     
     const pricePerBed = subscription.subscription.planId === 'basic' ? 59.99 : 79.99;
-    const calculatedTotalBeds = numberOfProperties * numberOfBedsPerProperty;
+    const calculatedTotalBeds = totalBeds;
     const boostPrice = subscription.subscription.hasBoost ? 49.99 : 0;
     
     const total = (pricePerBed * calculatedTotalBeds) + boostPrice;
@@ -318,41 +319,26 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <InputWithLabel
-                    id="properties"
-                    label="Number of Properties"
-                    type="number"
-                    min={1}
-                    value={numberOfProperties}
-                    onChange={(e) => {
-                      const count = Math.max(1, parseInt(e.target.value) || 1);
-                      setNumberOfProperties(count);
-                    }}
-                    icon={<Building className="h-4 w-4 text-gray-500" />}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    You currently have {propertiesData.length} active properties
-                  </p>
+                  <p className="text-sm font-medium mb-1">Current Properties</p>
+                  <div className="flex items-center bg-gray-50 p-3 rounded-md">
+                    <Building className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="font-medium">{propertiesData.length}</span>
+                    <span className="text-gray-500 ml-1">active properties</span>
+                  </div>
                 </div>
                 
                 <div>
-                  <InputWithLabel
-                    id="beds"
-                    label="Beds per Property"
-                    type="number"
-                    min={1}
-                    value={numberOfBedsPerProperty}
-                    onChange={(e) => {
-                      const count = Math.max(1, parseInt(e.target.value) || 1);
-                      setNumberOfBedsPerProperty(count);
-                    }}
-                    icon={<Home className="h-4 w-4 text-gray-500" />}
-                  />
-                  {propertiesData.length > 0 && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Your properties average {Math.round(totalBeds / propertiesData.length)} beds per property
-                    </p>
-                  )}
+                  <p className="text-sm font-medium mb-1">Beds</p>
+                  <div className="flex items-center bg-gray-50 p-3 rounded-md">
+                    <Home className="h-5 w-5 text-gray-500 mr-2" />
+                    <span className="font-medium">{totalBeds}</span>
+                    <span className="text-gray-500 ml-1">total beds</span>
+                    {propertiesData.length > 0 && (
+                      <span className="text-gray-500 ml-1">
+                        ({Math.round(totalBeds / propertiesData.length)} per property avg.)
+                      </span>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="mt-6 bg-gray-50 p-4 rounded-md">
@@ -365,17 +351,12 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                   
                   <div className="flex justify-between mb-2">
                     <span className="text-gray-600">Properties:</span>
-                    <span className="font-medium">{numberOfProperties}</span>
-                  </div>
-                  
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Beds per property:</span>
-                    <span className="font-medium">{numberOfBedsPerProperty}</span>
+                    <span className="font-medium">{propertiesData.length}</span>
                   </div>
                   
                   <div className="flex justify-between mb-2">
                     <span className="text-gray-600">Total beds:</span>
-                    <span className="font-medium">{numberOfProperties * numberOfBedsPerProperty}</span>
+                    <span className="font-medium">{totalBeds}</span>
                   </div>
                   
                   {subscription.subscription?.hasBoost && (
@@ -392,18 +373,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                     </span>
                   </div>
                 </div>
-
-                {numberOfProperties !== propertiesData.length && (
-                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                    <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-amber-800">
-                        Your subscription settings don't match your actual property count. 
-                        This may affect billing.
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
               
               <div className="mt-6 flex justify-end gap-3">
