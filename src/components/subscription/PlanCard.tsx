@@ -33,6 +33,9 @@ export const PlanCard = ({
     }
     
     if (onSelect) {
+      if (plan.id === 'basic') {
+        return 'Downgrade';
+      }
       return 'Select Plan';
     }
     
