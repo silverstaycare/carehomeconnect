@@ -54,18 +54,9 @@ serve(async (req) => {
         quantity: numberOfBeds,
       });
     } else if (planId === 'basic') {
-      // Create price data for basic plan
+      // Use the specific Stripe Price ID for Starter plan
       lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: `Starter Plan (${numberOfBeds} bed${numberOfBeds > 1 ? 's' : ''})`,
-          },
-          unit_amount: 5999, // $59.99 per bed in cents
-          recurring: {
-            interval: 'month',
-          },
-        },
+        price: 'price_1RNYneIpb6JiWPFADhjn8JtB',
         quantity: numberOfBeds,
       });
     } else {
