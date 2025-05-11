@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -247,18 +248,9 @@ const SubscriptionPage = () => {
         ) : currentSubscription?.status === 'active' ? (
           <div className="mb-4">
             <Button 
-              variant="outline"
-              onClick={() => checkSubscriptionStatus()}
-              disabled={checkingSubscription}
-              className="mb-4"
-            >
-              Refresh Subscription Status
-            </Button>
-            
-            <Button 
               onClick={handleManageSubscription}
               disabled={isProcessing}
-              className="ml-2 mb-4"
+              className="mb-4"
             >
               Manage Subscription
             </Button>
