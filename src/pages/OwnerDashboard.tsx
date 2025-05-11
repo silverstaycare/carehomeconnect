@@ -1,19 +1,30 @@
 
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useOwnerProperties } from "@/hooks/useOwnerProperties";
 import { PropertiesGrid } from "@/components/owner-dashboard/PropertiesGrid";
 import { EmptyState } from "@/components/owner-dashboard/EmptyState";
 import { DashboardHeader } from "@/components/owner-dashboard/DashboardHeader";
+import { Spinner } from "@/components/ui/spinner";
 
 const OwnerDashboard = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { properties, profile, isLoading, handleProfileUpdated } = useOwnerProperties();
+  
+  // Check for payment tab parameter
+  useEffect(() => {
+    const paymentTab = searchParams.get('paymentTab');
+    if (paymentTab === 'true') {
+      navigate('/profile?tab=payment');
+    }
+  }, [searchParams, navigate]);
 
   // If loading, show a loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[500px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Spinner size="md" />
       </div>
     );
   }
