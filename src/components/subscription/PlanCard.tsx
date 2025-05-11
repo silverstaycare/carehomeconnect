@@ -1,3 +1,4 @@
+
 import { Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -86,8 +87,8 @@ export const PlanCard = ({
       <CardFooter className="mt-auto">
         {!isCurrentPlan && (
           <Button 
-            className={`w-full ${plan.recommended ? 'bg-care-600 hover:bg-care-700' : ''}`}
-            variant={plan.recommended ? 'default' : 'outline'}
+            className={`w-full ${plan.recommended ? 'bg-care-600 hover:bg-care-700' : plan.id === 'pro' ? 'bg-care-500 hover:bg-care-600' : ''}`}
+            variant={plan.id === 'pro' || plan.recommended ? 'default' : 'outline'}
             onClick={onSelect || onSubscribe}
           >
             {getButtonLabel()}
