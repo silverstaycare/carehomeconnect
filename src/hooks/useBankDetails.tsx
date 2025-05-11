@@ -22,6 +22,8 @@ export function useBankDetails(userId: string) {
     if (!userId) return;
     
     try {
+      console.log("Fetching bank details for user:", userId);
+      
       const { data, error } = await supabase
         .from("bank_details")
         .select()
@@ -38,6 +40,8 @@ export function useBankDetails(userId: string) {
         return;
       }
 
+      console.log("Bank details fetched:", data);
+      
       if (data) {
         setBankDetails(data);
         setUseForBoth(data.use_for_both || false);
@@ -90,7 +94,8 @@ export function useBankDetails(userId: string) {
         const { error } = await supabase
           .from("bank_details")
           .update(bankPayload)
-          .eq("user_id", userId);
+          .eq("id", existingData.id) // Use the record ID for better security
+          .eq("user_id", userId);    // Make sure we're updating the user's own record
           
         updateError = error;
       } else {
@@ -139,7 +144,8 @@ export function useBankDetails(userId: string) {
       const { error } = await supabase
         .from("bank_details")
         .delete()
-        .eq("user_id", userId);
+        .eq("id", bankDetails.id)    // Use the record ID for better security
+        .eq("user_id", userId);      // Make sure we're deleting the user's own record
         
       if (error) throw error;
       
@@ -167,7 +173,13 @@ export function useBankDetails(userId: string) {
 
   // Load bank details when component mounts
   useEffect(() => {
-    fetchBankDetails();
+    if (userId) {
+      fetchBankDetails();
+    } else {
+      // Reset state if no user ID provided
+      setBankDetails(null);
+      setUseForBoth(false);
+    }
   }, [userId]);
 
   return {

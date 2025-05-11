@@ -109,10 +109,12 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
     if (!user) return;
     
     try {
+      console.log("Fetching bank details for payment section, user:", user.id);
+      
       const { data, error } = await supabase
         .from("bank_details")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", user.id) // Make sure we filter by the current user's ID
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
@@ -120,6 +122,8 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
         return;
       }
 
+      console.log("Bank details in payment section:", data);
+      
       if (data) {
         setBankDetails(data);
         setUseForBoth(data.use_for_both || false);
@@ -207,7 +211,8 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
         const { error } = await supabase
           .from("bank_details")
           .update(bankPayload)
-          .eq("user_id", user.id);
+          .eq("id", existingData.id)  // Use the record ID for better security
+          .eq("user_id", user.id);    // Ensure we're updating the user's own record
           
         updateError = error;
       } else {
