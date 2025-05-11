@@ -15,7 +15,7 @@ interface DashboardHeaderProps {
   onProfileUpdated: () => void;
 }
 
-export function DashboardHeader({ profile }: DashboardHeaderProps) {
+export function DashboardHeader({ profile, onProfileUpdated }: DashboardHeaderProps) {
   const navigate = useNavigate();
   const displayName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : "Owner";
   
