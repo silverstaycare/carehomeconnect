@@ -1,141 +1,111 @@
-
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { EditProfileDialog } from "./EditProfileDialog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Check, Edit, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useProfileData, ProfileFormValues } from "@/hooks/useProfileData";
-
-const profileFormSchema = z.object({
-  displayName: z.string().min(2, {
-    message: "Display name must be at least 2 characters",
-  }),
-  phone: z.string().optional(),
-  email: z.string().email().optional(),
-});
+import { useProfileData } from "@/hooks/useProfileData";
 
 interface ProfileInfoTabProps {
   user: any;
-  onProfileUpdated?: () => void;
+  onProfileUpdated?: () => Promise<void>;
 }
 
 export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) {
-  const { profile, isSubmitting, updateProfile } = useProfileData(user?.id);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { profile, isLoading, updateProfile } = useProfileData(user?.id);
 
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileFormSchema),
-    defaultValues: {
-      displayName: [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || "",
-      phone: profile?.phone || "",
-      email: user?.email || "",
-    },
-  });
+  // Handle opening the edit dialog
+  const handleEditProfile = () => {
+    setIsEditDialogOpen(true);
+  };
 
-  // Update form values when profile data changes
-  React.useEffect(() => {
-    if (profile) {
-      form.reset({
-        displayName: [profile.first_name, profile.last_name].filter(Boolean).join(' ') || "",
-        phone: profile?.phone || "",
-        email: user?.email || "",
-      });
-    }
-  }, [profile, user?.email, form]);
-
-  async function onSubmit(data: ProfileFormValues) {
-    const success = await updateProfile(data);
+  // Handle saving profile changes
+  const handleSaveProfile = async (formData: any) => {
+    const success = await updateProfile(formData);
     if (success && onProfileUpdated) {
-      onProfileUpdated();
+      await onProfileUpdated();
     }
-  }
+    return success;
+  };
 
-  const userInitials = [
-    profile?.first_name?.charAt(0) || "",
-    profile?.last_name?.charAt(0) || "",
-  ].join('').toUpperCase();
+  // Formatted display name
+  const getFullName = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    }
+    return "Your Name";
+  };
+
+  // Get initials for avatar
+  const getInitials = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
+    }
+    return "U";
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
-      <div className="flex items-center gap-4 mb-6">
-        <Avatar className="h-16 w-16 text-xl">
-          <AvatarFallback>{userInitials}</AvatarFallback>
-        </Avatar>
-        <div>
-          <h2 className="font-medium text-lg">
-            {[profile?.first_name, profile?.last_name].filter(Boolean).join(' ')}
-          </h2>
-          <p className="text-gray-500">{user?.email}</p>
-        </div>
-      </div>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email (Login)</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="Email address" 
-                    {...field} 
-                    disabled 
-                    className="bg-muted cursor-not-allowed" 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="displayName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone Number (Optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your phone number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
+      <Card className="border-0 shadow-none">
+        <CardHeader className="px-0 pt-0">
+          <CardTitle>Profile Information</CardTitle>
+          <CardDescription>
+            Manage your personal information
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="px-0 space-y-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 border">
+              <AvatarFallback className="bg-care-100 text-care-800">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="text-lg font-medium">{getFullName()}</h3>
+              <p className="text-gray-500">{user?.email}</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Full Name</p>
+                <p className="font-medium">{getFullName()}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="font-medium">{user?.email}</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Phone</p>
+                <p className="font-medium">{profile?.phone || "Not provided"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Account Type</p>
+                <p className="font-medium capitalize">{profile?.role || "User"}</p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Saving..." : "Save Changes"}
+            <Button onClick={handleEditProfile} className="flex items-center gap-2">
+              <Edit className="h-4 w-4" />
+              Edit Profile
             </Button>
           </div>
-        </form>
-      </Form>
+        </CardContent>
+      </Card>
+
+      <EditProfileDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        profile={profile}
+        onSave={handleSaveProfile}
+      />
     </div>
   );
 }
