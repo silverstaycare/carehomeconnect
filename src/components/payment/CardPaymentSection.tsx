@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -25,6 +24,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
+import { BankDetails } from "@/types/bank";
+import { BankDetailsDisplay } from "@/components/payment/BankDetailsDisplay";
 
 // Secure schema with improved validation
 const cardSchema = z.object({
@@ -61,9 +62,15 @@ type BankFormValues = z.infer<typeof bankSchema>;
 
 interface CardPaymentSectionProps {
   user: any;
+  sharedBankAccount?: boolean;
+  bankDetails?: BankDetails | null;
 }
 
-export function CardPaymentSection({ user }: CardPaymentSectionProps) {
+export function CardPaymentSection({ 
+  user, 
+  sharedBankAccount = false,
+  bankDetails = null
+}: CardPaymentSectionProps) {
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -78,9 +85,20 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
       exp_year: 2025,
     }
   ]);
-  const [bankDetails, setBankDetails] = useState<any>(null);
+  const [localBankDetails, setLocalBankDetails] = useState<BankDetails | null>(null);
   const [useForBoth, setUseForBoth] = useState(false);
   const { toast } = useToast();
+
+  // Update local bank details when prop changes
+  useEffect(() => {
+    if (sharedBankAccount && bankDetails) {
+      setLocalBankDetails(bankDetails);
+      setUseForBoth(true);
+    } else if (bankDetails?.use_for_both) {
+      setLocalBankDetails(bankDetails);
+      setUseForBoth(true);
+    }
+  }, [bankDetails, sharedBankAccount]);
 
   // Form for credit card with improved security
   const cardForm = useForm<CardFormValues>({
@@ -108,6 +126,11 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
   const fetchBankDetails = async () => {
     if (!user) return;
     
+    // Skip fetching if we already have shared bank details
+    if (sharedBankAccount && bankDetails) {
+      return;
+    }
+    
     try {
       console.log("Fetching bank details for payment section, user:", user.id);
       
@@ -125,7 +148,7 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
       console.log("Bank details in payment section:", data);
       
       if (data) {
-        setBankDetails(data);
+        setLocalBankDetails(data);
         setUseForBoth(data.use_for_both || false);
         
         // Pre-fill the form if we're editing
@@ -289,7 +312,8 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
         </div>
       )}
       
-      {bankDetails && (
+      {/* If bank details are shared from BankDetailsSection, show them here */}
+      {sharedBankAccount && bankDetails && (
         <div className="border rounded-md p-4">
           <div className="flex items-center">
             <div className="bg-green-50 p-2 rounded mr-4">
@@ -300,26 +324,21 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
               <p className="text-sm text-gray-500">
                 {bankDetails.account_name} • Account ending in {bankDetails.account_number?.slice(-4)}
               </p>
-              {bankDetails.use_for_both && (
-                <div className="mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded inline-block">
-                  Used for both subscription and rent deposits
-                </div>
-              )}
+              <div className="mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded inline-block">
+                Used for both subscription and rent deposits
+              </div>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                toast({
-                  title: "Bank Details",
-                  description: "This bank account is set up for payments",
-                });
-              }}
-            >
-              Details
-            </Button>
           </div>
         </div>
+      )}
+      
+      {/* Show local bank details if they exist and aren't shared */}
+      {!sharedBankAccount && localBankDetails && (
+        <BankDetailsDisplay 
+          bankDetails={localBankDetails}
+          onEdit={() => setIsAddBankOpen(true)}
+          isForBothPayments={useForBoth}
+        />
       )}
       
       <div className="flex flex-wrap gap-3 mt-6">
@@ -331,13 +350,15 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
           Add Card
         </Button>
         
-        <Button
-          variant="outline"
-          onClick={() => setIsAddBankOpen(true)}
-        >
-          <Banknote className="mr-2 h-4 w-4" />
-          Add Bank Details
-        </Button>
+        {!sharedBankAccount && (
+          <Button
+            variant="outline"
+            onClick={() => setIsAddBankOpen(true)}
+          >
+            <Banknote className="mr-2 h-4 w-4" />
+            Add Bank Details
+          </Button>
+        )}
       </div>
 
       {/* Add Card Dialog */}
@@ -463,57 +484,24 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
         </DialogContent>
       </Dialog>
       
-      {/* Add Bank Details Dialog */}
-      <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{bankDetails ? "Edit Bank Details" : "Add Bank Details"}</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...bankForm}>
-            <form onSubmit={bankForm.handleSubmit(onSubmitBank)} className="space-y-4">
-              <FormField
-                control={bankForm.control}
-                name="accountName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Account Holder Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter account holder name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={bankForm.control}
-                name="bankName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Bank Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter bank name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Add Bank Details Dialog - only shown if not using shared bank details */}
+      {!sharedBankAccount && (
+        <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{bankDetails ? "Edit Bank Details" : "Add Bank Details"}</DialogTitle>
+            </DialogHeader>
+            
+            <Form {...bankForm}>
+              <form onSubmit={bankForm.handleSubmit(onSubmitBank)} className="space-y-4">
                 <FormField
                   control={bankForm.control}
-                  name="accountNumber"
+                  name="accountName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Account Number</FormLabel>
+                      <FormLabel>Account Holder Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Enter account number" 
-                          type="password" 
-                          autoComplete="off"
-                          {...field} 
-                        />
+                        <Input placeholder="Enter account holder name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -522,67 +510,102 @@ export function CardPaymentSection({ user }: CardPaymentSectionProps) {
                 
                 <FormField
                   control={bankForm.control}
-                  name="routingNumber"
+                  name="bankName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Routing Number</FormLabel>
+                      <FormLabel>Bank Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="9 digits" 
-                          maxLength={9}
-                          {...field} 
-                        />
+                        <Input placeholder="Enter bank name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-              
-              <div className="flex items-center space-x-2 mt-4">
-                <Checkbox 
-                  id="useForBoth" 
-                  checked={useForBoth} 
-                  onCheckedChange={(checked) => {
-                    setUseForBoth(checked as boolean);
-                  }}
-                />
-                <label
-                  htmlFor="useForBoth"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Use this account for both subscription payments and rent deposits
-                </label>
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4 flex items-start gap-2">
-                <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p>Your banking information is stored securely with encryption and is only accessible by you.</p>
-              </div>
-              
-              <DialogFooter className="mt-6">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsAddBankOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isProcessingBank}>
-                  {isProcessingBank ? (
-                    <>
-                      <Spinner size="sm" className="mr-2" />
-                      Saving...
-                    </>
-                  ) : (
-                    bankDetails ? "Update Bank Details" : "Save Bank Details"
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={bankForm.control}
+                    name="accountNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Account Number</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter account number" 
+                            type="password" 
+                            autoComplete="off"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={bankForm.control}
+                    name="routingNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Routing Number</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="9 digits" 
+                            maxLength={9}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2 mt-4">
+                  <Checkbox 
+                    id="useForBoth" 
+                    checked={useForBoth} 
+                    onCheckedChange={(checked) => {
+                      setUseForBoth(checked as boolean);
+                    }}
+                  />
+                  <label
+                    htmlFor="useForBoth"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Use this account for both subscription payments and rent deposits
+                  </label>
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4 flex items-start gap-2">
+                  <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <p>Your banking information is stored securely with encryption and is only accessible by you.</p>
+                </div>
+                
+                <DialogFooter className="mt-6">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsAddBankOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isProcessingBank}>
+                    {isProcessingBank ? (
+                      <>
+                        <Spinner size="sm" className="mr-2" />
+                        Saving...
+                      </>
+                    ) : (
+                      bankDetails ? "Update Bank Details" : "Save Bank Details"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

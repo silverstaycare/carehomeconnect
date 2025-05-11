@@ -15,15 +15,20 @@ import { BankDetailsDisplay } from "@/components/payment/BankDetailsDisplay";
 
 interface BankDetailsSectionProps {
   user: any;
+  onBankDetailsChanged?: () => void;
 }
 
-export function BankDetailsSection({ user }: BankDetailsSectionProps) {
+export function BankDetailsSection({ 
+  user,
+  onBankDetailsChanged
+}: BankDetailsSectionProps) {
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const { 
     bankDetails, 
     isProcessing, 
     useForBoth, 
-    setUseForBoth, 
+    setUseForBoth,
+    fetchBankDetails,
     saveBankDetails 
   } = useBankDetails(user?.id);
 
@@ -32,13 +37,13 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
     const success = await saveBankDetails(data);
     if (success) {
       setIsAddBankOpen(false);
+      // Notify parent component that bank details have changed
+      if (onBankDetailsChanged) {
+        onBankDetailsChanged();
+      }
     }
     return success;
   };
-
-  // Check if we should show the bank details section
-  // Only show if there are bank details and they're not marked for both purposes
-  const shouldShowBankSection = !bankDetails?.use_for_both || !bankDetails;
 
   // Prepare default values for the form when editing
   const getFormDefaultValues = (): BankFormValues => {
@@ -58,30 +63,20 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
     };
   };
 
-  if (!shouldShowBankSection) {
-    return (
-      <div>
-        <h3 className="text-xl font-medium mb-3 border-b pb-2">Receive Payment Methods</h3>
-        <p className="text-gray-600 mb-4">Same bank account is being used for both payments and deposits</p>
-        
-        <BankDetailsDisplay 
-          bankDetails={bankDetails} 
-          onEdit={() => setIsAddBankOpen(true)}
-          isForBothPayments={true}
-        />
-      </div>
-    );
-  }
-
   return (
     <div>
       <h3 className="text-xl font-medium mb-3 border-b pb-2">Receive Payment Methods</h3>
-      <p className="text-gray-600 mb-4">Add your bank details to receive payments from bookings</p>
+      <p className="text-gray-600 mb-4">
+        {bankDetails?.use_for_both 
+          ? "Same bank account is being used for both payments and deposits" 
+          : "Add your bank details to receive payments from bookings"}
+      </p>
       
       {bankDetails ? (
         <BankDetailsDisplay 
           bankDetails={bankDetails} 
           onEdit={() => setIsAddBankOpen(true)}
+          isForBothPayments={bankDetails.use_for_both || false}
         />
       ) : (
         <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
