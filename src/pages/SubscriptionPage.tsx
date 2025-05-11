@@ -1,6 +1,15 @@
+
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Check } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
+
 import type { Subscription, SubscriptionPlan } from "@/types/subscription";
 import { BoostAddOn } from "@/components/subscription/BoostAddOn";
 import { BedsInput } from "@/components/subscription/BedsInput";
@@ -10,13 +19,35 @@ import { PromoCodeBox } from "@/components/subscription/PromoCodeBox";
 
 const SubscriptionPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const { toast } = useToast();
+  
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [boostEnabled, setBoostEnabled] = useState(false);
   const [numberOfBeds, setNumberOfBeds] = useState(1);
   const boostPrice = 49.99;
+  
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showCanceledDialog, setShowCanceledDialog] = useState(false);
+  const [checkingSubscription, setCheckingSubscription] = useState(false);
+
+  // Check for success or canceled status from URL
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      setShowSuccessDialog(true);
+      checkSubscriptionStatus();
+    } else if (searchParams.get('canceled') === 'true') {
+      setShowCanceledDialog(true);
+    }
+    // Clean up URL params
+    if (searchParams.has('success') || searchParams.has('canceled')) {
+      navigate('/owner/subscription', { replace: true });
+    }
+  }, [searchParams, navigate]);
 
   useEffect(() => {
     const mockPlans: SubscriptionPlan[] = [
@@ -51,17 +82,48 @@ const SubscriptionPage = () => {
       }
     ];
 
-    const mockSubscription: Subscription = {
-      planId: 'basic',
-      status: 'active',
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      hasBoost: false
-    };
-
     setPlans(mockPlans);
-    setCurrentSubscription(mockSubscription);
-    setIsLoading(false);
+    checkSubscriptionStatus();
   }, []);
+
+  const checkSubscriptionStatus = async () => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setCheckingSubscription(true);
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) throw error;
+      
+      if (data.subscribed && data.subscription) {
+        setCurrentSubscription({
+          planId: data.subscription.planId,
+          status: data.subscription.status,
+          currentPeriodEnd: data.subscription.currentPeriodEnd,
+          hasBoost: data.subscription.hasBoost
+        });
+        
+        // Set the UI to match the current subscription
+        setBoostEnabled(data.subscription.hasBoost);
+        setNumberOfBeds(data.subscription.numberOfBeds);
+      } else {
+        setCurrentSubscription(null);
+      }
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check subscription status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      setCheckingSubscription(false);
+    }
+  };
 
   const calculateTotalPrice = (pricePerBed: number) => {
     let total = pricePerBed * numberOfBeds;
@@ -71,35 +133,84 @@ const SubscriptionPage = () => {
     return total.toFixed(2);
   };
 
-  const handleSubscribe = (planId: string) => {
+  const handleSubscribe = async (planId: string) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to subscribe to a plan",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+    
     const selectedPlan = plans.find(p => p.id === planId);
     if (!selectedPlan) return;
-
-    const total = calculateTotalPrice(selectedPlan.pricePerBed);
     
-    toast({
-      title: 'Subscription Updated',
-      description: `You have successfully subscribed to the ${selectedPlan.name} plan with ${numberOfBeds} bed${numberOfBeds > 1 ? 's' : ''} ${boostEnabled ? 'and Boost add-on' : ''} for $${total}/month.`,
-    });
-    
-    setCurrentSubscription({
-      planId,
-      status: 'active',
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      hasBoost: boostEnabled
-    });
+    try {
+      setIsProcessing(true);
+      
+      // Create a checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          planId,
+          numberOfBeds,
+          boostEnabled,
+        },
+      });
+      
+      if (error) throw error;
+      
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create checkout session",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleCancel = () => {
-    if (currentSubscription) {
+  const handleManageSubscription = async () => {
+    if (!user) {
       toast({
-        title: 'Subscription Cancelled',
-        description: 'Your subscription has been cancelled. You will still have access until the end of your current billing period.',
+        title: "Login Required",
+        description: "Please log in to manage your subscription",
+        variant: "destructive",
       });
-      setCurrentSubscription({
-        ...currentSubscription,
-        status: 'canceled'
+      navigate("/login");
+      return;
+    }
+    
+    try {
+      setIsProcessing(true);
+      
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) throw error;
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No portal URL returned");
+      }
+    } catch (error) {
+      console.error("Error creating customer portal session:", error);
+      toast({
+        title: "Error",
+        description: "Failed to access subscription management portal",
+        variant: "destructive",
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -111,7 +222,14 @@ const SubscriptionPage = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container py-12 flex justify-center items-center">
+        <div className="text-center">
+          <Spinner size="lg" className="mx-auto mb-4" />
+          <p className="text-gray-600">Loading subscription information...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -122,25 +240,53 @@ const SubscriptionPage = () => {
           Choose the subscription plan that works best for your residential care home business needs.
         </p>
         
-        <div className="space-y-6">
-          <BoostAddOn 
-            boostEnabled={boostEnabled}
-            onBoostChange={setBoostEnabled}
-            price={boostPrice}
-          />
+        {checkingSubscription ? (
+          <div className="flex items-center space-x-2 mb-4">
+            <Spinner size="sm" />
+            <span className="text-gray-600">Checking subscription status...</span>
+          </div>
+        ) : currentSubscription?.status === 'active' ? (
+          <div className="mb-4">
+            <Button 
+              variant="outline"
+              onClick={() => checkSubscriptionStatus()}
+              disabled={checkingSubscription}
+              className="mb-4"
+            >
+              Refresh Subscription Status
+            </Button>
+            
+            <Button 
+              onClick={handleManageSubscription}
+              disabled={isProcessing}
+              className="ml-2 mb-4"
+            >
+              Manage Subscription
+            </Button>
+          </div>
+        ) : null}
+        
+        {!currentSubscription?.status && (
+          <div className="space-y-6">
+            <BoostAddOn 
+              boostEnabled={boostEnabled}
+              onBoostChange={setBoostEnabled}
+              price={boostPrice}
+            />
 
-          <BedsInput
-            numberOfBeds={numberOfBeds}
-            onBedsChange={setNumberOfBeds}
-          />
-        </div>
+            <BedsInput
+              numberOfBeds={numberOfBeds}
+              onBedsChange={setNumberOfBeds}
+            />
+          </div>
+        )}
       </div>
 
       {currentSubscription?.status === 'active' && (
         <CurrentSubscription
           subscription={currentSubscription}
           plans={plans}
-          onCancel={handleCancel}
+          onCancel={handleManageSubscription}
         />
       )}
 
@@ -160,6 +306,54 @@ const SubscriptionPage = () => {
           />
         ))}
       </div>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-green-600">
+              <Check className="mr-2 h-5 w-5" />
+              Subscription Successful
+            </DialogTitle>
+            <DialogDescription>
+              Your subscription has been activated successfully. You can now enjoy all the features of your plan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Alert className="bg-green-50 border-green-200">
+              <Check className="h-4 w-4 text-green-600" />
+              <AlertTitle>Payment Processed</AlertTitle>
+              <AlertDescription>
+                Thank you for subscribing. Your payment has been processed and your subscription is now active.
+              </AlertDescription>
+            </Alert>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowSuccessDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Canceled Dialog */}
+      <Dialog open={showCanceledDialog} onOpenChange={setShowCanceledDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-amber-600">
+              <AlertCircle className="mr-2 h-5 w-5" />
+              Payment Canceled
+            </DialogTitle>
+            <DialogDescription>
+              Your subscription payment was canceled. No charges have been made.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p>You can try again whenever you're ready.</p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowCanceledDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
