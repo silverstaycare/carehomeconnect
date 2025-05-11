@@ -5,6 +5,13 @@ import { BankDetails } from "@/types/bank";
 import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck } from "lucide-react";
 
+export interface BankFormValues {
+  accountName: string;
+  accountNumber: string;
+  routingNumber: string;
+  bankName: string;
+}
+
 export function useBankDetails(userId: string) {
   const [bankDetails, setBankDetails] = useState<BankDetails | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,12 +54,7 @@ export function useBankDetails(userId: string) {
   };
 
   // Save or update bank details
-  const saveBankDetails = async (formData: {
-    accountName: string;
-    accountNumber: string;
-    routingNumber: string;
-    bankName: string;
-  }) => {
+  const saveBankDetails = async (formData: BankFormValues) => {
     if (!userId) return false;
     
     setIsProcessing(true);
@@ -102,6 +104,7 @@ export function useBankDetails(userId: string) {
       
       if (updateError) throw updateError;
       
+      // Use a string for icon instead of JSX element
       toast({
         title: "Banking details updated",
         description: "Your banking information has been saved securely",
