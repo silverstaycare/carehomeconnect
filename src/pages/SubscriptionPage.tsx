@@ -1,6 +1,8 @@
 
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import SubscriptionManager from '@/components/subscription/SubscriptionManager';
 
 const SubscriptionPage = () => {
@@ -15,8 +17,22 @@ const SubscriptionPage = () => {
     }
   }, [searchParams, navigate]);
 
+  const handleBackToProfile = () => {
+    navigate('/profile');
+  };
+
   return (
     <div className="container py-8 px-4 max-w-6xl">
+      <div className="mb-6">
+        <Button 
+          variant="ghost" 
+          onClick={handleBackToProfile} 
+          className="flex items-center gap-2 mb-4"
+        >
+          <ArrowLeft size={16} />
+          Back to Profile
+        </Button>
+      </div>
       <SubscriptionManager />
     </div>
   );
