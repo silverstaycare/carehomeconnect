@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +13,6 @@ import { Spinner } from "@/components/ui/spinner";
 import type { Subscription, SubscriptionPlan } from "@/types/subscription";
 import { BoostAddOn } from "@/components/subscription/BoostAddOn";
 import { BedsInput } from "@/components/subscription/BedsInput";
-import { CurrentSubscription } from "@/components/subscription/CurrentSubscription";
 import { PlanCard } from "@/components/subscription/PlanCard";
 import { PromoCodeBox } from "@/components/subscription/PromoCodeBox";
 
@@ -77,8 +77,7 @@ const SubscriptionPage = () => {
           'Online booking inquiry form',
           'Up to 5 homes/properties',
           'Analytics dashboard (views, inquiries)'
-        ],
-        recommended: true
+        ]
       }
     ];
 
@@ -317,14 +316,6 @@ const SubscriptionPage = () => {
         )}
       </div>
 
-      {currentSubscription?.status === 'active' && (
-        <CurrentSubscription
-          subscription={currentSubscription}
-          plans={plans}
-          onCancel={handleManageSubscription}
-        />
-      )}
-
       <PromoCodeBox onApplyPromo={handlePromoCode} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -416,3 +407,4 @@ const SubscriptionPage = () => {
 };
 
 export default SubscriptionPage;
+
