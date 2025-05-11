@@ -1,5 +1,5 @@
 
-import { CreditCard, Banknote, Check } from "lucide-react";
+import { CreditCard, Banknote, Check, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PaymentMethod {
@@ -17,12 +17,14 @@ interface PaymentMethodsListProps {
   methods: PaymentMethod[];
   onSetDefault: (id: string) => void;
   onEdit?: (id: string) => void;
+  onAddCard?: () => void;
 }
 
 export function PaymentMethodsList({
   methods,
   onSetDefault,
-  onEdit
+  onEdit,
+  onAddCard
 }: PaymentMethodsListProps) {
   // Filter methods by type
   const cardMethods = methods.filter(method => method.type === "card");
@@ -41,7 +43,20 @@ export function PaymentMethodsList({
       {/* Cards Section */}
       {cardMethods.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Payment Cards</h4>
+          <div className="flex justify-between items-center">
+            <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Payment Cards</h4>
+            {onAddCard && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onAddCard}
+                className="flex items-center gap-1"
+              >
+                <PlusCircle className="h-3.5 w-3.5" />
+                Add Card
+              </Button>
+            )}
+          </div>
           {cardMethods.map((method) => (
             <div key={method.id} className="border rounded-md p-4">
               <div className="flex items-center">

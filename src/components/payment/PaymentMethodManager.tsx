@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -121,6 +120,11 @@ export function PaymentMethodManager({
     console.log("Selected bank account for rent payments:", id);
   };
 
+  // Open add card dialog
+  const handleAddCardClick = () => {
+    setIsAddPaymentOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Subscription Payment Methods Section */}
@@ -133,6 +137,7 @@ export function PaymentMethodManager({
         <PaymentMethodsList 
           methods={paymentMethods}
           onSetDefault={handleSetDefault}
+          onAddCard={handleAddCardClick}
         />
         
         <Button
@@ -189,4 +194,3 @@ export function PaymentMethodManager({
     </div>
   );
 }
-
