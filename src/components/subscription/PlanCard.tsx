@@ -1,3 +1,4 @@
+
 import { Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,7 +69,7 @@ export const PlanCard = ({
         <div className="mb-6">
           <p className="text-3xl font-bold">
             ${totalPrice}
-            <span className="text-lg font-normal text-gray-600">/mo</span>
+            <span className="text-lg font-normal text-gray-600">/month/bed</span>
           </p>
         </div>
         <ul className="space-y-3">
