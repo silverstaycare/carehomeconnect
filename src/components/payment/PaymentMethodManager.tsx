@@ -245,7 +245,7 @@ export function PaymentMethodManager({
         }}
       />
       
-      {/* Payment Method Selection */}
+      {/* Payment Method Selection - Moved below the cards/bank list */}
       <div className="mt-8 space-y-4 pt-4 border-t">
         <h3 className="text-lg font-medium">Default Payment Methods</h3>
         
