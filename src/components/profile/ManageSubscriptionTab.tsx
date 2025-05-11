@@ -312,7 +312,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
             <CardHeader>
               <CardTitle>Current Plan: {subscription.subscription?.planId === 'basic' ? 'Starter' : 'Pro'}</CardTitle>
               <CardDescription>
-                {propertiesData.length} properties with a total of {totalBeds} beds
+                {/* Property and bed information removed as requested */}
               </CardDescription>
             </CardHeader>
             <CardContent>
