@@ -1,210 +1,126 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
-import { CreditCard, Banknote, ShieldCheck } from "lucide-react";
+import { CreditCard, Banknote, ShieldCheck, Plus } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle, 
-  DialogFooter 
+  DialogTitle 
 } from "@/components/ui/dialog";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { Checkbox } from "@/components/ui/checkbox";
 import { BankDetails } from "@/types/bank";
-import { BankDetailsDisplay } from "@/components/payment/BankDetailsDisplay";
-
-// Secure schema with improved validation
-const cardSchema = z.object({
-  cardholderName: z.string().min(2, { message: "Name is required" }),
-  cardNumber: z.string()
-    .min(13, { message: "Valid card number required" })
-    .max(19)
-    .refine((val) => /^[0-9\s]+$/.test(val), { 
-      message: "Card number must contain only digits" 
-    }),
-  expiryDate: z.string()
-    .min(5, { message: "Valid expiry date required" })
-    .max(5)
-    .refine((val) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(val), {
-      message: "Expiry date must be in MM/YY format"
-    }),
-  cvv: z.string()
-    .min(3, { message: "Valid CVV required" })
-    .max(4)
-    .refine((val) => /^\d{3,4}$/.test(val), {
-      message: "CVV must be 3 or 4 digits"
-    }),
-});
-
-const bankSchema = z.object({
-  accountName: z.string().min(2, { message: "Account name is required" }),
-  accountNumber: z.string().min(5, { message: "Valid account number required" }),
-  routingNumber: z.string().min(9, { message: "Valid routing number required" }).max(9),
-  bankName: z.string().min(2, { message: "Bank name is required" }),
-});
-
-type CardFormValues = z.infer<typeof cardSchema>;
-type BankFormValues = z.infer<typeof bankSchema>;
+import { supabase } from "@/integrations/supabase/client";
+import { PaymentMethodsList } from "@/components/payment/PaymentMethodsList";
+import { PaymentMethodSelect } from "@/components/payment/PaymentMethodSelect";
+import { AddCardForm } from "@/components/payment/AddCardForm";
+import { AddBankForm } from "@/components/payment/AddBankForm";
 
 interface CardPaymentSectionProps {
   user: any;
   sharedBankAccount?: boolean;
   bankDetails?: BankDetails | null;
+  onBankDetailsChanged?: () => void;
 }
+
+type PaymentMethod = {
+  id: string;
+  type: "card" | "bank";
+  name: string;
+  last4?: string;
+  bank_name?: string;
+  exp_month?: number;
+  exp_year?: number;
+  isDefault?: boolean;
+};
 
 export function CardPaymentSection({ 
   user, 
   sharedBankAccount = false,
-  bankDetails = null
+  bankDetails = null,
+  onBankDetailsChanged
 }: CardPaymentSectionProps) {
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isProcessingBank, setIsProcessingBank] = useState(false);
-  const [savedCards, setSavedCards] = useState<any[]>([
-    // Placeholder data for UI display
-    {
-      id: 1,
-      last4: "4242",
-      brand: "Visa",
-      exp_month: 12,
-      exp_year: 2025,
-    }
-  ]);
-  const [localBankDetails, setLocalBankDetails] = useState<BankDetails | null>(null);
-  const [useForBoth, setUseForBoth] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const { toast } = useToast();
 
-  // Update local bank details when prop changes
+  // Populate payment methods when component mounts or bank details change
   useEffect(() => {
+    const cardMethods: PaymentMethod[] = [
+      {
+        id: "card-1",
+        type: "card",
+        name: "Visa",
+        last4: "4242",
+        exp_month: 12,
+        exp_year: 2025,
+        isDefault: true
+      }
+    ];
+    
+    const methods = [...cardMethods];
+    
+    // Add bank details if they exist and are to be used for both payment types
     if (sharedBankAccount && bankDetails) {
-      setLocalBankDetails(bankDetails);
-      setUseForBoth(true);
-    } else if (bankDetails?.use_for_both) {
-      setLocalBankDetails(bankDetails);
-      setUseForBoth(true);
+      methods.push({
+        id: `bank-${bankDetails.id}`,
+        type: "bank",
+        name: bankDetails.account_name || "",
+        last4: bankDetails.account_number?.slice(-4) || "",
+        bank_name: bankDetails.bank_name || "",
+        isDefault: false
+      });
+    }
+    
+    setPaymentMethods(methods);
+    
+    // Set the default payment method
+    if (!selectedPaymentMethod) {
+      const defaultMethod = methods.find(m => m.isDefault);
+      if (defaultMethod) {
+        setSelectedPaymentMethod(defaultMethod.id);
+      } else if (methods.length > 0) {
+        setSelectedPaymentMethod(methods[0].id);
+      }
     }
   }, [bankDetails, sharedBankAccount]);
 
-  // Form for credit card with improved security
-  const cardForm = useForm<CardFormValues>({
-    resolver: zodResolver(cardSchema),
-    defaultValues: {
-      cardholderName: "",
-      cardNumber: "",
-      expiryDate: "",
-      cvv: ""
-    }
-  });
-
-  // Form for bank account
-  const bankForm = useForm<BankFormValues>({
-    resolver: zodResolver(bankSchema),
-    defaultValues: {
-      accountName: "",
-      accountNumber: "",
-      routingNumber: "",
-      bankName: ""
-    }
-  });
-
-  // Fetch bank details with improved error handling
-  const fetchBankDetails = async () => {
-    if (!user) return;
-    
-    // Skip fetching if we already have shared bank details
-    if (sharedBankAccount && bankDetails) {
-      return;
-    }
-    
-    try {
-      console.log("Fetching bank details for payment section, user:", user.id);
-      
-      const { data, error } = await supabase
-        .from("bank_details")
-        .select("*")
-        .eq("user_id", user.id) // Make sure we filter by the current user's ID
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error("Error fetching bank details:", error);
-        return;
-      }
-
-      console.log("Bank details in payment section:", data);
-      
-      if (data) {
-        setLocalBankDetails(data);
-        setUseForBoth(data.use_for_both || false);
-        
-        // Pre-fill the form if we're editing
-        bankForm.reset({
-          accountName: data.account_name || "",
-          accountNumber: data.account_number || "",
-          routingNumber: data.routing_number || "",
-          bankName: data.bank_name || ""
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching bank details:", error);
-    }
-  };
-
-  // Load bank details when component mounts
-  useEffect(() => {
-    fetchBankDetails();
-  }, [user]);
-
-  // Handle form submission with improved security
-  const onSubmit = async (data: CardFormValues) => {
+  // Handle adding a new card
+  const handleAddCard = async (cardData: any) => {
     setIsProcessing(true);
     
     // Simulate API call to a secure payment processor
-    // In a real application, card details would be tokenized through Stripe.js
-    // and never stored directly in your database
     setTimeout(() => {
+      const newCard: PaymentMethod = {
+        id: `card-${Math.floor(Math.random() * 1000)}`,
+        type: "card",
+        name: cardData.cardholderName,
+        last4: cardData.cardNumber.slice(-4),
+        exp_month: parseInt(cardData.expiryDate.split('/')[0]),
+        exp_year: parseInt(`20${cardData.expiryDate.split('/')[1]}`),
+        isDefault: false
+      };
+      
       toast({
         title: "Card added securely",
         description: "Your card has been securely tokenized and saved",
-        icon: <ShieldCheck className="h-4 w-4 text-green-600" />
       });
       
+      setPaymentMethods(prev => [...prev, newCard]);
       setIsProcessing(false);
       setIsAddCardOpen(false);
-      
-      // Update the UI with the new card (in a real app, this would come from the API)
-      setSavedCards([
-        ...savedCards,
-        {
-          id: Math.floor(Math.random() * 1000),
-          last4: data.cardNumber.slice(-4),
-          brand: "Visa", // In a real app, this would be determined by the payment processor
-          exp_month: parseInt(data.expiryDate.split('/')[0]),
-          exp_year: parseInt(`20${data.expiryDate.split('/')[1]}`),
-        }
-      ]);
     }, 1500);
   };
 
-  // Handle bank form submission with improved security
-  const onSubmitBank = async (data: BankFormValues) => {
+  // Handle adding a new bank account
+  const handleAddBank = async (bankData: any) => {
     if (!user) return;
     
-    setIsProcessingBank(true);
+    setIsProcessing(true);
     
     try {
       // Check if bank details already exist
@@ -218,13 +134,13 @@ export function CardPaymentSection({
         throw checkError; 
       }
       
-      // Setup payload with the useForBoth flag
+      // Setup payload
       const bankPayload = {
-        account_name: data.accountName,
-        account_number: data.accountNumber,
-        routing_number: data.routingNumber,
-        bank_name: data.bankName,
-        use_for_both: useForBoth
+        account_name: bankData.accountName,
+        account_number: bankData.accountNumber,
+        routing_number: bankData.routingNumber,
+        bank_name: bankData.bankName,
+        use_for_both: bankData.useForBoth || false
       };
       
       let updateError;
@@ -234,8 +150,8 @@ export function CardPaymentSection({
         const { error } = await supabase
           .from("bank_details")
           .update(bankPayload)
-          .eq("id", existingData.id)  // Use the record ID for better security
-          .eq("user_id", user.id);    // Ensure we're updating the user's own record
+          .eq("id", existingData.id)
+          .eq("user_id", user.id);
           
         updateError = error;
       } else {
@@ -254,12 +170,13 @@ export function CardPaymentSection({
       
       toast({
         title: "Banking details updated",
-        description: "Your banking information has been saved securely",
-        icon: <ShieldCheck className="h-4 w-4 text-green-600" />
+        description: "Your banking information has been saved securely"
       });
       
       // Refresh bank details
-      fetchBankDetails();
+      if (onBankDetailsChanged) {
+        onBankDetailsChanged();
+      }
       
       // Close the dialog
       setIsAddBankOpen(false);
@@ -271,82 +188,36 @@ export function CardPaymentSection({
         variant: "destructive",
       });
     } finally {
-      setIsProcessingBank(false);
+      setIsProcessing(false);
     }
   };
 
+  // Handle setting a payment method as default
+  const handleSetDefaultPayment = (id: string) => {
+    setPaymentMethods(prev => 
+      prev.map(method => ({
+        ...method,
+        isDefault: method.id === id
+      }))
+    );
+    
+    setSelectedPaymentMethod(id);
+    
+    toast({
+      title: "Default payment method updated",
+      description: "Your default payment method has been updated successfully"
+    });
+  };
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-xl font-medium mb-3 border-b pb-2">Payment Methods</h3>
-      <p className="text-gray-600 mb-4">Manage your payment methods for subscription</p>
-      
-      {savedCards.length > 0 && (
-        <div className="space-y-3">
-          {savedCards.map((card) => (
-            <div key={card.id} className="border rounded-md p-4">
-              <div className="flex items-center">
-                <div className="bg-blue-50 p-2 rounded mr-4">
-                  <CreditCard className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{card.brand} •••• {card.last4}</p>
-                  <p className="text-sm text-gray-500">
-                    Expires {card.exp_month}/{card.exp_year}
-                  </p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    toast({
-                      title: "Default payment method",
-                      description: "This card is your default payment method",
-                    });
-                  }}
-                >
-                  Default
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      
-      {/* If bank details are shared from BankDetailsSection, show them here */}
-      {sharedBankAccount && bankDetails && (
-        <div className="border rounded-md p-4">
-          <div className="flex items-center">
-            <div className="bg-green-50 p-2 rounded mr-4">
-              <Banknote className="h-5 w-5 text-green-600" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium">{bankDetails.bank_name}</p>
-              <p className="text-sm text-gray-500">
-                {bankDetails.account_name} • Account ending in {bankDetails.account_number?.slice(-4)}
-              </p>
-              <div className="mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded inline-block">
-                Used for both subscription and rent deposits
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Show local bank details if they exist and aren't shared */}
-      {!sharedBankAccount && localBankDetails && (
-        <BankDetailsDisplay 
-          bankDetails={localBankDetails}
-          onEdit={() => setIsAddBankOpen(true)}
-          isForBothPayments={useForBoth}
-        />
-      )}
-      
-      <div className="flex flex-wrap gap-3 mt-6">
+    <div className="space-y-6">
+      {/* Add Payment Method Buttons */}
+      <div className="flex flex-wrap gap-3 mb-6">
         <Button
           variant="outline"
           onClick={() => setIsAddCardOpen(true)}
         >
-          <CreditCard className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 h-4 w-4" /> 
           Add Card
         </Button>
         
@@ -355,10 +226,52 @@ export function CardPaymentSection({
             variant="outline"
             onClick={() => setIsAddBankOpen(true)}
           >
-            <Banknote className="mr-2 h-4 w-4" />
-            Add Bank Details
+            <Plus className="mr-2 h-4 w-4" />
+            Add Bank Account
           </Button>
         )}
+      </div>
+      
+      {/* Payment Methods List */}
+      <PaymentMethodsList 
+        methods={paymentMethods} 
+        onSetDefault={handleSetDefaultPayment} 
+        onEdit={(id) => {
+          const method = paymentMethods.find(m => m.id === id);
+          if (method?.type === "card") {
+            setIsAddCardOpen(true);
+          } else {
+            setIsAddBankOpen(true);
+          }
+        }}
+      />
+      
+      {/* Payment Method Selection */}
+      <div className="mt-8 space-y-4 pt-4 border-t">
+        <h3 className="text-lg font-medium">Default Payment Methods</h3>
+        
+        <div className="grid md:grid-cols-2 gap-6">
+          <PaymentMethodSelect 
+            methods={paymentMethods}
+            selectedId={selectedPaymentMethod}
+            onSelect={setSelectedPaymentMethod}
+            label="Subscription Payment Method"
+          />
+          
+          {/* Only show bank accounts for receiving payments */}
+          <PaymentMethodSelect 
+            methods={paymentMethods.filter(m => m.type === "bank")}
+            selectedId={paymentMethods.find(m => m.type === "bank")?.id || null}
+            onSelect={(id) => {
+              // Logic to set selected bank account
+              toast({
+                title: "Receive payment method updated",
+                description: "Your default receive payment method has been updated"
+              });
+            }}
+            label="Receive Payment Method"
+          />
+        </div>
       </div>
 
       {/* Add Card Dialog */}
@@ -367,120 +280,11 @@ export function CardPaymentSection({
           <DialogHeader>
             <DialogTitle>Add Payment Card</DialogTitle>
           </DialogHeader>
-          
-          <Form {...cardForm}>
-            <form onSubmit={cardForm.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={cardForm.control}
-                name="cardholderName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cardholder Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter cardholder name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={cardForm.control}
-                name="cardNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Card Number</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="1234 5678 9012 3456" 
-                        {...field} 
-                        onChange={(e) => {
-                          // Format card number with spaces
-                          let value = e.target.value.replace(/\s/g, "");
-                          if (value.length > 16) value = value.slice(0, 16);
-                          value = value.replace(/(\d{4})(?=\d)/g, "$1 ");
-                          field.onChange(value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={cardForm.control}
-                  name="expiryDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Expiry Date</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="MM/YY" 
-                          {...field} 
-                          onChange={(e) => {
-                            let value = e.target.value.replace(/\D/g, "");
-                            if (value.length > 4) value = value.slice(0, 4);
-                            if (value.length > 2) {
-                              value = `${value.slice(0, 2)}/${value.slice(2)}`;
-                            }
-                            field.onChange(value);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={cardForm.control}
-                  name="cvv"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>CVV</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="123" 
-                          type="password" 
-                          autoComplete="off"
-                          {...field} 
-                          onChange={(e) => {
-                            let value = e.target.value.replace(/\D/g, "");
-                            if (value.length > 4) value = value.slice(0, 4);
-                            field.onChange(value);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4 flex items-start gap-2">
-                <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p>Your card details are encrypted during transmission and securely tokenized. We never store your full card number.</p>
-              </div>
-              
-              <DialogFooter className="mt-6">
-                <Button type="button" variant="outline" onClick={() => setIsAddCardOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isProcessing}>
-                  {isProcessing ? (
-                    <>
-                      <Spinner size="sm" className="mr-2" />
-                      Adding...
-                    </>
-                  ) : (
-                    "Add Card"
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+          <AddCardForm 
+            onSubmit={handleAddCard} 
+            isProcessing={isProcessing} 
+            onCancel={() => setIsAddCardOpen(false)}
+          />
         </DialogContent>
       </Dialog>
       
@@ -489,120 +293,21 @@ export function CardPaymentSection({
         <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>{bankDetails ? "Edit Bank Details" : "Add Bank Details"}</DialogTitle>
+              <DialogTitle>Add Bank Account</DialogTitle>
             </DialogHeader>
-            
-            <Form {...bankForm}>
-              <form onSubmit={bankForm.handleSubmit(onSubmitBank)} className="space-y-4">
-                <FormField
-                  control={bankForm.control}
-                  name="accountName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Account Holder Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter account holder name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={bankForm.control}
-                  name="bankName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bank Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter bank name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={bankForm.control}
-                    name="accountNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Account Number</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Enter account number" 
-                            type="password" 
-                            autoComplete="off"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={bankForm.control}
-                    name="routingNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Routing Number</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="9 digits" 
-                            maxLength={9}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2 mt-4">
-                  <Checkbox 
-                    id="useForBoth" 
-                    checked={useForBoth} 
-                    onCheckedChange={(checked) => {
-                      setUseForBoth(checked as boolean);
-                    }}
-                  />
-                  <label
-                    htmlFor="useForBoth"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Use this account for both subscription payments and rent deposits
-                  </label>
-                </div>
-                
-                <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4 flex items-start gap-2">
-                  <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <p>Your banking information is stored securely with encryption and is only accessible by you.</p>
-                </div>
-                
-                <DialogFooter className="mt-6">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsAddBankOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isProcessingBank}>
-                    {isProcessingBank ? (
-                      <>
-                        <Spinner size="sm" className="mr-2" />
-                        Saving...
-                      </>
-                    ) : (
-                      bankDetails ? "Update Bank Details" : "Save Bank Details"
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+            <AddBankForm 
+              onSubmit={handleAddBank} 
+              isProcessing={isProcessing}
+              defaultValues={{
+                accountName: "",
+                accountNumber: "",
+                routingNumber: "",
+                bankName: ""
+              }}
+              useForBoth={false}
+              onUseForBothChange={() => {}}
+              onCancel={() => setIsAddBankOpen(false)}
+            />
           </DialogContent>
         </Dialog>
       )}

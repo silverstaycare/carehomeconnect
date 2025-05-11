@@ -1,13 +1,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Banknote, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle,
-  DialogFooter
+  DialogTitle
 } from "@/components/ui/dialog";
 import { useBankDetails, BankFormValues } from "@/hooks/useBankDetails";
 import { BankDetailsForm } from "@/components/payment/BankDetailsForm";
@@ -65,7 +64,6 @@ export function BankDetailsSection({
 
   return (
     <div>
-      <h3 className="text-xl font-medium mb-3 border-b pb-2">Receive Payment Methods</h3>
       <p className="text-gray-600 mb-4">
         {bankDetails?.use_for_both 
           ? "Same bank account is being used for both payments and deposits" 
@@ -90,7 +88,7 @@ export function BankDetailsSection({
           onClick={() => setIsAddBankOpen(true)}
           className="mt-4 w-full md:w-auto"
         >
-          <Banknote className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 h-4 w-4" />
           Add Bank Details
         </Button>
       )}

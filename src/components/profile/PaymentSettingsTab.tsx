@@ -3,6 +3,12 @@ import { useState, useEffect } from "react";
 import { useBankDetails } from "@/hooks/useBankDetails";
 import { CardPaymentSection } from "@/components/payment/CardPaymentSection";
 import { BankDetailsSection } from "@/components/payment/BankDetailsSection";
+import { 
+  Card, 
+  CardHeader,
+  CardTitle,
+  CardContent
+} from "@/components/ui/card";
 
 interface PaymentSettingsTabProps {
   user: any;
@@ -27,23 +33,34 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
   }, [user?.id, fetchBankDetails]);
 
   return (
-    <div className="bg-white p-6 rounded-lg border shadow-sm">
+    <div className="space-y-6">
       {/* Subscription Payment Section */}
-      <div className="mb-8">
-        <CardPaymentSection 
-          user={user} 
-          sharedBankAccount={sharedBankAccount} 
-          bankDetails={bankDetails}
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Methods</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CardPaymentSection 
+            user={user} 
+            sharedBankAccount={sharedBankAccount} 
+            bankDetails={bankDetails}
+            onBankDetailsChanged={fetchBankDetails}
+          />
+        </CardContent>
+      </Card>
       
       {/* Receive Payment Section */}
-      <div>
-        <BankDetailsSection 
-          user={user} 
-          onBankDetailsChanged={fetchBankDetails}
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Receive Payment Methods</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <BankDetailsSection 
+            user={user} 
+            onBankDetailsChanged={fetchBankDetails}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
