@@ -202,7 +202,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
   if (isCheckingSubscription || isLoadingProperties) {
     return (
       <div className="bg-white p-6 rounded-lg border shadow-sm">
-        <h2 className="text-2xl font-bold mb-4">Manage Subscription</h2>
+        <h2 className="text-2xl font-bold mb-4">Subscription Management</h2>
         <div className="flex items-center justify-center p-8">
           <Spinner size="lg" />
           <p className="ml-3 text-gray-600">Loading subscription information...</p>
@@ -214,7 +214,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
   // Regular content view
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
-      <h2 className="text-2xl font-bold mb-4">Manage Subscription</h2>
+      <h2 className="text-2xl font-bold mb-4">Subscription Management</h2>
       
       {fetchError && (
         <div className="mb-4 p-3 border border-amber-200 bg-amber-50 rounded-md">
@@ -227,7 +227,25 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
       
       {subscription?.subscribed ? (
         <div className="space-y-6">
-          <Card>
+          {subscription.subscription?.planId === 'basic' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6 flex justify-between items-center">
+              <div>
+                <h3 className="font-medium text-amber-800">Upgrade Available</h3>
+                <p className="text-amber-700">
+                  Unlock more features with our Pro plan
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate("/owner/subscription", { state: { upgradeIntent: true } })}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                <ArrowUp className="mr-2 h-4 w-4" />
+                Upgrade to Pro
+              </Button>
+            </div>
+          )}
+          
+          <Card className={`border-2 ${subscription.subscription?.planId === 'pro' ? 'border-care-500' : 'border-blue-400'}`}>
             <CardHeader>
               <CardTitle>Current Plan: {subscription.subscription?.planId === 'basic' ? 'Starter' : 'Pro'}</CardTitle>
               <CardDescription>
