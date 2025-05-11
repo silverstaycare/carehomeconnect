@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -258,27 +257,6 @@ export function PaymentMethodManager({
               label="Subscription Payment Method"
             />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-lg font-medium mb-4">Receive Payment Methods</h3>
-          <p className="text-gray-600 mb-4">
-            Add your bank details to receive payments from bookings
-          </p>
-          <PaymentMethodSelect 
-            methods={paymentMethods.filter(m => m.type === "bank")}
-            selectedId={paymentMethods.find(m => m.type === "bank")?.id || null}
-            onSelect={(id) => {
-              // Logic to set selected bank account
-              toast({
-                title: "Receive payment method updated",
-                description: "Your default receive payment method has been updated"
-              });
-            }}
-            label="Receive Payment Method"
-          />
         </CardContent>
       </Card>
 
