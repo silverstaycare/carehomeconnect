@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowUp, Home, Building, AlertCircle } from "lucide-react";
+import { Check, ArrowUp, Home, Building, AlertCircle, RefreshCw } from "lucide-react";
 import { InputWithLabel } from "@/components/ui/InputWithLabel";
 
 interface ManageSubscriptionTabProps {
@@ -30,6 +30,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
   const [propertiesData, setPropertiesData] = useState<PropertyData[]>([]);
   const [isLoadingProperties, setIsLoadingProperties] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0); // To track retry attempts
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -42,13 +43,19 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
       setFetchError(null);
       
       try {
+        console.log("Fetching properties for user:", user.id);
         const { data, error } = await supabase
           .from('care_homes')
           .select('id, capacity')
           .eq('owner_id', user.id)
           .eq('active', true);
         
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase error fetching properties:", error);
+          throw error;
+        }
+        
+        console.log("Properties data received:", data);
         
         if (data && data.length > 0) {
           setPropertiesData(data);
@@ -60,6 +67,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
           setNumberOfBedsPerProperty(avgBedsPerProp || 1);
           setTotalBeds(totalCapacity);
         } else {
+          console.log("No properties found, setting defaults");
           // Default values if no properties
           setNumberOfProperties(1);
           setNumberOfBedsPerProperty(1);
@@ -79,7 +87,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     };
 
     fetchProperties();
-  }, [user, toast]);
+  }, [user, loadAttempt]); // Also refetch when loadAttempt changes
 
   // Check subscription status
   const checkSubscriptionStatus = async () => {
@@ -89,10 +97,15 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
       setIsCheckingSubscription(true);
       setFetchError(null);
       
+      console.log("Checking subscription status for user:", user.id);
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
-      if (error) throw error;
+      if (error) {
+        console.error("Edge function error:", error);
+        throw error;
+      }
       
+      console.log("Subscription data received:", data);
       setSubscription(data);
       
       // Set initial values based on current subscription
@@ -119,8 +132,9 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
 
   // Load subscription status when component mounts
   useEffect(() => {
+    console.log("Loading subscription data, user:", user?.id);
     checkSubscriptionStatus();
-  }, [user]);
+  }, [user, loadAttempt]); // Also refetch when loadAttempt changes
 
   const calculateTotalMonthly = () => {
     if (!subscription?.subscription) return "0.00";
@@ -179,7 +193,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
       
       if (error) throw error;
       
-      if (data.url) {
+      if (data?.url) {
         window.location.href = data.url;
       } else {
         throw new Error("No portal URL returned");
@@ -198,7 +212,16 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     }
   };
 
-  // Show a loading state or error state while initializing
+  const handleRetry = () => {
+    setLoadAttempt(prev => prev + 1);
+    setFetchError(null);
+    toast({
+      title: "Retrying",
+      description: "Attempting to reload subscription data...",
+    });
+  };
+
+  // Show a loading state while initializing
   if (isCheckingSubscription || isLoadingProperties) {
     return (
       <div className="bg-white p-6 rounded-lg border shadow-sm">
@@ -206,6 +229,32 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
         <div className="flex items-center justify-center p-8">
           <Spinner size="lg" />
           <p className="ml-3 text-gray-600">Loading subscription information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there are critical errors
+  if (!subscription && fetchError) {
+    return (
+      <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <h2 className="text-2xl font-bold mb-4">Subscription Management</h2>
+        <div className="p-6 border border-red-200 bg-red-50 rounded-md mb-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-red-800">Error Loading Subscription</h3>
+              <p className="text-red-700 mb-4">{fetchError}</p>
+              <Button onClick={handleRetry} variant="outline" size="sm" className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" /> Retry Loading
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="text-center mt-6">
+          <Button onClick={handleNavigateToSubscriptions}>
+            View Subscription Plans
+          </Button>
         </div>
       </div>
     );
@@ -220,7 +269,17 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
         <div className="mb-4 p-3 border border-amber-200 bg-amber-50 rounded-md">
           <div className="flex items-start gap-2">
             <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-800">{fetchError}</p>
+            <div>
+              <p className="text-sm text-amber-800">{fetchError}</p>
+              <Button 
+                onClick={handleRetry} 
+                variant="link" 
+                size="sm" 
+                className="text-amber-800 p-0 h-auto mt-1"
+              >
+                Retry loading data
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -378,9 +437,11 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
           <div className="flex justify-between items-center mt-6">
             <Button 
               variant="outline" 
-              onClick={checkSubscriptionStatus}
+              onClick={handleRetry}
               size="sm"
+              className="flex items-center gap-2"
             >
+              <RefreshCw className="h-4 w-4" />
               Refresh Status
             </Button>
           </div>
@@ -397,9 +458,11 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
           <div className="flex justify-between items-center">
             <Button 
               variant="outline" 
-              onClick={checkSubscriptionStatus}
+              onClick={handleRetry}
               size="sm"
+              className="flex items-center gap-2"
             >
+              <RefreshCw className="h-4 w-4" />
               Refresh Status
             </Button>
             
