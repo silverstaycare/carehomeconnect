@@ -31,7 +31,7 @@ const SubscriptionPage = () => {
           className="flex items-center gap-2 mb-4"
         >
           <ArrowLeft size={16} />
-          Back to Subscription Settings
+          Back to Settings
         </Button>
       </div>
       <SubscriptionManager />
