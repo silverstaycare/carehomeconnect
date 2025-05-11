@@ -108,7 +108,7 @@ export function useBankDetails(userId: string) {
       toast({
         title: "Banking details updated",
         description: "Your banking information has been saved securely",
-        icon: <ShieldCheck className="h-4 w-4 text-green-600" />
+        icon: "shield-check"
       });
       
       // Refresh bank details

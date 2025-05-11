@@ -9,8 +9,8 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
-import { useBankDetails } from "@/hooks/useBankDetails";
-import { BankDetailsForm, BankFormValues } from "@/components/payment/BankDetailsForm";
+import { useBankDetails, BankFormValues } from "@/hooks/useBankDetails";
+import { BankDetailsForm } from "@/components/payment/BankDetailsForm";
 import { BankDetailsDisplay } from "@/components/payment/BankDetailsDisplay";
 
 interface BankDetailsSectionProps {
@@ -41,7 +41,7 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
   const shouldShowBankSection = !bankDetails?.use_for_both || !bankDetails;
 
   // Prepare default values for the form when editing
-  const getFormDefaultValues = () => {
+  const getFormDefaultValues = (): BankFormValues => {
     if (bankDetails) {
       return {
         accountName: bankDetails.account_name || "",
@@ -50,7 +50,12 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
         bankName: bankDetails.bank_name || ""
       };
     }
-    return undefined;
+    return {
+      accountName: "",
+      accountNumber: "",
+      routingNumber: "",
+      bankName: ""
+    };
   };
 
   if (!shouldShowBankSection) {
