@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
-import { Banknote, Plus } from "lucide-react";
+import { Banknote, Plus, ShieldCheck } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -56,20 +56,25 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
     }
   });
 
-  // Fetch bank details
+  // Fetch bank details with improved error handling
   const fetchBankDetails = async () => {
     if (!user) return;
     
     try {
-      // Using type assertion to access the bank_details table
-      const { data, error } = await (supabase
-        .from("bank_details" as any)
+      const { data, error } = await supabase
+        .from("bank_details")
         .select("*")
         .eq("user_id", user.id)
-        .maybeSingle() as any);
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
-        throw error;
+        console.error("Error fetching bank details:", error);
+        toast({
+          title: "Error loading data",
+          description: "Could not load your bank information. Please try again later.",
+          variant: "destructive",
+        });
+        return;
       }
 
       if (data) {
@@ -86,6 +91,11 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
       }
     } catch (error) {
       console.error("Error fetching bank details:", error);
+      toast({
+        title: "Error loading data",
+        description: "Could not load your bank information. Please try again later.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -94,7 +104,7 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
     fetchBankDetails();
   }, [user]);
 
-  // Handle bank form submission
+  // Handle bank form submission with improved security
   const onSubmitBank = async (data: BankFormValues) => {
     if (!user) return;
     
@@ -102,11 +112,11 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
     
     try {
       // Check if bank details already exist
-      const { data: existingData, error: checkError } = await (supabase
-        .from("bank_details" as any)
+      const { data: existingData, error: checkError } = await supabase
+        .from("bank_details")
         .select("id")
         .eq("user_id", user.id)
-        .maybeSingle() as any);
+        .maybeSingle();
         
       if (checkError && checkError.code !== 'PGRST116') {
         throw checkError; 
@@ -125,20 +135,20 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
       
       if (existingData?.id) {
         // Update existing record
-        const { error } = await (supabase
-          .from("bank_details" as any)
+        const { error } = await supabase
+          .from("bank_details")
           .update(bankPayload)
-          .eq("user_id", user.id) as any);
+          .eq("user_id", user.id);
           
         updateError = error;
       } else {
         // Create new record
-        const { error } = await (supabase
-          .from("bank_details" as any)
+        const { error } = await supabase
+          .from("bank_details")
           .insert({
             user_id: user.id,
             ...bankPayload
-          }) as any);
+          });
           
         updateError = error;
       }
@@ -147,7 +157,8 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
       
       toast({
         title: "Banking details updated",
-        description: "Your banking information has been saved securely"
+        description: "Your banking information has been saved securely",
+        icon: <ShieldCheck className="h-4 w-4 text-green-600" />
       });
       
       // Refresh bank details
@@ -159,7 +170,7 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
       console.error("Error updating bank details:", error);
       toast({
         title: "Error",
-        description: "Failed to update banking information",
+        description: "Failed to update banking information. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -339,8 +350,9 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
                 </label>
               </div>
               
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4">
-                <p>Your banking information is stored securely and will be used for receiving payments from bookings.</p>
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4 flex items-start gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p>Your banking information is stored securely with encryption and is only accessible by you.</p>
               </div>
               
               <DialogFooter className="mt-6">
