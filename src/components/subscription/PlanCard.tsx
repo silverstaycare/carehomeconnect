@@ -27,10 +27,35 @@ export const PlanCard = ({
   isSelected,
   onSelect
 }: PlanCardProps) => {
+  // Determine button label based on current plan and the plan being displayed
+  const getButtonLabel = () => {
+    if (isCurrentPlan) {
+      return 'Current Plan';
+    }
+    
+    if (onSelect) {
+      return 'Select Plan';
+    }
+    
+    if (plan.id === 'pro' && !isCurrentPlan) {
+      return 'Upgrade';
+    }
+    
+    if (plan.id === 'basic' && !isCurrentPlan) {
+      return 'Downgrade';
+    }
+    
+    return plan.recommended ? 'Upgrade Now' : 'Subscribe';
+  };
+
   return (
     <Card className={`${plan.recommended ? 'border-2 border-care-500 relative' : ''} flex flex-col h-full ${isSelected ? 'ring-2 ring-care-500 ring-offset-2' : ''}`}>
       <CardHeader>
-        <CardTitle>{plan.name}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>
+            {plan.name} {isCurrentPlan && <span className="ml-2 text-sm text-care-600 bg-care-50 px-2 py-1 rounded-md">Current Plan</span>}
+          </CardTitle>
+        </div>
         <CardDescription>
           {plan.name === 'Starter' ? 'For small care homes just starting out' :
            plan.name === 'Pro' ? 'For established care homes looking to grow' :
@@ -60,20 +85,15 @@ export const PlanCard = ({
         </ul>
       </CardContent>
       <CardFooter className="mt-auto">
-        <Button 
-          className={`w-full ${plan.recommended ? 'bg-care-600 hover:bg-care-700' : ''}`}
-          variant={plan.recommended ? 'default' : 'outline'}
-          disabled={isCurrentPlan}
-          onClick={onSelect || onSubscribe}
-        >
-          {isCurrentPlan
-            ? 'Current Plan'
-            : onSelect 
-              ? 'Select Plan'
-              : plan.recommended
-                ? 'Upgrade Now'
-                : 'Subscribe'}
-        </Button>
+        {!isCurrentPlan && (
+          <Button 
+            className={`w-full ${plan.recommended ? 'bg-care-600 hover:bg-care-700' : ''}`}
+            variant={plan.recommended ? 'default' : 'outline'}
+            onClick={onSelect || onSubscribe}
+          >
+            {getButtonLabel()}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
