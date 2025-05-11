@@ -7,21 +7,79 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowUp, Home, Building } from "lucide-react";
+import { Check, ArrowUp, Home, Building, AlertCircle } from "lucide-react";
 import { InputWithLabel } from "@/components/ui/InputWithLabel";
 
 interface ManageSubscriptionTabProps {
   user: any;
 }
 
+interface PropertyData {
+  id: string;
+  capacity: number;
+}
+
 export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [subscription, setSubscription] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [numberOfProperties, setNumberOfProperties] = useState(1);
-  const [numberOfBedsPerProperty, setNumberOfBedsPerProperty] = useState(1);
+  const [isManagingSubscription, setIsManagingSubscription] = useState(false);
+  const [numberOfProperties, setNumberOfProperties] = useState(0);
+  const [numberOfBedsPerProperty, setNumberOfBedsPerProperty] = useState(0);
+  const [totalBeds, setTotalBeds] = useState(0);
+  const [propertiesData, setPropertiesData] = useState<PropertyData[]>([]);
+  const [isLoadingProperties, setIsLoadingProperties] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Fetch the owner's properties and calculate total beds
+  useEffect(() => {
+    const fetchProperties = async () => {
+      if (!user) return;
+
+      setIsLoadingProperties(true);
+      try {
+        const { data, error } = await supabase
+          .from('care_homes')
+          .select('id, capacity')
+          .eq('owner_id', user.id)
+          .eq('active', true);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setPropertiesData(data);
+          const count = data.length;
+          const totalCapacity = data.reduce((sum, home) => sum + (home.capacity || 0), 0);
+          const avgBedsPerProp = Math.round(totalCapacity / count);
+          
+          setNumberOfProperties(count);
+          setNumberOfBedsPerProperty(avgBedsPerProp || 1);
+          setTotalBeds(totalCapacity);
+        } else {
+          // Default values if no properties
+          setNumberOfProperties(1);
+          setNumberOfBedsPerProperty(1);
+          setTotalBeds(1);
+        }
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch your properties data",
+          variant: "destructive",
+        });
+        // Set defaults on error
+        setNumberOfProperties(1);
+        setNumberOfBedsPerProperty(1);
+        setTotalBeds(1);
+      } finally {
+        setIsLoadingProperties(false);
+      }
+    };
+
+    fetchProperties();
+  }, [user, toast]);
 
   // Check subscription status
   const checkSubscriptionStatus = async () => {
@@ -37,8 +95,8 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
       
       // Set initial values based on current subscription
       if (data.subscription) {
-        setNumberOfProperties(data.subscription.numberOfProperties || 1);
-        setNumberOfBedsPerProperty(data.subscription.numberOfBedsPerProperty || 1);
+        setNumberOfProperties(data.subscription.numberOfProperties || numberOfProperties);
+        setNumberOfBedsPerProperty(data.subscription.numberOfBedsPerProperty || numberOfBedsPerProperty);
       }
     } catch (error) {
       console.error("Error checking subscription:", error);
@@ -61,10 +119,10 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     if (!subscription?.subscription) return "0.00";
     
     const pricePerBed = subscription.subscription.planId === 'basic' ? 59.99 : 79.99;
-    const totalBeds = numberOfProperties * numberOfBedsPerProperty;
+    const calculatedTotalBeds = numberOfProperties * numberOfBedsPerProperty;
     const boostPrice = subscription.subscription.hasBoost ? 49.99 : 0;
     
-    const total = (pricePerBed * totalBeds) + boostPrice;
+    const total = (pricePerBed * calculatedTotalBeds) + boostPrice;
     return total.toFixed(2);
   };
 
@@ -96,14 +154,51 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     navigate("/owner/subscription");
   };
 
+  const handleManageSubscription = async () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to manage your subscription",
+        variant: "destructive",
+      });
+      navigate("/login");
+      return;
+    }
+    
+    try {
+      setIsManagingSubscription(true);
+      
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) throw error;
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No portal URL returned");
+      }
+    } catch (error) {
+      console.error("Error creating customer portal session:", error);
+      toast({
+        title: "Portal Access Failed",
+        description: "Unable to access subscription management portal. Redirecting to subscription page instead.",
+        variant: "destructive",
+      });
+      // Fallback to subscription page
+      setTimeout(() => navigate("/owner/subscription"), 1500);
+    } finally {
+      setIsManagingSubscription(false);
+    }
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
       <h2 className="text-2xl font-bold mb-4">Manage Subscription</h2>
       
-      {isCheckingSubscription ? (
+      {(isCheckingSubscription || isLoadingProperties) ? (
         <div className="flex items-center justify-center p-8">
           <Spinner size="lg" />
-          <p className="ml-3 text-gray-600">Checking subscription status...</p>
+          <p className="ml-3 text-gray-600">Loading subscription information...</p>
         </div>
       ) : subscription?.subscribed ? (
         <div className="space-y-6">
@@ -111,7 +206,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
             <CardHeader>
               <CardTitle>Current Plan: {subscription.subscription?.planId === 'basic' ? 'Starter' : 'Pro'}</CardTitle>
               <CardDescription>
-                Adjust your subscription parameters below
+                Based on your actual property data - {propertiesData.length} properties with a total of {totalBeds} beds
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -123,9 +218,15 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                     type="number"
                     min={1}
                     value={numberOfProperties}
-                    onChange={(e) => setNumberOfProperties(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => {
+                      const count = Math.max(1, parseInt(e.target.value) || 1);
+                      setNumberOfProperties(count);
+                    }}
                     icon={<Building className="h-4 w-4 text-gray-500" />}
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    You currently have {propertiesData.length} active properties
+                  </p>
                 </div>
                 
                 <div>
@@ -135,9 +236,17 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                     type="number"
                     min={1}
                     value={numberOfBedsPerProperty}
-                    onChange={(e) => setNumberOfBedsPerProperty(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => {
+                      const count = Math.max(1, parseInt(e.target.value) || 1);
+                      setNumberOfBedsPerProperty(count);
+                    }}
                     icon={<Home className="h-4 w-4 text-gray-500" />}
                   />
+                  {propertiesData.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Your properties average {Math.round(totalBeds / propertiesData.length)} beds per property
+                    </p>
+                  )}
                 </div>
                 
                 <div className="mt-6 bg-gray-50 p-4 rounded-md">
@@ -177,9 +286,35 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                     </span>
                   </div>
                 </div>
+
+                {numberOfProperties !== propertiesData.length && (
+                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-amber-800">
+                        Your subscription settings don't match your actual property count. 
+                        This may affect billing.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
               
-              <div className="mt-6 flex justify-end">
+              <div className="mt-6 flex justify-end gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={handleManageSubscription}
+                  disabled={isManagingSubscription}
+                >
+                  {isManagingSubscription ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Opening Portal...
+                    </>
+                  ) : (
+                    "Manage Current Plan"
+                  )}
+                </Button>
                 <Button 
                   onClick={handleUpdateSubscription}
                   disabled={isUpdating}
