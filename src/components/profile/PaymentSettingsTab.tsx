@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useBankDetails } from "@/hooks/useBankDetails";
 import { CardPaymentSection } from "@/components/payment/CardPaymentSection";
-import { BankDetailsSection } from "@/components/payment/BankDetailsSection";
 import { 
   Card, 
   CardHeader,
@@ -41,19 +40,6 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
             user={user} 
             sharedBankAccount={sharedBankAccount} 
             bankDetails={bankDetails}
-            onBankDetailsChanged={fetchBankDetails}
-          />
-        </CardContent>
-      </Card>
-      
-      {/* Receive Payment Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Receive Payment Methods</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <BankDetailsSection 
-            user={user} 
             onBankDetailsChanged={fetchBankDetails}
           />
         </CardContent>
