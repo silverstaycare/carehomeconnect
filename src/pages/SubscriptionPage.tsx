@@ -28,6 +28,7 @@ const SubscriptionPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [boostEnabled, setBoostEnabled] = useState(false);
   const [numberOfBeds, setNumberOfBeds] = useState(1);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const boostPrice = 49.99;
   
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -220,6 +221,60 @@ const SubscriptionPage = () => {
     });
   };
 
+  const handleSelectPlan = (planId: string) => {
+    setSelectedPlanId(planId);
+  };
+
+  const handleConfirmPlanChange = async () => {
+    if (!selectedPlanId) {
+      toast({
+        title: "No Plan Selected",
+        description: "Please select a plan before confirming",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      
+      // Create a checkout session with the existing payment method
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          planId: selectedPlanId,
+          numberOfBeds,
+          boostEnabled,
+          useExistingPaymentMethod: true,
+        },
+      });
+      
+      if (error) throw error;
+      
+      // Handle the response - might immediately redirect or confirm the change
+      if (data.success) {
+        toast({
+          title: "Plan Updated",
+          description: "Your subscription plan has been updated successfully",
+        });
+        checkSubscriptionStatus();
+      } else if (data.url) {
+        // If we still need to redirect to a checkout page
+        window.location.href = data.url;
+      } else {
+        throw new Error("Unexpected response from server");
+      }
+    } catch (error) {
+      console.error("Error updating subscription:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update subscription plan",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container py-12 flex justify-center items-center">
@@ -272,7 +327,7 @@ const SubscriptionPage = () => {
 
       <PromoCodeBox onApplyPromo={handlePromoCode} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {plans.map((plan) => (
           <PlanCard
             key={plan.id}
@@ -282,10 +337,32 @@ const SubscriptionPage = () => {
             numberOfBeds={numberOfBeds}
             boostEnabled={boostEnabled}
             boostPrice={boostPrice}
+            isSelected={selectedPlanId === plan.id}
+            onSelect={() => handleSelectPlan(plan.id)}
             onSubscribe={() => handleSubscribe(plan.id)}
           />
         ))}
       </div>
+
+      {currentSubscription?.status === 'active' && selectedPlanId && (
+        <div className="flex justify-center mt-6">
+          <Button 
+            onClick={handleConfirmPlanChange}
+            size="lg"
+            className="px-8"
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <>
+                <Spinner size="sm" className="mr-2" />
+                Processing...
+              </>
+            ) : (
+              'Confirm Plan Change'
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>

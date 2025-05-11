@@ -1,6 +1,5 @@
 
 import { Check } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SubscriptionPlan } from "@/types/subscription";
@@ -13,6 +12,8 @@ interface PlanCardProps {
   boostEnabled: boolean;
   boostPrice: number;
   onSubscribe: () => void;
+  isSelected?: boolean;
+  onSelect?: () => void;
 }
 
 export const PlanCard = ({
@@ -22,10 +23,12 @@ export const PlanCard = ({
   numberOfBeds,
   boostEnabled,
   boostPrice,
-  onSubscribe
+  onSubscribe,
+  isSelected,
+  onSelect
 }: PlanCardProps) => {
   return (
-    <Card className={`${plan.recommended ? 'border-2 border-care-500 relative' : ''} flex flex-col h-full`}>
+    <Card className={`${plan.recommended ? 'border-2 border-care-500 relative' : ''} flex flex-col h-full ${isSelected ? 'ring-2 ring-care-500 ring-offset-2' : ''}`}>
       <CardHeader>
         <CardTitle>{plan.name}</CardTitle>
         <CardDescription>
@@ -61,13 +64,15 @@ export const PlanCard = ({
           className={`w-full ${plan.recommended ? 'bg-care-600 hover:bg-care-700' : ''}`}
           variant={plan.recommended ? 'default' : 'outline'}
           disabled={isCurrentPlan}
-          onClick={onSubscribe}
+          onClick={onSelect || onSubscribe}
         >
           {isCurrentPlan
             ? 'Current Plan'
-            : plan.recommended
-              ? 'Upgrade Now'
-              : 'Subscribe'}
+            : onSelect 
+              ? 'Select Plan'
+              : plan.recommended
+                ? 'Upgrade Now'
+                : 'Subscribe'}
         </Button>
       </CardFooter>
     </Card>
