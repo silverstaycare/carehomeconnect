@@ -1,5 +1,5 @@
 
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Home, Info, Shield, FileText, User, Settings, LogOut } from "lucide-react";
 import Logo from "@/components/common/Logo";
@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const AppLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userInitials, setUserInitials] = useState<string>("");
@@ -60,6 +61,11 @@ const AppLayout = () => {
     navigate("/profile");
   };
 
+  // Check if user is on dashboard page
+  const isOnDashboardPage = () => {
+    return location.pathname.includes('/dashboard');
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b bg-white sticky top-0 z-10">
@@ -81,8 +87,9 @@ const AppLayout = () => {
             {user ? (
               <>
                 <Button 
-                  variant="ghost"
+                  variant={isOnDashboardPage() ? "default" : "ghost"}
                   onClick={handleDashboardClick}
+                  className={isOnDashboardPage() ? "bg-care-600 hover:bg-care-700" : ""}
                 >
                   Dashboard
                 </Button>
