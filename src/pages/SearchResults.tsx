@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -77,6 +78,26 @@ const SearchResults = () => {
             .eq('is_primary', true)
             .maybeSingle();
             
+          // Fetch amenities for this property
+          const { data: amenitiesData } = await supabase
+            .from('care_home_amenities')
+            .select('*')
+            .eq('care_home_id', home.id)
+            .maybeSingle();
+            
+          // Convert amenities data to string array
+          const amenities: string[] = [];
+          if (amenitiesData) {
+            if (amenitiesData.private_rooms) amenities.push('Private Rooms');
+            if (amenitiesData.ensuite_rooms) amenities.push('Ensuite Rooms');
+            if (amenitiesData.garden) amenities.push('Garden');
+            if (amenitiesData.communal_dining) amenities.push('Communal Dining');
+            if (amenitiesData.entertainment_area) amenities.push('Entertainment Area');
+            if (amenitiesData.housekeeping) amenities.push('Housekeeping');
+            if (amenitiesData.laundry) amenities.push('Laundry Service');
+            if (amenitiesData.transportation) amenities.push('Transportation');
+          }
+            
           // For now, use placeholder ratings and reviews
           return {
             id: home.id,
@@ -86,7 +107,7 @@ const SearchResults = () => {
             city: home.city,
             state: home.state,
             image: mediaData?.photo_url || "/placeholder.svg",
-            amenities: [], // We'll add real amenities in a future update
+            amenities: amenities, 
             rating: 4.5,
             reviews: 45
           };

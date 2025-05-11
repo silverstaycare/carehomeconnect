@@ -30,7 +30,6 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
   const isAuthenticated = !!user;
   const { saveProperty, savedProperties } = useFamilyDashboardData();
   const [saved, setSaved] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
 
   // Check if property is saved
   useEffect(() => {
@@ -43,12 +42,10 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     e.stopPropagation(); // Prevent navigation when saving
     
     if (!isAuthenticated) {
-      // Notification removed
       return;
     }
 
     if (saved) {
-      // Notification removed
       return;
     }
 
@@ -63,7 +60,6 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
     const success = await saveProperty(propertyData);
     if (success) {
       setSaved(true);
-      // Notification removed
     }
   };
 
@@ -99,13 +95,21 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
         <h3 className="font-bold text-xl mb-1">{property.name}</h3>
         <p className="text-gray-600 mb-4">{property.location}</p>
         <div className="flex flex-wrap gap-2 mb-4 h-8 overflow-hidden">
-          {property.amenities.length > 0 ? (
-            <span className="amenity-badge">
-              {property.amenities[0]}
-              {property.amenities.length > 1 && ` +${property.amenities.length - 1} more`}
-            </span>
+          {property.amenities && property.amenities.length > 0 ? (
+            <>
+              {property.amenities.slice(0, 2).map((amenity, index) => (
+                <span key={`${amenity}-${index}`} className="bg-gray-100 px-2 py-1 rounded-full text-xs">
+                  {amenity}
+                </span>
+              ))}
+              {property.amenities.length > 2 && (
+                <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">
+                  +{property.amenities.length - 2} More
+                </span>
+              )}
+            </>
           ) : (
-            <span className="amenity-badge">No amenities listed</span>
+            <span className="bg-gray-100 px-2 py-1 rounded-full text-xs">No amenities listed</span>
           )}
         </div>
         {isAuthenticated ? (
