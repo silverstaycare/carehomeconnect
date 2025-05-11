@@ -47,7 +47,8 @@ serve(async (req) => {
     });
     
     if (customers.data.length === 0) {
-      return new Response(JSON.stringify({
+      // No subscription found
+      return new Response(JSON.stringify({ 
         subscribed: false,
         subscription: null
       }), {
@@ -64,9 +65,10 @@ serve(async (req) => {
       status: 'active',
       limit: 1,
     });
-
+    
     if (subscriptions.data.length === 0) {
-      return new Response(JSON.stringify({
+      // No active subscription found
+      return new Response(JSON.stringify({ 
         subscribed: false,
         subscription: null
       }), {
@@ -74,67 +76,47 @@ serve(async (req) => {
         status: 200,
       });
     }
-
+    
     const subscription = subscriptions.data[0];
     
-    // Determine the plan ID based on the price
-    const items = subscription.items.data;
-    let planId = '';
+    // Get the subscription items to determine plan and add-ons
+    const items = await stripe.subscriptionItems.list({
+      subscription: subscription.id,
+    });
+    
+    // Determine plan type and whether boost is enabled
+    let planId = 'basic';
     let hasBoost = false;
     let numberOfBeds = 1;
     
-    // Loop through subscription items to find plan and boost
-    for (const item of items) {
-      const price = await stripe.prices.retrieve(item.price.id);
-      const productName = price.nickname?.toLowerCase() || '';
+    for (const item of items.data) {
+      const product = await stripe.products.retrieve(item.price.product as string);
       
-      if (productName.includes('starter')) {
-        planId = 'basic';
-        numberOfBeds = item.quantity || 1;
-      } else if (productName.includes('pro')) {
-        planId = 'pro';
-        numberOfBeds = item.quantity || 1;
-      } else if (productName.includes('boost')) {
-        hasBoost = true;
-      }
-    }
-    
-    // If we couldn't determine the plan from price nickname, use a fallback
-    if (!planId) {
-      // Check the subscription metadata
-      if (subscription.metadata.planId) {
-        planId = subscription.metadata.planId;
-      } else {
-        // Fallback based on price amount
-        const basePrice = items[0].price.unit_amount || 0;
-        if (basePrice <= 999) {
-          planId = 'basic';
-        } else {
-          planId = 'pro';
+      if (product.metadata.type === 'plan') {
+        planId = product.metadata.plan_id || 'basic';
+        
+        // Try to get the number of beds from the quantity or metadata
+        if (item.quantity) {
+          numberOfBeds = item.quantity;
+        } else if (product.metadata.beds) {
+          numberOfBeds = parseInt(product.metadata.beds, 10);
         }
-      }
-      
-      if (subscription.metadata.numberOfBeds) {
-        numberOfBeds = parseInt(subscription.metadata.numberOfBeds, 10) || 1;
-      }
-      
-      if (subscription.metadata.boostEnabled === 'true') {
+      } else if (product.metadata.type === 'addon' && product.metadata.name === 'boost') {
         hasBoost = true;
       }
     }
     
-    const subscriptionData = {
-      id: subscription.id,
-      status: subscription.status,
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-      planId: planId,
-      hasBoost: hasBoost,
-      numberOfBeds: numberOfBeds
-    };
-
+    // Return subscription details
     return new Response(JSON.stringify({
       subscribed: true,
-      subscription: subscriptionData
+      subscription: {
+        id: subscription.id,
+        status: subscription.status,
+        currentPeriodEnd: subscription.current_period_end * 1000, // Convert to milliseconds
+        planId,
+        hasBoost,
+        numberOfBeds
+      }
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

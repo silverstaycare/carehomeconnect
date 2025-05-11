@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,9 +12,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
+import { useProfileData, ProfileFormValues } from "@/hooks/useProfileData";
 
 const profileFormSchema = z.object({
   displayName: z.string().min(2, {
@@ -25,23 +23,13 @@ const profileFormSchema = z.object({
   email: z.string().email().optional(),
 });
 
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
-
 interface ProfileInfoTabProps {
   user: any;
-  profile: {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    phone: string | null;
-    role: string | null;
-  } | null;
-  onProfileUpdated: () => void;
+  onProfileUpdated?: () => void;
 }
 
-export function ProfileInfoTab({ user, profile, onProfileUpdated }: ProfileInfoTabProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) {
+  const { profile, isSubmitting, updateProfile } = useProfileData(user?.id);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -52,43 +40,21 @@ export function ProfileInfoTab({ user, profile, onProfileUpdated }: ProfileInfoT
     },
   });
 
-  async function onSubmit(data: ProfileFormValues) {
-    if (!user) return;
-    
-    setIsSubmitting(true);
-    
-    try {
-      // Split display name into first name and last name
-      const nameParts = data.displayName.trim().split(' ');
-      const first_name = nameParts[0] || '';
-      const last_name = nameParts.slice(1).join(' ') || '';
+  // Update form values when profile data changes
+  React.useEffect(() => {
+    if (profile) {
+      form.reset({
+        displayName: [profile.first_name, profile.last_name].filter(Boolean).join(' ') || "",
+        phone: profile?.phone || "",
+        email: user?.email || "",
+      });
+    }
+  }, [profile, user?.email, form]);
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          first_name,
-          last_name,
-          phone: data.phone || null
-        })
-        .eq('id', user.id);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully",
-      });
-      
+  async function onSubmit(data: ProfileFormValues) {
+    const success = await updateProfile(data);
+    if (success && onProfileUpdated) {
       onProfileUpdated();
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
     }
   }
 

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BankDetails } from "@/types/bank";
 import { useToast } from "@/hooks/use-toast";
-import { ShieldCheck } from "lucide-react";
 
 export interface BankFormValues {
   accountName: string;
@@ -42,6 +41,10 @@ export function useBankDetails(userId: string) {
       if (data) {
         setBankDetails(data);
         setUseForBoth(data.use_for_both || false);
+      } else {
+        // If no data found, reset the state
+        setBankDetails(null);
+        setUseForBoth(false);
       }
     } catch (error) {
       console.error("Error fetching bank details:", error);
@@ -104,7 +107,6 @@ export function useBankDetails(userId: string) {
       
       if (updateError) throw updateError;
       
-      // Use a string for icon instead of JSX element
       toast({
         title: "Banking details updated",
         description: "Your banking information has been saved securely",
@@ -127,6 +129,42 @@ export function useBankDetails(userId: string) {
     }
   };
 
+  // Delete bank details
+  const deleteBankDetails = async () => {
+    if (!userId || !bankDetails?.id) return false;
+    
+    setIsProcessing(true);
+    
+    try {
+      const { error } = await supabase
+        .from("bank_details")
+        .delete()
+        .eq("user_id", userId);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Banking details removed",
+        description: "Your banking information has been removed successfully",
+        icon: "check"
+      });
+      
+      setBankDetails(null);
+      setUseForBoth(false);
+      return true;
+    } catch (error) {
+      console.error("Error deleting bank details:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove banking information. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // Load bank details when component mounts
   useEffect(() => {
     fetchBankDetails();
@@ -138,6 +176,7 @@ export function useBankDetails(userId: string) {
     useForBoth,
     setUseForBoth,
     fetchBankDetails,
-    saveBankDetails
+    saveBankDetails,
+    deleteBankDetails
   };
 }

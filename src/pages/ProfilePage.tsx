@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CreditCard, Banknote, Home } from "lucide-react";
@@ -9,6 +8,7 @@ import { ProfileInfoTab } from "@/components/profile/ProfileInfoTab";
 import { PaymentSettingsTab } from "@/components/profile/PaymentSettingsTab";
 import { BankDetailsTab } from "@/components/profile/BankDetailsTab";
 import { ManageSubscriptionTab } from "@/components/profile/ManageSubscriptionTab";
+import { useProfileData } from "@/hooks/useProfileData";
 
 export default function ProfilePage() {
   const location = useLocation();
@@ -19,51 +19,19 @@ export default function ProfilePage() {
   
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<{
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    phone: string | null;
-    role: string | null;
-  } | null>(null);
+  const { profile, fetchProfileData } = useProfileData(user?.id);
 
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    
-    async function fetchProfile() {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-        return;
-      }
-
-      setProfile(data);
-    }
-
-    fetchProfile();
   }, [user, navigate]);
 
   // Fetch fresh profile data
   const handleProfileUpdated = async () => {
     if (!user) return;
-    
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-      
-    if (data) {
-      setProfile(data);
-    }
+    fetchProfileData();
   };
 
   // Only show bank details tab for owners
@@ -98,7 +66,6 @@ export default function ProfilePage() {
         <TabsContent value="profile" className="pt-4">
           <ProfileInfoTab 
             user={user} 
-            profile={profile} 
             onProfileUpdated={handleProfileUpdated} 
           />
         </TabsContent>
