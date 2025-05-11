@@ -43,38 +43,34 @@ serve(async (req) => {
     // Get request body
     const { planId, numberOfBeds, boostEnabled, successUrl, cancelUrl } = await req.json();
     
-    // Determine pricing based on the plan
-    let unitAmount;
-    let planName;
-    switch (planId) {
-      case 'basic':
-        unitAmount = 5999; // $59.99 per bed in cents
-        planName = 'Starter Plan';
-        break;
-      case 'pro':
-        unitAmount = 7999; // $79.99 per bed in cents
-        planName = 'Pro Plan';
-        break;
-      default:
-        throw new Error("Invalid plan ID");
-    }
-    
     // Create line items
-    const lineItems = [
-      {
+    const lineItems = [];
+
+    // Determine pricing based on the plan
+    if (planId === 'pro') {
+      // Use the specific Stripe Price ID for Pro plan
+      lineItems.push({
+        price: 'price_1RNYnxIpb6JiWPFAiaqSd2BI',
+        quantity: numberOfBeds,
+      });
+    } else if (planId === 'basic') {
+      // Create price data for basic plan
+      lineItems.push({
         price_data: {
           currency: 'usd',
           product_data: {
-            name: `${planName} (${numberOfBeds} bed${numberOfBeds > 1 ? 's' : ''})`,
+            name: `Starter Plan (${numberOfBeds} bed${numberOfBeds > 1 ? 's' : ''})`,
           },
-          unit_amount: unitAmount,
+          unit_amount: 5999, // $59.99 per bed in cents
           recurring: {
             interval: 'month',
           },
         },
         quantity: numberOfBeds,
-      },
-    ];
+      });
+    } else {
+      throw new Error("Invalid plan ID");
+    }
 
     // Add boost if enabled
     if (boostEnabled) {
