@@ -26,6 +26,19 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 
+// Define the bank details type based on our new table
+type BankDetails = {
+  id: string;
+  user_id: string;
+  account_name: string;
+  account_number: string;
+  routing_number: string;
+  bank_name: string;
+  use_for_both: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
 const bankSchema = z.object({
   accountName: z.string().min(2, { message: "Account name is required" }),
   accountNumber: z.string().min(5, { message: "Valid account number required" }),
@@ -42,7 +55,7 @@ interface BankDetailsSectionProps {
 export function BankDetailsSection({ user }: BankDetailsSectionProps) {
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const [isProcessingBank, setIsProcessingBank] = useState(false);
-  const [bankDetails, setBankDetails] = useState<any>(null);
+  const [bankDetails, setBankDetails] = useState<BankDetails | null>(null);
   const [useForBoth, setUseForBoth] = useState(false);
   const { toast } = useToast();
   
@@ -61,11 +74,12 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
     if (!user) return;
     
     try {
+      // Use the generic version of select to properly type the response
       const { data, error } = await supabase
         .from("bank_details")
-        .select("*")
+        .select()
         .eq("user_id", user.id)
-        .maybeSingle();
+        .maybeSingle<BankDetails>();
 
       if (error && error.code !== 'PGRST116') {
         console.error("Error fetching bank details:", error);
@@ -116,7 +130,7 @@ export function BankDetailsSection({ user }: BankDetailsSectionProps) {
         .from("bank_details")
         .select("id")
         .eq("user_id", user.id)
-        .maybeSingle();
+        .maybeSingle<BankDetails>();
         
       if (checkError && checkError.code !== 'PGRST116') {
         throw checkError; 

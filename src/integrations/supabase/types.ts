@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bank_details: {
+        Row: {
+          account_name: string
+          account_number: string
+          bank_name: string
+          created_at: string | null
+          id: string
+          routing_number: string
+          updated_at: string | null
+          use_for_both: boolean | null
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          bank_name: string
+          created_at?: string | null
+          id?: string
+          routing_number: string
+          updated_at?: string | null
+          use_for_both?: boolean | null
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          bank_name?: string
+          created_at?: string | null
+          id?: string
+          routing_number?: string
+          updated_at?: string | null
+          use_for_both?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           care_home_id: string
