@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -333,11 +332,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                     <Home className="h-5 w-5 text-gray-500 mr-2" />
                     <span className="font-medium">{totalBeds}</span>
                     <span className="text-gray-500 ml-1">total beds</span>
-                    {propertiesData.length > 0 && (
-                      <span className="text-gray-500 ml-1">
-                        ({Math.round(totalBeds / propertiesData.length)})
-                      </span>
-                    )}
                   </div>
                 </div>
                 
