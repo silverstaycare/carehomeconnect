@@ -26,11 +26,6 @@ export const PlanCard = ({
 }: PlanCardProps) => {
   return (
     <Card className={`${plan.recommended ? 'border-2 border-care-500 relative' : ''} flex flex-col h-full`}>
-      {plan.recommended && (
-        <div className="absolute top-0 right-0 transform translate-x-1/4 -translate-y-1/4">
-          <Badge className="bg-care-500">Recommended</Badge>
-        </div>
-      )}
       <CardHeader>
         <CardTitle>{plan.name}</CardTitle>
         <CardDescription>
