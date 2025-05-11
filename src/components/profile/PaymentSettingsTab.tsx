@@ -173,11 +173,31 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
                   </div>
                 )}
                 
-                <div className="flex justify-between mt-3 pt-3 border-t border-gray-200">
-                  <span className="text-gray-600 font-medium">Total monthly payment:</span>
-                  <span className="font-bold text-care-600">
-                    ${calculateTotalMonthly(subscription.subscription)}
-                  </span>
+                <div className="flex flex-col space-y-2 mt-3 pt-3 border-t border-gray-200">
+                  {subscription.subscription?.numberOfBeds > 1 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">
+                        ${subscription.subscription?.planId === 'basic' ? '59.99' : '79.99'} × {subscription.subscription?.numberOfBeds} beds:
+                      </span>
+                      <span className="font-medium">
+                        ${((subscription.subscription?.planId === 'basic' ? 59.99 : 79.99) * subscription.subscription?.numberOfBeds).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {subscription.subscription?.hasBoost && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Visibility boost:</span>
+                      <span className="font-medium">$49.99</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between mt-2 pt-2 border-t border-gray-200">
+                    <span className="text-gray-600 font-medium">Total monthly payment:</span>
+                    <span className="font-bold text-care-600">
+                      ${calculateTotalMonthly(subscription.subscription)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </CardContent>
