@@ -1,10 +1,11 @@
+
 import { useState } from "react";
-import { EditProfileDialog } from "./EditProfileDialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Edit, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useProfileData } from "@/hooks/useProfileData";
+import { EditProfileDialog } from "./EditProfileDialog";
 
 interface ProfileInfoTabProps {
   user: any;
@@ -100,12 +101,16 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
         </CardContent>
       </Card>
 
-      <EditProfileDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        profile={profile}
-        onSave={handleSaveProfile}
-      />
+      {/* Fixed EditProfileDialog props to match the component's interface */}
+      {profile && (
+        <EditProfileDialog 
+          userId={profile.id}
+          firstName={profile.first_name || ""}
+          lastName={profile.last_name || ""}
+          phone={profile.phone || ""}
+          onProfileUpdated={() => onProfileUpdated && onProfileUpdated()}
+        />
+      )}
     </div>
   );
 }
