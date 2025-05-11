@@ -376,20 +376,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
               
               <div className="mt-6 flex justify-end gap-3">
                 <Button 
-                  variant="outline"
-                  onClick={handleManageSubscription}
-                  disabled={isManagingSubscription}
-                >
-                  {isManagingSubscription ? (
-                    <>
-                      <Spinner size="sm" className="mr-2" />
-                      Opening Portal...
-                    </>
-                  ) : (
-                    "Manage Current Plan"
-                  )}
-                </Button>
-                <Button 
                   onClick={handleUpdateSubscription}
                   disabled={isUpdating}
                 >
@@ -399,7 +385,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                       Please wait...
                     </>
                   ) : (
-                    "Update Subscription"
+                    "Manage Subscription"
                   )}
                 </Button>
               </div>
