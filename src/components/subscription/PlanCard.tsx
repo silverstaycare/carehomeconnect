@@ -1,4 +1,3 @@
-
 import { Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +35,9 @@ export const PlanCard = ({
     if (onSelect) {
       if (plan.id === 'basic') {
         return 'Downgrade';
+      }
+      if (plan.id === 'pro') {
+        return 'Upgrade';
       }
       return 'Select Plan';
     }
