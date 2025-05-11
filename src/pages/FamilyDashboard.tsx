@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -32,6 +31,7 @@ const FamilyDashboard = () => {
   } = useFamilyDashboardData();
   const isMobile = useIsMobile();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Fetch user profile data
   useEffect(() => {
@@ -102,13 +102,26 @@ const FamilyDashboard = () => {
         </div>
         <div className="mt-4 md:mt-0 flex gap-3 items-center">
           {profile && (
-            <EditProfileDialog 
-              userId={profile.id}
-              firstName={profile.first_name || ""}
-              lastName={profile.last_name || ""}
-              phone={profile.phone || ""}
-              onProfileUpdated={handleProfileUpdated}
-            />
+            <>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                onClick={() => setIsEditDialogOpen(true)}
+              >
+                <Pencil size={16} />
+                Edit Profile
+              </Button>
+              <EditProfileDialog 
+                userId={profile.id}
+                firstName={profile.first_name || ""}
+                lastName={profile.last_name || ""}
+                phone={profile.phone || ""}
+                onProfileUpdated={handleProfileUpdated}
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+              />
+            </>
           )}
           <Button 
             onClick={() => window.location.href = "/search"} 
