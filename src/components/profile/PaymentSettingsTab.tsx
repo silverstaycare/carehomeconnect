@@ -379,106 +379,120 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
 
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
-      <h2 className="text-2xl font-bold mb-4">Payment Methods</h2>
+      <h2 className="text-2xl font-bold mb-4">Payment Settings</h2>
       
-      {isLoadingCards ? (
-        <div className="flex items-center justify-center p-4">
-          <Spinner size="sm" />
-          <p className="ml-3 text-gray-600">Loading payment methods...</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {paymentCards.length === 0 ? (
-            <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center">
-              <p className="text-gray-600">No payment methods added yet</p>
-            </div>
-          ) : (
-            paymentCards.map((card) => (
-              <div key={card.id} className="flex items-center justify-between border rounded-md p-4">
-                <div className="flex items-center">
-                  <div className="bg-blue-50 p-2 rounded mr-4">
-                    <CreditCard className="h-5 w-5 text-blue-600" />
+      {/* Subscription Payment Section */}
+      <div className="mb-8">
+        <h3 className="text-xl font-medium mb-3 border-b pb-2">Subscription Payment Methods</h3>
+        <p className="text-gray-600 mb-4">Add payment methods for your subscription and services</p>
+        
+        {isLoadingCards ? (
+          <div className="flex items-center justify-center p-4">
+            <Spinner size="sm" />
+            <p className="ml-3 text-gray-600">Loading payment methods...</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {paymentCards.length === 0 ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center">
+                <p className="text-gray-600">No payment methods added yet</p>
+              </div>
+            ) : (
+              paymentCards.map((card) => (
+                <div key={card.id} className="flex items-center justify-between border rounded-md p-4">
+                  <div className="flex items-center">
+                    <div className="bg-blue-50 p-2 rounded mr-4">
+                      <CreditCard className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {card.card_type} •••• {card.last_four}
+                        {card.is_default && (
+                          <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">Default</Badge>
+                        )}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {card.cardholder_name} • Expires {card.expiry_date}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">
-                      {card.card_type} •••• {card.last_four}
-                      {card.is_default && (
-                        <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">Default</Badge>
-                      )}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {card.cardholder_name} • Expires {card.expiry_date}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  {!card.is_default && (
+                  <div className="flex gap-2">
+                    {!card.is_default && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleSetDefaultCard(card.id)}
+                      >
+                        Set Default
+                      </Button>
+                    )}
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => handleSetDefaultCard(card.id)}
+                      onClick={() => handleRemoveCard(card.id)}
                     >
-                      Set Default
+                      <Trash className="h-4 w-4" />
                     </Button>
-                  )}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleRemoveCard(card.id)}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
-          
-          <div className="flex flex-col gap-2 mt-2">
+              ))
+            )}
+            
             <Button
               variant="outline"
               onClick={() => setIsAddCardOpen(true)}
+              className="w-full md:w-auto"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Payment Method
             </Button>
-            
-            <Button 
-              variant="outline"
-              onClick={() => setIsAddBankOpen(true)}
-              className="bg-gray-50 hover:bg-gray-100"
-            >
-              <Banknote className="mr-2 h-4 w-4" />
-              Add Bank Details
-            </Button>
           </div>
-
-          {bankDetails && (
-            <div className="mt-6">
-              <h3 className="text-lg font-medium mb-2">Bank Account Information</h3>
-              <div className="border rounded-md p-4">
-                <div className="flex items-center">
-                  <div className="bg-green-50 p-2 rounded mr-4">
-                    <Banknote className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{bankDetails.bank_name}</p>
-                    <p className="text-sm text-gray-500">
-                      {bankDetails.account_name} • Account ending in {bankDetails.account_number?.slice(-4)}
-                    </p>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setIsAddBankOpen(true)}
-                  >
-                    Edit
-                  </Button>
-                </div>
+        )}
+      </div>
+      
+      {/* Receive Payment Section */}
+      <div>
+        <h3 className="text-xl font-medium mb-3 border-b pb-2">Receive Payment Methods</h3>
+        <p className="text-gray-600 mb-4">Add your bank details to receive payments from bookings</p>
+        
+        {bankDetails ? (
+          <div className="border rounded-md p-4">
+            <div className="flex items-center">
+              <div className="bg-green-50 p-2 rounded mr-4">
+                <Banknote className="h-5 w-5 text-green-600" />
               </div>
+              <div className="flex-1">
+                <p className="font-medium">{bankDetails.bank_name}</p>
+                <p className="text-sm text-gray-500">
+                  {bankDetails.account_name} • Account ending in {bankDetails.account_number?.slice(-4)}
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsAddBankOpen(true)}
+              >
+                Edit
+              </Button>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
+            <p className="text-gray-600">No bank details added yet</p>
+          </div>
+        )}
+        
+        {!bankDetails && (
+          <Button
+            variant="outline"
+            onClick={() => setIsAddBankOpen(true)}
+            className="mt-4 w-full md:w-auto"
+          >
+            <Banknote className="mr-2 h-4 w-4" />
+            Add Bank Details
+          </Button>
+        )}
+      </div>
 
       {/* Add Payment Method Dialog */}
       <Dialog open={isAddCardOpen} onOpenChange={setIsAddCardOpen}>
