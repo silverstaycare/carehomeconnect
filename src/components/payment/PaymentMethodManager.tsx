@@ -15,6 +15,7 @@ import { AddBankForm } from "@/components/payment/AddBankForm";
 import { useToast } from "@/hooks/use-toast";
 import { BankDetails } from "@/types/bank";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface PaymentMethod {
   id: string;
@@ -231,7 +232,7 @@ export function PaymentMethodManager({
         )}
       </div>
       
-      {/* Payment Methods List */}
+      {/* Payment Methods List - All cards and banks displayed here */}
       <PaymentMethodsList 
         methods={paymentMethods} 
         onSetDefault={handleSetDefaultPayment} 
@@ -245,19 +246,27 @@ export function PaymentMethodManager({
         }}
       />
       
-      {/* Payment Method Selection - Now moved completely out of the border-t section */}
-      <div className="mt-8 pt-6 border-t">
-        <h3 className="text-lg font-medium">Default Payment Methods</h3>
-        
-        <div className="grid md:grid-cols-2 gap-6 mt-4">
-          <PaymentMethodSelect 
-            methods={paymentMethods}
-            selectedId={selectedPaymentMethod}
-            onSelect={setSelectedPaymentMethod}
-            label="Subscription Payment Method"
-          />
-          
-          {/* Only show bank accounts for receiving payments */}
+      {/* Payment Method Selection in separate cards */}
+      <Card className="mt-8">
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-medium mb-4">Payment Methods</h3>
+          <div className="space-y-6">
+            <PaymentMethodSelect 
+              methods={paymentMethods}
+              selectedId={selectedPaymentMethod}
+              onSelect={setSelectedPaymentMethod}
+              label="Subscription Payment Method"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <h3 className="text-lg font-medium mb-4">Receive Payment Methods</h3>
+          <p className="text-gray-600 mb-4">
+            Add your bank details to receive payments from bookings
+          </p>
           <PaymentMethodSelect 
             methods={paymentMethods.filter(m => m.type === "bank")}
             selectedId={paymentMethods.find(m => m.type === "bank")?.id || null}
@@ -270,8 +279,8 @@ export function PaymentMethodManager({
             }}
             label="Receive Payment Method"
           />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Add Card Dialog */}
       <Dialog open={isAddCardOpen} onOpenChange={setIsAddCardOpen}>
