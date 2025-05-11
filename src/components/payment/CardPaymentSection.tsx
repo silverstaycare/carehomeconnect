@@ -1,0 +1,426 @@
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { CreditCard, Plus, Trash } from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter 
+} from "@/components/ui/dialog";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+interface PaymentCard {
+  id: string;
+  cardholder_name: string;
+  last_four: string;
+  expiry_date: string;
+  card_type: string;
+  is_default: boolean;
+}
+
+interface CardPaymentSectionProps {
+  user: any;
+}
+
+const cardSchema = z.object({
+  cardholderName: z.string().min(2, "Cardholder name is required"),
+  cardNumber: z.string()
+    .min(13, "Card number must be between 13-19 digits")
+    .max(19, "Card number must be between 13-19 digits")
+    .refine((val) => /^[0-9]+$/.test(val), "Card number must contain only digits"),
+  expiryDate: z.string()
+    .min(5, "Expiry date is required (MM/YY)")
+    .max(5, "Expiry date must be in MM/YY format")
+    .refine((val) => /^(0[1-9]|1[0-2])\/[0-9]{2}$/.test(val), "Expiry date must be in MM/YY format"),
+  cvc: z.string()
+    .min(3, "CVC must be 3-4 digits")
+    .max(4, "CVC must be 3-4 digits")
+    .refine((val) => /^[0-9]+$/.test(val), "CVC must contain only digits"),
+});
+
+type CardFormValues = z.infer<typeof cardSchema>;
+
+export function CardPaymentSection({ user }: CardPaymentSectionProps) {
+  const [paymentCards, setPaymentCards] = useState<PaymentCard[]>([]);
+  const [isLoadingCards, setIsLoadingCards] = useState(false);
+  const [isAddCardOpen, setIsAddCardOpen] = useState(false);
+  const [isProcessingCard, setIsProcessingCard] = useState(false);
+  const { toast } = useToast();
+  
+  const cardForm = useForm<CardFormValues>({
+    resolver: zodResolver(cardSchema),
+    defaultValues: {
+      cardholderName: "",
+      cardNumber: "",
+      expiryDate: "",
+      cvc: ""
+    }
+  });
+
+  // Fetch saved payment cards
+  const fetchPaymentCards = async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoadingCards(true);
+      
+      // Here we would normally fetch cards from Stripe via an edge function
+      // For now, we'll simulate with mock data
+      const mockCards: PaymentCard[] = [
+        {
+          id: "card_1",
+          cardholder_name: "John Smith",
+          last_four: "4242",
+          expiry_date: "12/25",
+          card_type: "Visa",
+          is_default: true
+        }
+      ];
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setPaymentCards(mockCards);
+    } catch (error) {
+      console.error("Error fetching payment cards:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load payment methods",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingCards(false);
+    }
+  };
+
+  // Load payment cards when component mounts
+  useState(() => {
+    fetchPaymentCards();
+  });
+
+  // Format card number with spaces
+  const formatCardNumber = (value: string): string => {
+    const val = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const matches = val.match(/.{1,4}/g);
+    return matches ? matches.join(' ') : value;
+  };
+
+  // Format expiry date with slash
+  const formatExpiryDate = (value: string): string => {
+    const val = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (val.length >= 2) {
+      return `${val.substring(0, 2)}/${val.substring(2, 4)}`;
+    }
+    return val;
+  };
+
+  // Handle card form submission
+  const onSubmitCard = async (data: CardFormValues) => {
+    if (!user) return;
+    
+    setIsProcessingCard(true);
+    
+    try {
+      // In a real implementation, we would call a Stripe edge function
+      // to tokenize and save the card securely
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Add new card to state (in real app, we'd fetch from API)
+      const newCard: PaymentCard = {
+        id: `card_${Date.now()}`,
+        cardholder_name: data.cardholderName,
+        last_four: data.cardNumber.slice(-4),
+        expiry_date: data.expiryDate,
+        card_type: getCardType(data.cardNumber),
+        is_default: paymentCards.length === 0 // Make default if first card
+      };
+      
+      setPaymentCards([...paymentCards, newCard]);
+      
+      toast({
+        title: "Card added",
+        description: "Your payment method has been saved"
+      });
+      
+      // Reset form and close dialog
+      cardForm.reset();
+      setIsAddCardOpen(false);
+    } catch (error) {
+      console.error("Error adding payment method:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save payment method",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingCard(false);
+    }
+  };
+
+  // Determine card type from number
+  const getCardType = (cardNumber: string): string => {
+    const firstDigit = cardNumber.charAt(0);
+    
+    if (cardNumber.startsWith('4')) return 'Visa';
+    if (/^5[1-5]/.test(cardNumber)) return 'Mastercard';
+    if (/^3[47]/.test(cardNumber)) return 'American Express';
+    if (/^6(?:011|5)/.test(cardNumber)) return 'Discover';
+    
+    return 'Card';
+  };
+
+  // Remove payment card
+  const handleRemoveCard = async (cardId: string) => {
+    try {
+      // In a real implementation, we would call a Stripe edge function
+      // to remove the card securely
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Remove card from state
+      setPaymentCards(paymentCards.filter(card => card.id !== cardId));
+      
+      toast({
+        title: "Card removed",
+        description: "Your payment method has been removed"
+      });
+    } catch (error) {
+      console.error("Error removing payment method:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove payment method",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Set card as default
+  const handleSetDefaultCard = async (cardId: string) => {
+    try {
+      // In a real implementation, we would call a Stripe edge function
+      // to set the default card
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update cards in state
+      setPaymentCards(paymentCards.map(card => ({
+        ...card,
+        is_default: card.id === cardId
+      })));
+      
+      toast({
+        title: "Default updated",
+        description: "Your default payment method has been updated"
+      });
+    } catch (error) {
+      console.error("Error setting default payment method:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update default payment method",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="text-xl font-medium mb-3 border-b pb-2">Subscription Payment Methods</h3>
+      <p className="text-gray-600 mb-4">Add payment methods for your subscription and services</p>
+      
+      {isLoadingCards ? (
+        <div className="flex items-center justify-center p-4">
+          <Spinner size="sm" />
+          <p className="ml-3 text-gray-600">Loading payment methods...</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {paymentCards.length === 0 ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center">
+              <p className="text-gray-600">No payment methods added yet</p>
+            </div>
+          ) : (
+            paymentCards.map((card) => (
+              <div key={card.id} className="flex items-center justify-between border rounded-md p-4">
+                <div className="flex items-center">
+                  <div className="bg-blue-50 p-2 rounded mr-4">
+                    <CreditCard className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">
+                      {card.card_type} •••• {card.last_four}
+                      {card.is_default && (
+                        <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-100">Default</Badge>
+                      )}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {card.cardholder_name} • Expires {card.expiry_date}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  {!card.is_default && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleSetDefaultCard(card.id)}
+                    >
+                      Set Default
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleRemoveCard(card.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+          
+          <Button
+            variant="outline"
+            onClick={() => setIsAddCardOpen(true)}
+            className="w-full md:w-auto"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Payment Method
+          </Button>
+        </div>
+      )}
+
+      {/* Add Payment Method Dialog */}
+      <Dialog open={isAddCardOpen} onOpenChange={setIsAddCardOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Payment Method</DialogTitle>
+          </DialogHeader>
+          
+          <Form {...cardForm}>
+            <form onSubmit={cardForm.handleSubmit(onSubmitCard)} className="space-y-4">
+              <FormField
+                control={cardForm.control}
+                name="cardholderName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cardholder Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Name on card" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={cardForm.control}
+                name="cardNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Card Number</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="1234 5678 9012 3456" 
+                        value={formatCardNumber(field.value)}
+                        onChange={(e) => {
+                          const formatted = e.target.value.replace(/\s+/g, '').slice(0, 19);
+                          field.onChange(formatted);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={cardForm.control}
+                  name="expiryDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Expiry Date</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="MM/YY" 
+                          value={field.value}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                            field.onChange(formatExpiryDate(value));
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={cardForm.control}
+                  name="cvc"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CVC</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="123" 
+                          value={field.value}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                            field.onChange(value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <DialogFooter className="mt-6">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAddCardOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isProcessingCard}>
+                  {isProcessingCard ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Card"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
