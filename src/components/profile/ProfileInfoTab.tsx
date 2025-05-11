@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Edit, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -49,12 +49,6 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
       <Card className="border-0 shadow-none">
-        <CardHeader className="px-0 pt-0">
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>
-            Manage your personal information
-          </CardDescription>
-        </CardHeader>
         <CardContent className="px-0 space-y-6">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16 border">
