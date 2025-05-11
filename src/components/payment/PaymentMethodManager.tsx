@@ -19,19 +19,17 @@ interface PaymentMethod {
   exp_year?: number;
   isDefault?: boolean;
 }
-
 interface PaymentMethodManagerProps {
   user: any;
   sharedBankAccount?: boolean;
   bankDetails?: BankDetails | null;
   onBankDetailsChanged?: () => void;
 }
-
-export function PaymentMethodManager({ 
-  user, 
+export function PaymentMethodManager({
+  user,
   sharedBankAccount = false,
   bankDetails = null,
-  onBankDetailsChanged 
+  onBankDetailsChanged
 }: PaymentMethodManagerProps) {
   // State
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
@@ -44,31 +42,28 @@ export function PaymentMethodManager({
   const [bankMethods, setBankMethods] = useState<PaymentMethod[]>([]);
   const [useForBoth, setUseForBoth] = useState(false);
   const [onEdit, setOnEdit] = useState<((id: string) => void) | undefined>(undefined);
-  
+
   // Mock data for demo purposes
   useEffect(() => {
     // This would normally be fetched from an API
-    const mockMethods: PaymentMethod[] = [
-      { 
-        id: "card_1", 
-        type: "card", 
-        name: "Visa", 
-        last4: "4242", 
-        exp_month: 12, 
-        exp_year: 2025,
-        isDefault: true
-      },
-      { 
-        id: "card_2", 
-        type: "card", 
-        name: "Mastercard", 
-        last4: "5555", 
-        exp_month: 10, 
-        exp_year: 2026,
-        isDefault: false
-      }
-    ];
-    
+    const mockMethods: PaymentMethod[] = [{
+      id: "card_1",
+      type: "card",
+      name: "Visa",
+      last4: "4242",
+      exp_month: 12,
+      exp_year: 2025,
+      isDefault: true
+    }, {
+      id: "card_2",
+      type: "card",
+      name: "Mastercard",
+      last4: "5555",
+      exp_month: 10,
+      exp_year: 2026,
+      isDefault: false
+    }];
+
     // If we have bank details, add them to the mock payment methods
     if (bankDetails) {
       const bankMethod: PaymentMethod = {
@@ -82,21 +77,18 @@ export function PaymentMethodManager({
         exp_month: undefined,
         exp_year: undefined
       };
-      
       mockMethods.push(bankMethod);
       setBankMethods([bankMethod]);
-      
       if (sharedBankAccount) {
         setSelectedRentBankId("bank_1");
       }
     }
-    
     setPaymentMethods(mockMethods);
     const defaultMethod = mockMethods.find(m => m.isDefault);
     setDefaultPaymentId(defaultMethod?.id || null);
     setSelectedSubscriptionId(defaultMethod?.id || null);
   }, [bankDetails, sharedBankAccount]);
-  
+
   // Handle setting default payment method
   const handleSetDefault = (id: string) => {
     // This would normally be an API call
@@ -106,7 +98,7 @@ export function PaymentMethodManager({
     })));
     setDefaultPaymentId(id);
   };
-  
+
   // Handle adding new payment method (mock)
   const handleAddPaymentMethod = (data: any) => {
     // This would normally be an API call
@@ -127,7 +119,7 @@ export function PaymentMethodManager({
     // This would normally update a setting in the backend
     console.log("Selected bank account for rent payments:", id);
   };
-  
+
   // Select payment method for subscription
   const handleSelectSubscription = (id: string) => {
     setSelectedSubscriptionId(id);
@@ -149,27 +141,19 @@ export function PaymentMethodManager({
   const handleAddBankAccount = (data: any) => {
     console.log("Adding bank account:", data);
     setIsAddBankOpen(false);
-    
+
     // This would normally be an API call
     // For now, we'll just mock it
     if (onBankDetailsChanged) {
       onBankDetailsChanged();
     }
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Subscription Payment Methods Section */}
       <div>
-        <h3 className="text-lg font-medium mb-4">Payment Methods</h3>
         
-        <PaymentMethodsList 
-          methods={paymentMethods}
-          onSetDefault={handleSetDefault}
-          onAddCard={handleAddCardClick}
-          onAddBank={handleAddBankClick}
-          onEdit={onEdit}
-        />
+        
+        <PaymentMethodsList methods={paymentMethods} onSetDefault={handleSetDefault} onAddCard={handleAddCardClick} onAddBank={handleAddBankClick} onEdit={onEdit} />
         
         {/* Add Payment Method Dialog */}
         <Dialog open={isAddPaymentOpen} onOpenChange={setIsAddPaymentOpen}>
@@ -178,11 +162,7 @@ export function PaymentMethodManager({
               <DialogTitle>Add Payment Method</DialogTitle>
             </DialogHeader>
             
-            <AddCardForm 
-              onSubmit={handleAddPaymentMethod}
-              isProcessing={isProcessing}
-              onCancel={handleCancel}
-            />
+            <AddCardForm onSubmit={handleAddPaymentMethod} isProcessing={isProcessing} onCancel={handleCancel} />
           </DialogContent>
         </Dialog>
 
@@ -193,19 +173,12 @@ export function PaymentMethodManager({
               <DialogTitle>Add Bank Account</DialogTitle>
             </DialogHeader>
             
-            <AddBankForm 
-              onSubmit={handleAddBankAccount}
-              isProcessing={isProcessing}
-              defaultValues={{
-                accountName: "",
-                accountNumber: "",
-                routingNumber: "",
-                bankName: ""
-              }}
-              useForBoth={useForBoth}
-              onUseForBothChange={setUseForBoth}
-              onCancel={handleCancel}
-            />
+            <AddBankForm onSubmit={handleAddBankAccount} isProcessing={isProcessing} defaultValues={{
+            accountName: "",
+            accountNumber: "",
+            routingNumber: "",
+            bankName: ""
+          }} useForBoth={useForBoth} onUseForBothChange={setUseForBoth} onCancel={handleCancel} />
           </DialogContent>
         </Dialog>
       </div>
@@ -217,18 +190,9 @@ export function PaymentMethodManager({
           Select payment method for subscription
         </p>
         
-        {paymentMethods.length > 0 ? (
-          <PaymentMethodSelect
-            methods={paymentMethods}
-            selectedId={selectedSubscriptionId}
-            onSelect={handleSelectSubscription}
-            label=""
-          />
-        ) : (
-          <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
+        {paymentMethods.length > 0 ? <PaymentMethodSelect methods={paymentMethods} selectedId={selectedSubscriptionId} onSelect={handleSelectSubscription} label="" /> : <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
             <p className="text-gray-600">No payment methods added yet</p>
-          </div>
-        )}
+          </div>}
       </div>
       
       {/* Separator for visual distinction */}
@@ -238,25 +202,13 @@ export function PaymentMethodManager({
           Select which bank account should receive rent payments
         </p>
         
-        {bankMethods.length > 0 ? (
-          <PaymentMethodSelect
-            methods={bankMethods}
-            selectedId={selectedRentBankId}
-            onSelect={handleSelectRentBank}
-            label=""
-          />
-        ) : (
-          <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
+        {bankMethods.length > 0 ? <PaymentMethodSelect methods={bankMethods} selectedId={selectedRentBankId} onSelect={handleSelectRentBank} label="" /> : <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
             <p className="text-gray-600">No bank accounts added yet</p>
-          </div>
-        )}
+          </div>}
         
-        {bankDetails?.use_for_both && (
-          <p className="text-sm text-blue-600 mt-2">
+        {bankDetails?.use_for_both && <p className="text-sm text-blue-600 mt-2">
             Using the same bank account for subscription payments and rent deposits
-          </p>
-        )}
+          </p>}
       </div>
-    </div>
-  );
+    </div>;
 }
