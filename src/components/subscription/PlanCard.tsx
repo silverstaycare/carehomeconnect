@@ -70,12 +70,6 @@ export const PlanCard = ({
             ${totalPrice}
             <span className="text-lg font-normal text-gray-600">/mo</span>
           </p>
-          <p className="text-sm text-gray-600">
-            ${plan.pricePerBed}/bed/mo × {numberOfBeds} beds
-            {boostEnabled && (
-              <> + ${boostPrice} boost</>
-            )}
-          </p>
         </div>
         <ul className="space-y-3">
           {plan.features.map((feature, index) => (
