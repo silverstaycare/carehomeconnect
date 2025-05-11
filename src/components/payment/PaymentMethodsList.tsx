@@ -18,13 +18,15 @@ interface PaymentMethodsListProps {
   onSetDefault: (id: string) => void;
   onEdit?: (id: string) => void;
   onAddCard?: () => void;
+  onAddBank?: () => void;
 }
 
 export function PaymentMethodsList({
   methods,
   onSetDefault,
   onEdit,
-  onAddCard
+  onAddCard,
+  onAddBank
 }: PaymentMethodsListProps) {
   // Filter methods by type
   const cardMethods = methods.filter(method => method.type === "card");
@@ -102,7 +104,20 @@ export function PaymentMethodsList({
       {/* Bank Accounts Section */}
       {bankMethods.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Bank Accounts</h4>
+          <div className="flex justify-between items-center">
+            <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Bank Accounts</h4>
+            {onAddBank && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onAddBank}
+                className="flex items-center gap-1"
+              >
+                <PlusCircle className="h-3.5 w-3.5" />
+                Add Bank
+              </Button>
+            )}
+          </div>
           {bankMethods.map((method) => (
             <div key={method.id} className="border rounded-md p-4">
               <div className="flex items-center">

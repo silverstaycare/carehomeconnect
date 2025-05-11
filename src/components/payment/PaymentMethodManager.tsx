@@ -7,6 +7,7 @@ import { PaymentMethodsList } from "@/components/payment/PaymentMethodsList";
 import { AddCardForm } from "@/components/payment/AddCardForm";
 import { PaymentMethodSelect } from "@/components/payment/PaymentMethodSelect";
 import { BankDetails } from "@/types/bank";
+import { AddBankForm } from "@/components/payment/AddBankForm";
 
 // Define the PaymentMethod interface to match what's expected
 interface PaymentMethod {
@@ -35,11 +36,13 @@ export function PaymentMethodManager({
 }: PaymentMethodManagerProps) {
   // State
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
+  const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [defaultPaymentId, setDefaultPaymentId] = useState<string | null>(null);
   const [selectedRentBankId, setSelectedRentBankId] = useState<string | null>(null);
   const [bankMethods, setBankMethods] = useState<PaymentMethod[]>([]);
+  const [useForBoth, setUseForBoth] = useState(false);
   
   // Mock data for demo purposes
   useEffect(() => {
@@ -112,6 +115,7 @@ export function PaymentMethodManager({
   // Handle cancel action for the add payment form
   const handleCancel = () => {
     setIsAddPaymentOpen(false);
+    setIsAddBankOpen(false);
   };
 
   // Select bank account for rent payment
@@ -124,6 +128,23 @@ export function PaymentMethodManager({
   // Open add card dialog
   const handleAddCardClick = () => {
     setIsAddPaymentOpen(true);
+  };
+
+  // Open add bank dialog
+  const handleAddBankClick = () => {
+    setIsAddBankOpen(true);
+  };
+
+  // Handle adding new bank account
+  const handleAddBankAccount = (data: any) => {
+    console.log("Adding bank account:", data);
+    setIsAddBankOpen(false);
+    
+    // This would normally be an API call
+    // For now, we'll just mock it
+    if (onBankDetailsChanged) {
+      onBankDetailsChanged();
+    }
   };
 
   return (
@@ -139,6 +160,7 @@ export function PaymentMethodManager({
           methods={paymentMethods}
           onSetDefault={handleSetDefault}
           onAddCard={handleAddCardClick}
+          onAddBank={handleAddBankClick}
         />
         
         {/* Add Payment Method Dialog */}
@@ -151,6 +173,29 @@ export function PaymentMethodManager({
             <AddCardForm 
               onSubmit={handleAddPaymentMethod}
               isProcessing={isProcessing}
+              onCancel={handleCancel}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Bank Account Dialog */}
+        <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Bank Account</DialogTitle>
+            </DialogHeader>
+            
+            <AddBankForm 
+              onSubmit={handleAddBankAccount}
+              isProcessing={isProcessing}
+              defaultValues={{
+                accountName: "",
+                accountNumber: "",
+                routingNumber: "",
+                bankName: ""
+              }}
+              useForBoth={useForBoth}
+              onUseForBothChange={setUseForBoth}
               onCancel={handleCancel}
             />
           </DialogContent>
