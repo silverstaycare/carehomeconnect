@@ -13,4 +13,5 @@ export interface Subscription {
   status: 'active' | 'canceled' | 'expired' | null;
   currentPeriodEnd: string | null;
   hasBoost?: boolean;
+  numberOfBeds?: number;
 }
