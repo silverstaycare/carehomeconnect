@@ -12,6 +12,7 @@ type ToastProps = {
   variant?: "default" | "destructive";
   onOpenChange?: (open: boolean) => void;
   open?: boolean;
+  icon?: React.ReactNode; // Add the icon prop
 }
 
 // Simplified placeholder implementation
