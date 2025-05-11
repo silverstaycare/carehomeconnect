@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -139,15 +140,6 @@ export function PaymentMethodManager({
           onSetDefault={handleSetDefault}
           onAddCard={handleAddCardClick}
         />
-        
-        <Button
-          variant="outline"
-          onClick={() => setIsAddPaymentOpen(true)}
-          className="mt-4 w-full md:w-auto"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Payment Method
-        </Button>
         
         {/* Add Payment Method Dialog */}
         <Dialog open={isAddPaymentOpen} onOpenChange={setIsAddPaymentOpen}>
