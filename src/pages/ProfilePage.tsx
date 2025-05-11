@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Wallet } from "lucide-react";
+import { Wallet, CreditCard, BankNote } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,10 +30,19 @@ const profileFormSchema = z.object({
   email: z.string().email().optional(),
 });
 
+const bankDetailsSchema = z.object({
+  accountName: z.string().min(2, { message: "Account name is required" }),
+  accountNumber: z.string().min(5, { message: "Valid account number required" }),
+  routingNumber: z.string().min(9, { message: "Valid routing number required" }).max(9),
+  bankName: z.string().min(2, { message: "Bank name is required" }),
+});
+
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
+type BankDetailsFormValues = z.infer<typeof bankDetailsSchema>;
 
 export default function ProfilePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittingBank, setIsSubmittingBank] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [isCheckingSubscription, setIsCheckingSubscription] = useState(false);
   const [subscription, setSubscription] = useState(null);
@@ -45,6 +54,13 @@ export default function ProfilePage() {
     first_name: string | null;
     last_name: string | null;
     phone: string | null;
+    role: string | null;
+  } | null>(null);
+  const [bankDetails, setBankDetails] = useState<{
+    account_name: string | null;
+    account_number: string | null;
+    routing_number: string | null;
+    bank_name: string | null;
   } | null>(null);
 
   const form = useForm<ProfileFormValues>({
@@ -53,6 +69,16 @@ export default function ProfilePage() {
       displayName: "",
       phone: "",
       email: user?.email || "",
+    },
+  });
+
+  const bankForm = useForm<BankDetailsFormValues>({
+    resolver: zodResolver(bankDetailsSchema),
+    defaultValues: {
+      accountName: "",
+      accountNumber: "",
+      routingNumber: "",
+      bankName: "",
     },
   });
 
@@ -86,8 +112,31 @@ export default function ProfilePage() {
       });
     }
 
+    async function fetchBankDetails() {
+      const { data, error } = await supabase
+        .from("bank_details")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!error && data) {
+        setBankDetails(data);
+        
+        bankForm.reset({
+          accountName: data.account_name || "",
+          accountNumber: data.account_number || "",
+          routingNumber: data.routing_number || "",
+          bankName: data.bank_name || "",
+        });
+      }
+    }
+
     fetchProfile();
-  }, [user, navigate, form]);
+    // Only fetch bank details for owners
+    if (profile?.role === "owner") {
+      fetchBankDetails();
+    }
+  }, [user, navigate, form, bankForm, profile?.role]);
 
   // Check subscription status when needed
   const checkSubscriptionStatus = async () => {
@@ -157,6 +206,81 @@ export default function ProfilePage() {
     }
   }
 
+  async function onSubmitBankDetails(data: BankDetailsFormValues) {
+    if (!user) return;
+    
+    setIsSubmittingBank(true);
+    
+    try {
+      // Check if bank details already exist
+      const { data: existingData, error: checkError } = await supabase
+        .from('bank_details')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+        
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError; 
+      }
+      
+      let updateError;
+      
+      if (existingData?.id) {
+        // Update existing record
+        const { error } = await supabase
+          .from('bank_details')
+          .update({
+            account_name: data.accountName,
+            account_number: data.accountNumber,
+            routing_number: data.routingNumber,
+            bank_name: data.bankName
+          })
+          .eq('user_id', user.id);
+          
+        updateError = error;
+      } else {
+        // Create new record
+        const { error } = await supabase
+          .from('bank_details')
+          .insert({
+            user_id: user.id,
+            account_name: data.accountName,
+            account_number: data.accountNumber,
+            routing_number: data.routingNumber,
+            bank_name: data.bankName
+          });
+          
+        updateError = error;
+      }
+      
+      if (updateError) throw updateError;
+      
+      toast({
+        title: "Banking details updated",
+        description: "Your banking information has been saved securely",
+      });
+      
+      // Refresh bank details
+      const { data: refreshedData } = await supabase
+        .from('bank_details')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+        
+      setBankDetails(refreshedData);
+      
+    } catch (error) {
+      console.error("Error updating bank details:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update banking information",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingBank(false);
+    }
+  }
+
   const handleManageSubscription = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('customer-portal');
@@ -184,6 +308,9 @@ export default function ProfilePage() {
     profile?.last_name?.charAt(0) || "",
   ].join('').toUpperCase();
 
+  // Only show bank details tab for owners
+  const isOwner = profile?.role === "owner";
+
   return (
     <div className="container py-8 px-4 max-w-2xl mx-auto">
       <div className="mb-8">
@@ -192,12 +319,18 @@ export default function ProfilePage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">Profile Settings</TabsTrigger>
           <TabsTrigger value="payment" className="flex items-center gap-2">
-            <Wallet className="h-4 w-4" />
+            <CreditCard className="h-4 w-4" />
             <span>Payment Settings</span>
           </TabsTrigger>
+          {isOwner && (
+            <TabsTrigger value="bank" className="flex items-center gap-2">
+              <BankNote className="h-4 w-4" />
+              <span>Bank Details</span>
+            </TabsTrigger>
+          )}
         </TabsList>
         
         <TabsContent value="profile" className="pt-4">
@@ -337,6 +470,101 @@ export default function ProfilePage() {
             )}
           </div>
         </TabsContent>
+
+        {isOwner && (
+          <TabsContent value="bank" className="pt-4">
+            <div className="bg-white p-6 rounded-lg border shadow-sm">
+              <h2 className="text-2xl font-bold mb-4">Banking Information</h2>
+              <p className="text-gray-600 mb-6">
+                Add your bank details to receive payments for your properties
+              </p>
+              
+              <Form {...bankForm}>
+                <form onSubmit={bankForm.handleSubmit(onSubmitBankDetails)} className="space-y-6">
+                  <FormField
+                    control={bankForm.control}
+                    name="accountName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Account Holder Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter account holder name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={bankForm.control}
+                    name="bankName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bank Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter bank name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={bankForm.control}
+                      name="accountNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Account Number</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter account number" 
+                              type="password" 
+                              autoComplete="off"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={bankForm.control}
+                      name="routingNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Routing Number</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="9 digits" 
+                              maxLength={9}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4">
+                    <p>Your banking information is stored securely and will be used for receiving payments from bookings.</p>
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmittingBank}
+                    >
+                      {isSubmittingBank ? "Saving..." : "Save Bank Details"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
