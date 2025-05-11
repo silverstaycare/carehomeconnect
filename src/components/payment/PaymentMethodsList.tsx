@@ -1,5 +1,5 @@
 
-import { CreditCard, Banknote, Check, PlusCircle } from "lucide-react";
+import { CreditCard, Banknote, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PaymentMethod {
@@ -70,12 +70,7 @@ export function PaymentMethodsList({
                   <p className="text-sm text-gray-500">
                     Expires {method.exp_month}/{method.exp_year}
                   </p>
-                  {method.isDefault && (
-                    <p className="text-xs text-green-600 font-medium mt-1 flex items-center">
-                      <Check className="mr-1 h-3 w-3" />
-                      Default
-                    </p>
-                  )}
+                  {/* Removed Default indicator */}
                 </div>
                 {onEdit && (
                   <Button 
@@ -120,12 +115,7 @@ export function PaymentMethodsList({
                   <p className="text-sm text-gray-500">
                     {method.name} • Account ending in {method.last4}
                   </p>
-                  {method.isDefault && (
-                    <p className="text-xs text-green-600 font-medium mt-1 flex items-center">
-                      <Check className="mr-1 h-3 w-3" />
-                      Default
-                    </p>
-                  )}
+                  {/* Removed Default indicator */}
                 </div>
                 {onEdit && (
                   <Button 
