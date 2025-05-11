@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Plus, Trash } from "lucide-react";
+import { CreditCard, Plus, Trash, Banknote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Dialog, 
@@ -25,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentSettingsTabProps {
   user: any;
@@ -63,6 +63,7 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
   const [isAddCardOpen, setIsAddCardOpen] = useState(false);
   const [isProcessingCard, setIsProcessingCard] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const cardForm = useForm<CardFormValues>({
     resolver: zodResolver(cardSchema),
@@ -243,6 +244,11 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
     }
   };
 
+  // Navigate to bank details tab in profile
+  const handleAddBankDetails = () => {
+    navigate('/profile', { state: { activeTab: 'bank' } });
+  };
+
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
       <h2 className="text-2xl font-bold mb-4">Payment Methods</h2>
@@ -299,14 +305,24 @@ export function PaymentSettingsTab({ user }: PaymentSettingsTabProps) {
             ))
           )}
           
-          <Button
-            variant="outline"
-            onClick={() => setIsAddCardOpen(true)}
-            className="mt-2"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Payment Method
-          </Button>
+          <div className="flex flex-col gap-2 mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsAddCardOpen(true)}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add Payment Method
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={handleAddBankDetails}
+              className="bg-gray-50 hover:bg-gray-100"
+            >
+              <Banknote className="mr-2 h-4 w-4" />
+              Add Bank Details
+            </Button>
+          </div>
         </div>
       )}
 
