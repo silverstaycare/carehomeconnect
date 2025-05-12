@@ -1,3 +1,4 @@
+
 import { useState, useEffect, forwardRef, ForwardRefRenderFunction, useImperativeHandle } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ interface PaymentMethodManagerProps {
   onAddCardOpenChange?: (isOpen: boolean) => void;
   onAddBankOpenChange?: (isOpen: boolean) => void;
   isEditMode?: boolean;
+  isOwner?: boolean;
 }
 
 // Create a forwarded ref component
@@ -34,7 +36,8 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
   initialAddBankOpen = false,
   onAddCardOpenChange,
   onAddBankOpenChange,
-  isEditMode = false
+  isEditMode = false,
+  isOwner = false
 }, ref) => {
   // States
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(initialAddCardOpen);
@@ -397,83 +400,87 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
             </Dialog>
           </div>
           
-          {/* Pay for Subscription Section */}
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium mb-4">Pay for Subscription</h3>
-            <p className="text-gray-600 mb-4">
-              Select payment method for subscription
-            </p>
-            
-            {paymentMethods.length > 0 ? 
-              <PaymentMethodSelect 
-                methods={paymentMethods} 
-                selectedId={selectedSubscriptionId} 
-                onSelect={handleSelectSubscription} 
-                label=""
-                disabled={!isEditMode}
-              /> : 
-              <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
-                <p className="text-gray-600">No payment methods added yet</p>
-                {isEditMode && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleAddCardClick}
-                    className="mt-3"
-                  >
-                    Add Payment Method
-                  </Button>
-                )}
-              </div>
-            }
-            
-            {isEditMode && hasSelectionChanged && 
-              <p className="text-sm text-amber-600 mt-2">
-                Click "Save" to apply your changes
+          {/* Pay for Subscription Section - Show only for owner users */}
+          {isOwner && (
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-medium mb-4">Pay for Subscription</h3>
+              <p className="text-gray-600 mb-4">
+                Select payment method for subscription
               </p>
-            }
-          </div>
+              
+              {paymentMethods.length > 0 ? 
+                <PaymentMethodSelect 
+                  methods={paymentMethods} 
+                  selectedId={selectedSubscriptionId} 
+                  onSelect={handleSelectSubscription} 
+                  label=""
+                  disabled={!isEditMode}
+                /> : 
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
+                  <p className="text-gray-600">No payment methods added yet</p>
+                  {isEditMode && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleAddCardClick}
+                      className="mt-3"
+                    >
+                      Add Payment Method
+                    </Button>
+                  )}
+                </div>
+              }
+              
+              {isEditMode && hasSelectionChanged && 
+                <p className="text-sm text-amber-600 mt-2">
+                  Click "Save" to apply your changes
+                </p>
+              }
+            </div>
+          )}
           
-          {/* Separator for visual distinction */}
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium mb-4">Receive Rent Payment</h3>
-            <p className="text-gray-600 mb-4">
-              Select which bank account should receive rent payments
-            </p>
-            
-            {bankMethods.length > 0 ? 
-              <PaymentMethodSelect 
-                methods={bankMethods} 
-                selectedId={selectedRentBankId} 
-                onSelect={handleSelectRentBank} 
-                label=""
-                disabled={!isEditMode}
-              /> : 
-              <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
-                <p className="text-gray-600">No bank accounts added yet</p>
-                {isEditMode && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleAddBankClick}
-                    className="mt-3"
-                  >
-                    Add Bank Account
-                  </Button>
-                )}
-              </div>
-            }
-            
-            {useForBoth && <p className="text-sm text-blue-600 mt-2">
-              Using the same bank account for subscription payments and rent deposits
-            </p>}
-            
-            {isEditMode && hasSelectionChanged && 
-              <p className="text-sm text-amber-600 mt-2">
-                Click "Save" to apply your changes
+          {/* Receive Rent Payment Section - Show only for owner users */}
+          {isOwner && (
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-medium mb-4">Receive Rent Payment</h3>
+              <p className="text-gray-600 mb-4">
+                Select which bank account should receive rent payments
               </p>
-            }
-          </div>
+              
+              {bankMethods.length > 0 ? 
+                <PaymentMethodSelect 
+                  methods={bankMethods} 
+                  selectedId={selectedRentBankId} 
+                  onSelect={handleSelectRentBank} 
+                  label=""
+                  disabled={!isEditMode}
+                /> : 
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
+                  <p className="text-gray-600">No bank accounts added yet</p>
+                  {isEditMode && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleAddBankClick}
+                      className="mt-3"
+                    >
+                      Add Bank Account
+                    </Button>
+                  )}
+                </div>
+              }
+              
+              {useForBoth && <p className="text-sm text-blue-600 mt-2">
+                Using the same bank account for subscription payments and rent deposits
+              </p>}
+              
+              {isEditMode && hasSelectionChanged && 
+                <p className="text-sm text-amber-600 mt-2">
+                  Click "Save" to apply your changes
+                </p>
+              }
+            </div>
+          )}
         </>
       )}
     </div>
