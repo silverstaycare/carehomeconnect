@@ -8,16 +8,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { CreditCard, Banknote } from "lucide-react";
-
-interface PaymentMethod {
-  id: string;
-  type: "card" | "bank";
-  name: string;
-  last4?: string;
-  bank_name?: string;
-  exp_month?: number;
-  exp_year?: number;
-}
+import { PaymentMethod } from "@/services/paymentService";
 
 interface PaymentMethodSelectProps {
   methods: PaymentMethod[];
@@ -61,7 +52,7 @@ export function PaymentMethodSelect({
         </SelectTrigger>
         <SelectContent>
           {methods.map((method) => (
-            <SelectItem key={method.id} value={method.id}>
+            <SelectItem key={method.id} value={method.id || ""}>
               <div className="flex items-center">
                 {method.type === "card" ? (
                   <CreditCard className="mr-2 h-4 w-4 text-blue-600" />

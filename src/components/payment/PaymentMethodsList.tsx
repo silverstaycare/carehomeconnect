@@ -2,17 +2,7 @@
 import { CreditCard, Banknote, PlusCircle, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-
-interface PaymentMethod {
-  id: string;
-  type: "card" | "bank";
-  name: string;
-  last4?: string;
-  bank_name?: string;
-  exp_month?: number;
-  exp_year?: number;
-  isDefault?: boolean;
-}
+import { PaymentMethod } from "@/services/paymentService";
 
 interface PaymentMethodsListProps {
   methods: PaymentMethod[];
@@ -77,7 +67,7 @@ export function PaymentMethodsList({
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onEdit && onEdit(method.id)}
+                    onClick={() => onEdit && onEdit(method.id!)}
                     className="p-1 h-auto"
                   >
                     <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
@@ -124,7 +114,7 @@ export function PaymentMethodsList({
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onEdit && onEdit(method.id)}
+                    onClick={() => onEdit && onEdit(method.id!)}
                     className="p-1 h-auto"
                   >
                     <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />

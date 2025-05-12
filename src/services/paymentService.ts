@@ -13,6 +13,7 @@ export interface PaymentMethod {
   is_default?: boolean;
   is_subscription_default?: boolean;
   is_rent_default?: boolean;
+  user_id?: string;
 }
 
 export const paymentService = {
@@ -26,7 +27,12 @@ export const paymentService = {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      
+      // Cast the returned data to ensure type compatibility
+      return (data || []).map(item => ({
+        ...item,
+        type: item.type as "card" | "bank" // Ensure type is correctly cast to our union type
+      }));
       
     } catch (error) {
       console.error("Error fetching payment methods:", error);
@@ -63,7 +69,12 @@ export const paymentService = {
       if (error) throw error;
       
       toast.success(`${paymentMethod.type === 'card' ? 'Card' : 'Bank account'} added successfully`);
-      return data;
+      
+      // Cast the returned data to ensure type compatibility
+      return {
+        ...data,
+        type: data.type as "card" | "bank" // Ensure type is correctly cast to our union type
+      };
       
     } catch (error) {
       console.error("Error adding payment method:", error);
@@ -85,7 +96,12 @@ export const paymentService = {
       if (error) throw error;
       
       toast.success("Payment method updated");
-      return data;
+      
+      // Cast the returned data to ensure type compatibility
+      return {
+        ...data,
+        type: data.type as "card" | "bank" // Ensure type is correctly cast to our union type
+      };
       
     } catch (error) {
       console.error("Error updating payment method:", error);
