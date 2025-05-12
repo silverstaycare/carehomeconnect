@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -7,6 +6,7 @@ import ContactTourDialog from "./ContactTourDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import LastInquiryDialog from "./LastInquiryDialog";
+import { formatPhoneDisplay } from "@/utils/formatters";
 
 interface PropertyContactInfoProps {
   owner: {
@@ -100,7 +100,7 @@ const PropertyContactInfo = ({
           </li>
           <Separator />
           <li>
-            <p className="font-medium">{owner.phone}</p>
+            <p className="font-medium">{formatPhoneDisplay(owner.phone)}</p>
             <p className="text-gray-600">Phone</p>
           </li>
           <li>

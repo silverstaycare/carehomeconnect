@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatPhoneNumber } from "@/utils/formatters";
 
 export interface ProfileFormValues {
   displayName: string;
@@ -77,12 +77,15 @@ export function useProfileData(userId: string) {
       const first_name = nameParts[0] || '';
       const last_name = nameParts.slice(1).join(' ') || '';
 
+      // Format phone number before saving
+      const formattedPhone = data.phone ? formatPhoneNumber(data.phone) : null;
+
       const { error } = await supabase
         .from('profiles')
         .update({
           first_name,
           last_name,
-          phone: data.phone || null,
+          phone: formattedPhone,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);

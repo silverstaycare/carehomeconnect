@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatPhoneNumber } from "@/utils/formatters";
 
 const profileFormSchema = z.object({
   displayName: z.string().min(2, {
@@ -90,12 +90,15 @@ export function EditProfileDialog({
       const first_name = nameParts[0] || '';
       const last_name = nameParts.slice(1).join(' ') || '';
 
+      // Format the phone number before saving
+      const formattedPhone = data.phone ? formatPhoneNumber(data.phone) : null;
+
       const { error } = await supabase
         .from('profiles')
         .update({
           first_name: first_name,
           last_name: last_name,
-          phone: data.phone || null
+          phone: formattedPhone
         })
         .eq('id', userId);
       

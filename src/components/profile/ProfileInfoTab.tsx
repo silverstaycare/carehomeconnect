@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
+import { formatPhoneDisplay } from "@/utils/formatters";
 
 interface ProfileInfoTabProps {
   user: any;
@@ -206,7 +206,7 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Phone</p>
-                    <p className="font-medium">{profile?.phone || "Not provided"}</p>
+                    <p className="font-medium">{formatPhoneDisplay(profile?.phone)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Account Type</p>
