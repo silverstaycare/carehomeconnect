@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -19,7 +18,7 @@ const SubscriptionPage = () => {
 
   const handleBackToProfile = () => {
     // Navigate to profile page with the manage tab active
-    navigate('/profile', { state: { activeTab: 'manage' } });
+    navigate('/profile', { state: { activeTab: 'profile' } });
   };
 
   return (

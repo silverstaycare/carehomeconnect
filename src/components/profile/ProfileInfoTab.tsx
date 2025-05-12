@@ -2,32 +2,78 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Edit, User, Save } from "lucide-react";
+import { Edit, Save, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useProfileData } from "@/hooks/useProfileData";
-import { EditProfileDialog } from "./EditProfileDialog";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 
 interface ProfileInfoTabProps {
   user: any;
   onProfileUpdated?: () => Promise<void>;
 }
 
+interface ProfileFormValues {
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
 export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) {
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const { profile, isLoading, updateProfile } = useProfileData(user?.id);
 
-  // Handle opening the edit dialog
-  const handleEditProfile = () => {
-    setIsEditDialogOpen(true);
+  // Set up form with default values from profile
+  const form = useForm<ProfileFormValues>({
+    defaultValues: {
+      firstName: profile?.first_name || "",
+      lastName: profile?.last_name || "",
+      phone: profile?.phone || ""
+    }
+  });
+
+  // Update form values when profile changes
+  React.useEffect(() => {
+    if (profile) {
+      form.reset({
+        firstName: profile.first_name || "",
+        lastName: profile.last_name || "",
+        phone: profile.phone || ""
+      });
+    }
+  }, [profile, form]);
+
+  // Toggle edit mode
+  const handleToggleEdit = () => {
+    if (isEditing) {
+      // If we're currently editing, cancel edit mode
+      setIsEditing(false);
+      // Reset form to original values
+      form.reset({
+        firstName: profile?.first_name || "",
+        lastName: profile?.last_name || "",
+        phone: profile?.phone || ""
+      });
+    } else {
+      // Enter edit mode
+      setIsEditing(true);
+    }
   };
 
   // Handle saving profile changes
-  const handleSaveProfile = async (formData: any) => {
-    const success = await updateProfile(formData);
+  const handleSaveProfile = async (data: ProfileFormValues) => {
+    const formattedData = {
+      displayName: `${data.firstName} ${data.lastName}`,
+      phone: data.phone
+    };
+    
+    const success = await updateProfile(formattedData);
+    
     if (success && onProfileUpdated) {
       await onProfileUpdated();
+      setIsEditing(false);
     }
-    return success;
   };
 
   // Formatted display name
@@ -46,21 +92,29 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
     return "U";
   };
 
-  console.log("Current profile in ProfileInfoTab:", profile);
-
   return (
     <div className="space-y-6">
-      {/* Header with Edit Button */}
+      {/* Header with Edit/Save Button */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Profile</h2>
         <Button 
           variant="default" 
           size="sm" 
-          onClick={handleEditProfile} 
+          onClick={isEditing ? form.handleSubmit(handleSaveProfile) : handleToggleEdit} 
           className="flex items-center gap-1"
+          disabled={isLoading}
         >
-          <Edit className="h-4 w-4" />
-          Edit
+          {isEditing ? (
+            <>
+              <Save className="h-4 w-4" />
+              Save
+            </>
+          ) : (
+            <>
+              <Edit className="h-4 w-4" />
+              Edit
+            </>
+          )}
         </Button>
       </div>
 
@@ -79,44 +133,91 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Full Name</p>
-                  <p className="font-medium">{getFullName()}</p>
+            {isEditing ? (
+              <Form {...form}>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <label className="text-sm text-gray-500">First Name</label>
+                          <FormControl>
+                            <Input {...field} placeholder="First Name" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <label className="text-sm text-gray-500">Last Name</label>
+                          <FormControl>
+                            <Input {...field} placeholder="Last Name" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <label className="text-sm text-gray-500">Phone</label>
+                          <FormControl>
+                            <Input {...field} placeholder="Phone Number" type="tel" />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <div>
+                      <label className="text-sm text-gray-500">Email</label>
+                      <p className="font-medium mt-2">{user?.email}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="text-sm text-gray-500">Account Type</label>
+                      <p className="font-medium mt-1 capitalize">{profile?.role || "User"}</p>
+                    </div>
+                  </div>
+                </form>
+              </Form>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Full Name</p>
+                    <p className="font-medium">{getFullName()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="font-medium">{user?.email}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-medium">{user?.email}</p>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Phone</p>
+                    <p className="font-medium">{profile?.phone || "Not provided"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Account Type</p>
+                    <p className="font-medium capitalize">{profile?.role || "User"}</p>
+                  </div>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-medium">{profile?.phone || "Not provided"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Account Type</p>
-                  <p className="font-medium capitalize">{profile?.role || "User"}</p>
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
-
-      {profile && (
-        <EditProfileDialog 
-          userId={profile.id}
-          firstName={profile.first_name || ""}
-          lastName={profile.last_name || ""}
-          phone={profile.phone || ""}
-          onProfileUpdated={() => onProfileUpdated && onProfileUpdated()}
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-        />
-      )}
     </div>
   );
 }
