@@ -95,9 +95,7 @@ const FamilyDashboard = () => {
               
               <EditProfileDialog userId={profile.id} firstName={profile.first_name || ""} lastName={profile.last_name || ""} phone={profile.phone || ""} onProfileUpdated={handleProfileUpdated} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
             </>}
-          <Button onClick={() => window.location.href = "/search"} className="w-full md:w-auto">
-            Find Care Homes
-          </Button>
+          
         </div>
       </div>
 
