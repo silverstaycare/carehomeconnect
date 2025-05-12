@@ -17,20 +17,50 @@ interface PaymentMethodManagerProps {
   sharedBankAccount?: boolean;
   bankDetails?: BankDetails | null;
   onBankDetailsChanged?: () => void;
+  initialAddCardOpen?: boolean;
+  initialAddBankOpen?: boolean;
+  onAddCardOpenChange?: (isOpen: boolean) => void;
+  onAddBankOpenChange?: (isOpen: boolean) => void;
 }
 
 export function PaymentMethodManager({
   user,
   sharedBankAccount = false,
   bankDetails = null,
-  onBankDetailsChanged
+  onBankDetailsChanged,
+  initialAddCardOpen = false,
+  initialAddBankOpen = false,
+  onAddCardOpenChange,
+  onAddBankOpenChange
 }: PaymentMethodManagerProps) {
   // States
-  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
-  const [isAddBankOpen, setIsAddBankOpen] = useState(false);
+  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(initialAddCardOpen);
+  const [isAddBankOpen, setIsAddBankOpen] = useState(initialAddBankOpen);
   const [isProcessing, setIsProcessing] = useState(false);
   const [useForBoth, setUseForBoth] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Effect to sync the dialog state with parent component
+  useEffect(() => {
+    setIsAddPaymentOpen(initialAddCardOpen);
+  }, [initialAddCardOpen]);
+
+  useEffect(() => {
+    setIsAddBankOpen(initialAddBankOpen);
+  }, [initialAddBankOpen]);
+
+  // Effect to notify parent component when dialog state changes
+  useEffect(() => {
+    if (onAddCardOpenChange) {
+      onAddCardOpenChange(isAddPaymentOpen);
+    }
+  }, [isAddPaymentOpen, onAddCardOpenChange]);
+
+  useEffect(() => {
+    if (onAddBankOpenChange) {
+      onAddBankOpenChange(isAddBankOpen);
+    }
+  }, [isAddBankOpen, onAddBankOpenChange]);
 
   // Use the payment methods hook
   const {
