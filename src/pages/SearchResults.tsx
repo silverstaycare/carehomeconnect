@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import LocationSearchBox from "@/components/search/LocationSearchBox";
 import SearchFilters from "@/components/search/SearchFilters";
 import PropertiesGrid from "@/components/search/PropertiesGrid";
+import { Helmet } from "react-helmet";
 
 interface Property {
   id: string;
@@ -150,48 +150,65 @@ const SearchResults = () => {
     setFilteredProperties(properties);
   };
 
+  const pageTitle = searchLocation 
+    ? `Care Homes in ${searchLocation} | Care Home Connect` 
+    : "Search Care Homes | Care Home Connect";
+  
+  const pageDescription = searchLocation 
+    ? `Find licensed residential care homes in ${searchLocation}. Compare amenities, prices, and read reviews.` 
+    : "Search for licensed residential care homes by location, amenities, and price. Find the perfect care home for your loved one.";
+
   return (
-    <div className="container py-8 px-4">
-      <div className="bg-white rounded-lg shadow-sm border p-4 mb-8">
-        <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-grow">
-            <LocationSearchBox
-              value={searchLocation}
-              onChange={setSearchLocation}
-              onSearch={handleSearch}
+    <>
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={`https://carehomeconnect.com/search${searchLocation ? `?location=${encodeURIComponent(searchLocation)}` : ''}`} />
+      </Helmet>
+
+      <div className="container py-8 px-4">
+        <div className="bg-white rounded-lg shadow-sm border p-4 mb-8">
+          <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <LocationSearchBox
+                value={searchLocation}
+                onChange={setSearchLocation}
+                onSearch={handleSearch}
+              />
+            </div>
+            <Button type="submit">Search</Button>
+            <SearchFilters
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              selectedAmenities={selectedAmenities}
+              toggleAmenity={(amenity) => {
+                setSelectedAmenities(prev => 
+                  prev.includes(amenity) 
+                    ? prev.filter(a => a !== amenity)
+                    : [...prev, amenity]
+                );
+              }}
+              amenitiesList={amenitiesList}
+              filterOpen={filterOpen}
+              setFilterOpen={setFilterOpen}
             />
-          </div>
-          <Button type="submit">Search</Button>
-          <SearchFilters
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
-            selectedAmenities={selectedAmenities}
-            toggleAmenity={(amenity) => {
-              setSelectedAmenities(prev => 
-                prev.includes(amenity) 
-                  ? prev.filter(a => a !== amenity)
-                  : [...prev, amenity]
-              );
-            }}
-            amenitiesList={amenitiesList}
-            filterOpen={filterOpen}
-            setFilterOpen={setFilterOpen}
-          />
-        </form>
-      </div>
+          </form>
+        </div>
 
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">
-          {loading ? "Searching..." : `${filteredProperties.length} Care Homes Found`}
-        </h2>
-      </div>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">
+            {loading ? "Searching..." : `${filteredProperties.length} Care Homes Found${searchLocation ? ` in ${searchLocation}` : ''}`}
+          </h1>
+        </div>
 
-      <PropertiesGrid 
-        properties={filteredProperties}
-        loading={loading}
-        onReset={handleReset}
-      />
-    </div>
+        <PropertiesGrid 
+          properties={filteredProperties}
+          loading={loading}
+          onReset={handleReset}
+        />
+      </div>
+    </>
   );
 };
 
