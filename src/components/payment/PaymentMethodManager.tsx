@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,208 +8,267 @@ import { AddCardForm } from "@/components/payment/AddCardForm";
 import { PaymentMethodSelect } from "@/components/payment/PaymentMethodSelect";
 import { BankDetails } from "@/types/bank";
 import { AddBankForm } from "@/components/payment/AddBankForm";
+import { usePaymentMethods } from "@/hooks/usePaymentMethods";
+import { PaymentMethod } from "@/services/paymentService";
+import { Spinner } from "@/components/ui/spinner";
 
-// Define the PaymentMethod interface to match what's expected
-interface PaymentMethod {
-  id: string;
-  type: "card" | "bank";
-  name: string;
-  last4?: string;
-  bank_name?: string;
-  exp_month?: number;
-  exp_year?: number;
-  isDefault?: boolean;
-}
 interface PaymentMethodManagerProps {
   user: any;
   sharedBankAccount?: boolean;
   bankDetails?: BankDetails | null;
   onBankDetailsChanged?: () => void;
 }
+
 export function PaymentMethodManager({
   user,
   sharedBankAccount = false,
   bankDetails = null,
   onBankDetailsChanged
 }: PaymentMethodManagerProps) {
-  // State
+  // States
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [defaultPaymentId, setDefaultPaymentId] = useState<string | null>(null);
-  const [selectedRentBankId, setSelectedRentBankId] = useState<string | null>(null);
-  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(null);
-  const [bankMethods, setBankMethods] = useState<PaymentMethod[]>([]);
   const [useForBoth, setUseForBoth] = useState(false);
-  const [onEdit, setOnEdit] = useState<((id: string) => void) | undefined>(undefined);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Mock data for demo purposes
-  useEffect(() => {
-    // This would normally be fetched from an API
-    const mockMethods: PaymentMethod[] = [{
-      id: "card_1",
-      type: "card",
-      name: "Visa",
-      last4: "4242",
-      exp_month: 12,
-      exp_year: 2025,
-      isDefault: true
-    }, {
-      id: "card_2",
-      type: "card",
-      name: "Mastercard",
-      last4: "5555",
-      exp_month: 10,
-      exp_year: 2026,
-      isDefault: false
-    }];
-
-    // If we have bank details, add them to the mock payment methods
-    if (bankDetails) {
-      const bankMethod: PaymentMethod = {
-        id: "bank_1",
-        type: "bank",
-        name: bankDetails.account_name,
-        last4: bankDetails.account_number?.slice(-4),
-        bank_name: bankDetails.bank_name,
-        isDefault: false,
-        // Add dummy values for exp_month and exp_year to satisfy the type
-        exp_month: undefined,
-        exp_year: undefined
-      };
-      mockMethods.push(bankMethod);
-      setBankMethods([bankMethod]);
-      if (sharedBankAccount) {
-        setSelectedRentBankId("bank_1");
-      }
-    }
-    setPaymentMethods(mockMethods);
-    const defaultMethod = mockMethods.find(m => m.isDefault);
-    setDefaultPaymentId(defaultMethod?.id || null);
-    setSelectedSubscriptionId(defaultMethod?.id || null);
-  }, [bankDetails, sharedBankAccount]);
+  // Use the payment methods hook
+  const {
+    paymentMethods,
+    isLoading,
+    addPaymentMethod,
+    updatePaymentMethod,
+    setDefaultMethod,
+    setDefaultSubscriptionMethod,
+    setDefaultRentMethod,
+    getCardMethods,
+    getBankMethods,
+    getDefaultMethod,
+    getDefaultSubscriptionMethod,
+    getDefaultRentMethod
+  } = usePaymentMethods(user?.id);
 
   // Handle setting default payment method
-  const handleSetDefault = (id: string) => {
-    // This would normally be an API call
-    setPaymentMethods(prev => prev.map(method => ({
-      ...method,
-      isDefault: method.id === id
-    })));
-    setDefaultPaymentId(id);
+  const handleSetDefault = async (id: string) => {
+    await setDefaultMethod(id);
   };
 
-  // Handle adding new payment method (mock)
-  const handleAddPaymentMethod = (data: any) => {
-    // This would normally be an API call
-    console.log("Adding payment method:", data);
-    // Close the dialog
-    setIsAddPaymentOpen(false);
+  // Handle editing a payment method
+  const handleEdit = (id: string) => {
+    const method = paymentMethods.find(m => m.id === id);
+    if (!method) return;
+    
+    setEditingId(id);
+    if (method.type === 'card') {
+      setIsAddPaymentOpen(true);
+    } else {
+      setIsAddBankOpen(true);
+      // If it's a bank account being edited, check if it's used for both
+      setUseForBoth(method.is_subscription_default === true && method.is_rent_default === true);
+    }
   };
 
-  // Handle cancel action for the add payment form
+  // Handle adding new payment method
+  const handleAddPaymentMethod = async (data: any) => {
+    setIsProcessing(true);
+    
+    try {
+      const newCardMethod: PaymentMethod = {
+        type: "card",
+        name: data.cardholderName,
+        last4: data.cardNumber.slice(-4),
+        exp_month: parseInt(data.expiryDate.split('/')[0], 10),
+        exp_year: parseInt(`20${data.expiryDate.split('/')[1]}`, 10),
+      };
+      
+      if (editingId) {
+        await updatePaymentMethod(editingId, newCardMethod);
+      } else {
+        await addPaymentMethod(newCardMethod);
+      }
+      
+      // Close the dialog and reset state
+      setIsAddPaymentOpen(false);
+      setEditingId(null);
+    } catch (error) {
+      console.error("Error adding/updating payment method:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle adding new bank account
+  const handleAddBankAccount = async (data: any) => {
+    setIsProcessing(true);
+    
+    try {
+      const bankMethod: PaymentMethod = {
+        type: "bank",
+        name: data.accountName,
+        last4: data.accountNumber.slice(-4),
+        bank_name: data.bankName,
+        is_subscription_default: useForBoth ? true : undefined,
+        is_rent_default: true
+      };
+      
+      if (editingId) {
+        await updatePaymentMethod(editingId, bankMethod);
+      } else {
+        await addPaymentMethod(bankMethod);
+      }
+      
+      // Close the dialog and reset state
+      setIsAddBankOpen(false);
+      setEditingId(null);
+      
+      if (onBankDetailsChanged) {
+        onBankDetailsChanged();
+      }
+    } catch (error) {
+      console.error("Error adding/updating bank account:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle cancel action for forms
   const handleCancel = () => {
     setIsAddPaymentOpen(false);
     setIsAddBankOpen(false);
+    setEditingId(null);
   };
 
   // Select bank account for rent payment
-  const handleSelectRentBank = (id: string) => {
-    setSelectedRentBankId(id);
-    // This would normally update a setting in the backend
-    console.log("Selected bank account for rent payments:", id);
+  const handleSelectRentBank = async (id: string) => {
+    await setDefaultRentMethod(id);
   };
 
   // Select payment method for subscription
-  const handleSelectSubscription = (id: string) => {
-    setSelectedSubscriptionId(id);
-    // This would normally update a setting in the backend
-    console.log("Selected payment method for subscription:", id);
+  const handleSelectSubscription = async (id: string) => {
+    await setDefaultSubscriptionMethod(id);
   };
 
   // Open add card dialog
   const handleAddCardClick = () => {
+    setEditingId(null);
     setIsAddPaymentOpen(true);
   };
 
   // Open add bank dialog
   const handleAddBankClick = () => {
+    setEditingId(null);
     setIsAddBankOpen(true);
   };
 
-  // Handle adding new bank account
-  const handleAddBankAccount = (data: any) => {
-    console.log("Adding bank account:", data);
-    setIsAddBankOpen(false);
-
-    // This would normally be an API call
-    // For now, we'll just mock it
-    if (onBankDetailsChanged) {
-      onBankDetailsChanged();
-    }
-  };
-  return <div className="space-y-6">
-      {/* Subscription Payment Methods Section */}
-      <div>
-        
-        
-        <PaymentMethodsList methods={paymentMethods} onSetDefault={handleSetDefault} onAddCard={handleAddCardClick} onAddBank={handleAddBankClick} onEdit={onEdit} />
-        
-        {/* Add Payment Method Dialog */}
-        <Dialog open={isAddPaymentOpen} onOpenChange={setIsAddPaymentOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add Payment Method</DialogTitle>
-            </DialogHeader>
+  // Get current values
+  const cardMethods = getCardMethods();
+  const bankMethods = getBankMethods();
+  const defaultPaymentId = getDefaultMethod()?.id || null;
+  const selectedRentBankId = getDefaultRentMethod()?.id || null;
+  const selectedSubscriptionId = getDefaultSubscriptionMethod()?.id || null;
+  
+  return (
+    <div className="space-y-6">
+      {isLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <>
+          {/* Subscription Payment Methods Section */}
+          <div>
+            <PaymentMethodsList 
+              methods={paymentMethods} 
+              onSetDefault={handleSetDefault} 
+              onEdit={handleEdit} 
+              onAddCard={handleAddCardClick} 
+              onAddBank={handleAddBankClick} 
+            />
             
-            <AddCardForm onSubmit={handleAddPaymentMethod} isProcessing={isProcessing} onCancel={handleCancel} />
-          </DialogContent>
-        </Dialog>
+            {/* Add Payment Method Dialog */}
+            <Dialog open={isAddPaymentOpen} onOpenChange={setIsAddPaymentOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{editingId ? "Edit Payment Method" : "Add Payment Method"}</DialogTitle>
+                </DialogHeader>
+                
+                <AddCardForm 
+                  onSubmit={handleAddPaymentMethod} 
+                  isProcessing={isProcessing} 
+                  onCancel={handleCancel} 
+                />
+              </DialogContent>
+            </Dialog>
 
-        {/* Add Bank Account Dialog */}
-        <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add Bank Account</DialogTitle>
-            </DialogHeader>
+            {/* Add Bank Account Dialog */}
+            <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{editingId ? "Edit Bank Account" : "Add Bank Account"}</DialogTitle>
+                </DialogHeader>
+                
+                <AddBankForm 
+                  onSubmit={handleAddBankAccount} 
+                  isProcessing={isProcessing} 
+                  defaultValues={{
+                    accountName: "",
+                    accountNumber: "",
+                    routingNumber: "",
+                    bankName: ""
+                  }} 
+                  useForBoth={useForBoth} 
+                  onUseForBothChange={setUseForBoth} 
+                  onCancel={handleCancel} 
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+          
+          {/* Pay for Subscription Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-medium mb-4">Pay for Subscription</h3>
+            <p className="text-gray-600 mb-4">
+              Select payment method for subscription
+            </p>
             
-            <AddBankForm onSubmit={handleAddBankAccount} isProcessing={isProcessing} defaultValues={{
-            accountName: "",
-            accountNumber: "",
-            routingNumber: "",
-            bankName: ""
-          }} useForBoth={useForBoth} onUseForBothChange={setUseForBoth} onCancel={handleCancel} />
-          </DialogContent>
-        </Dialog>
-      </div>
-      
-      {/* Pay for Subscription Section */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-lg font-medium mb-4">Pay for Subscription</h3>
-        <p className="text-gray-600 mb-4">
-          Select payment method for subscription
-        </p>
-        
-        {paymentMethods.length > 0 ? <PaymentMethodSelect methods={paymentMethods} selectedId={selectedSubscriptionId} onSelect={handleSelectSubscription} label="" /> : <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
-            <p className="text-gray-600">No payment methods added yet</p>
-          </div>}
-      </div>
-      
-      {/* Separator for visual distinction */}
-      <div className="border-t border-gray-200 pt-6">
-        <h3 className="text-lg font-medium mb-4">Receive Rent Payment</h3>
-        <p className="text-gray-600 mb-4">
-          Select which bank account should receive rent payments
-        </p>
-        
-        {bankMethods.length > 0 ? <PaymentMethodSelect methods={bankMethods} selectedId={selectedRentBankId} onSelect={handleSelectRentBank} label="" /> : <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
-            <p className="text-gray-600">No bank accounts added yet</p>
-          </div>}
-        
-        {bankDetails?.use_for_both && <p className="text-sm text-blue-600 mt-2">
-            Using the same bank account for subscription payments and rent deposits
-          </p>}
-      </div>
-    </div>;
+            {paymentMethods.length > 0 ? 
+              <PaymentMethodSelect 
+                methods={paymentMethods} 
+                selectedId={selectedSubscriptionId} 
+                onSelect={handleSelectSubscription} 
+                label="" 
+              /> : 
+              <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
+                <p className="text-gray-600">No payment methods added yet</p>
+              </div>
+            }
+          </div>
+          
+          {/* Separator for visual distinction */}
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-medium mb-4">Receive Rent Payment</h3>
+            <p className="text-gray-600 mb-4">
+              Select which bank account should receive rent payments
+            </p>
+            
+            {bankMethods.length > 0 ? 
+              <PaymentMethodSelect 
+                methods={bankMethods} 
+                selectedId={selectedRentBankId} 
+                onSelect={handleSelectRentBank} 
+                label="" 
+              /> : 
+              <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
+                <p className="text-gray-600">No bank accounts added yet</p>
+              </div>
+            }
+            
+            {useForBoth && <p className="text-sm text-blue-600 mt-2">
+              Using the same bank account for subscription payments and rent deposits
+            </p>}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }

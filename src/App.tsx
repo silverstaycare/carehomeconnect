@@ -19,6 +19,7 @@ import ProfilePage from "./pages/ProfilePage";
 // Context providers
 import { AuthProvider } from "./contexts/AuthContext";
 import { AppLayout } from "./components/layout/AppLayout";
+import { Toaster } from "./components/ui/toaster";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
           </Route>
         </Routes>
       </BrowserRouter>
+      <Toaster />
     </AuthProvider>
   </QueryClientProvider>
 );

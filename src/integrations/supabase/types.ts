@@ -310,6 +310,54 @@ export type Database = {
           },
         ]
       }
+      payment_methods: {
+        Row: {
+          bank_name: string | null
+          created_at: string | null
+          exp_month: number | null
+          exp_year: number | null
+          id: string
+          is_default: boolean | null
+          is_rent_default: boolean | null
+          is_subscription_default: boolean | null
+          last4: string | null
+          name: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          bank_name?: string | null
+          created_at?: string | null
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean | null
+          is_rent_default?: boolean | null
+          is_subscription_default?: boolean | null
+          last4?: string | null
+          name: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          bank_name?: string | null
+          created_at?: string | null
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean | null
+          is_rent_default?: boolean | null
+          is_subscription_default?: boolean | null
+          last4?: string | null
+          name?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
