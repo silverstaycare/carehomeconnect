@@ -4,7 +4,7 @@ import { useBankDetails } from "@/hooks/useBankDetails";
 import { CardPaymentSection } from "@/components/payment/CardPaymentSection";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, CreditCard, Banknote, Pencil, Save } from "lucide-react";
+import { Pencil, Save } from "lucide-react";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { toast } from "sonner";
 
@@ -47,16 +47,6 @@ export function PaymentSettingsTab({
       fetchBankDetails();
     }
   }, [user?.id, fetchBankDetails]);
-
-  // Open add card dialog
-  const handleAddCardClick = () => {
-    setIsAddPaymentOpen(true);
-  };
-
-  // Open add bank dialog
-  const handleAddBankClick = () => {
-    setIsAddBankOpen(true);
-  };
 
   // Toggle edit mode and save changes when exiting edit mode
   const toggleEditMode = async () => {
@@ -120,31 +110,7 @@ export function PaymentSettingsTab({
         </Button>
       </div>
       
-      {/* Add Payment Method Buttons */}
-      {isEditMode && (
-        <div className="flex flex-wrap gap-3 mb-6">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleAddCardClick} 
-            className="flex items-center gap-1"
-          >
-            <PlusCircle className="h-4 w-4" />
-            <CreditCard className="h-4 w-4" />
-            Add Card
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleAddBankClick} 
-            className="flex items-center gap-1"
-          >
-            <PlusCircle className="h-4 w-4" />
-            <Banknote className="h-4 w-4" />
-            Add Bank
-          </Button>
-        </div>
-      )}
+      {/* Removed the duplicate Add Payment Method Buttons from here */}
 
       {/* Subscription Payment Section */}
       <Card>
