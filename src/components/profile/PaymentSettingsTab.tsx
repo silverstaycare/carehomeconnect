@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Save } from "lucide-react";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { toast } from "sonner";
+import { useProfileData } from "@/hooks/useProfileData";
 
 interface PaymentSettingsTabProps {
   user: any;
@@ -33,6 +34,12 @@ export function PaymentSettingsTab({
     fetchPaymentMethods,
     paymentMethods
   } = usePaymentMethods(user?.id);
+
+  // Get profile data to check user role
+  const { profile } = useProfileData(user?.id);
+  
+  // Determine if user is an owner
+  const isOwner = profile?.role === "owner";
 
   // Check if bank details are shared between payment methods
   useEffect(() => {
@@ -110,9 +117,7 @@ export function PaymentSettingsTab({
         </Button>
       </div>
       
-      {/* Removed the duplicate Add Payment Method Buttons from here */}
-
-      {/* Subscription Payment Section */}
+      {/* Only show payment sections to the appropriate user type */}
       <Card>
         <CardContent className="pt-6">
           <CardPaymentSection 
@@ -126,6 +131,7 @@ export function PaymentSettingsTab({
             onAddBankOpenChange={setIsAddBankOpen} 
             isEditMode={isEditMode} 
             ref={paymentManagerRef}
+            isOwner={isOwner}
           />
         </CardContent>
       </Card>

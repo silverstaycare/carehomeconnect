@@ -14,6 +14,7 @@ interface CardPaymentSectionProps {
   onAddCardOpenChange?: (isOpen: boolean) => void;
   onAddBankOpenChange?: (isOpen: boolean) => void;
   isEditMode?: boolean;
+  isOwner?: boolean;
 }
 
 // Create the forwarded ref component
@@ -26,7 +27,8 @@ const CardPaymentSectionComponent: ForwardRefRenderFunction<any, CardPaymentSect
   initialAddBankOpen = false,
   onAddCardOpenChange,
   onAddBankOpenChange,
-  isEditMode = false
+  isEditMode = false,
+  isOwner = false
 }, ref) => {
   return (
     <div className="space-y-8">
@@ -40,6 +42,7 @@ const CardPaymentSectionComponent: ForwardRefRenderFunction<any, CardPaymentSect
         onAddCardOpenChange={onAddCardOpenChange}
         onAddBankOpenChange={onAddBankOpenChange}
         isEditMode={isEditMode}
+        isOwner={isOwner}
         ref={ref}
       />
     </div>
