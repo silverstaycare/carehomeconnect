@@ -89,15 +89,15 @@ export function usePaymentMethods(userId: string | undefined) {
   
   // Use subscription default as primary default
   const getDefaultMethod = useCallback(() => {
-    return paymentMethods.find(method => method.is_subscription_default === true);
+    return paymentMethods.find(method => method.is_for_subscription === true);
   }, [paymentMethods]);
   
   const getDefaultSubscriptionMethod = useCallback(() => {
-    return paymentMethods.find(method => method.is_subscription_default === true);
+    return paymentMethods.find(method => method.is_for_subscription === true);
   }, [paymentMethods]);
   
   const getDefaultRentMethod = useCallback(() => {
-    return paymentMethods.find(method => method.is_rent_default === true);
+    return paymentMethods.find(method => method.is_for_rent === true);
   }, [paymentMethods]);
   
   return {

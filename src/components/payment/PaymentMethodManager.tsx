@@ -142,7 +142,7 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       });
       setCurrentCardData(null);
       // Check if bank account is used for both
-      setUseForBoth(method.is_subscription_default === true && method.is_rent_default === true);
+      setUseForBoth(method.is_for_subscription === true && method.is_for_rent === true);
       setIsAddBankOpen(true);
     }
   };
@@ -186,8 +186,8 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
         name: data.accountName,
         last4: data.accountNumber.slice(-4),
         bank_name: data.bankName,
-        is_subscription_default: useForBoth ? true : undefined,
-        is_rent_default: true
+        is_for_subscription: useForBoth ? true : undefined,
+        is_for_rent: true
       };
       
       if (editingId) {
@@ -255,7 +255,7 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       
       await Promise.all(updatePromises);
       
-      // Refresh payment methods to get the updated state
+      // Refresh payment methods after saving to ensure the UI reflects the current state
       await fetchPaymentMethods();
       
       return true;

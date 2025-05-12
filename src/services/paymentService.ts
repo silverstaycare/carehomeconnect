@@ -10,8 +10,8 @@ export interface PaymentMethod {
   bank_name?: string;
   exp_month?: number;
   exp_year?: number;
-  is_subscription_default?: boolean;
-  is_rent_default?: boolean;
+  is_for_subscription?: boolean;
+  is_for_rent?: boolean;
   user_id?: string;
 }
 
@@ -63,8 +63,8 @@ export const paymentService = {
           { 
             ...paymentMethod,
             user_id: userId,
-            is_subscription_default: paymentMethod.is_subscription_default || isFirstMethod,
-            is_rent_default: paymentMethod.type === 'bank' ? (paymentMethod.is_rent_default || isFirstMethod) : false
+            is_for_subscription: paymentMethod.is_for_subscription || isFirstMethod,
+            is_for_rent: paymentMethod.type === 'bank' ? (paymentMethod.is_for_rent || isFirstMethod) : false
           }
         ])
         .select('*')
@@ -149,7 +149,7 @@ export const paymentService = {
       // First reset all existing defaults
       const { error: resetError } = await supabase
         .from('payment_methods')
-        .update({ is_subscription_default: false })
+        .update({ is_for_subscription: false })
         .not('id', 'eq', id);
       
       if (resetError) throw resetError;
@@ -157,7 +157,7 @@ export const paymentService = {
       // Then set the selected one as default
       const { error } = await supabase
         .from('payment_methods')
-        .update({ is_subscription_default: true })
+        .update({ is_for_subscription: true })
         .eq('id', id);
       
       if (error) throw error;
@@ -180,7 +180,7 @@ export const paymentService = {
       // First reset all existing defaults
       const { error: resetError } = await supabase
         .from('payment_methods')
-        .update({ is_rent_default: false })
+        .update({ is_for_rent: false })
         .not('id', 'eq', id);
       
       if (resetError) throw resetError;
@@ -188,7 +188,7 @@ export const paymentService = {
       // Then set the selected one as default
       const { error } = await supabase
         .from('payment_methods')
-        .update({ is_rent_default: true })
+        .update({ is_for_rent: true })
         .eq('id', id);
       
       if (error) throw error;
