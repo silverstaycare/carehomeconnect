@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import SavedProperties from "@/components/dashboard/SavedProperties";
@@ -8,14 +7,12 @@ import { EditProfileDialog } from "@/components/profile/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
 interface UserProfile {
   id: string;
   first_name: string | null;
   last_name: string | null;
   phone: string | null;
 }
-
 const FamilyDashboard = () => {
   const {
     user
@@ -76,7 +73,6 @@ const FamilyDashboard = () => {
     // Fallback to email
     return user.email || 'User';
   };
-
   return <div className="container py-6 px-3 md:py-8 md:px-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
         <div>
@@ -85,14 +81,7 @@ const FamilyDashboard = () => {
         </div>
         <div className="mt-4 md:mt-0 flex gap-3 items-center">
           {profile && <>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex items-center gap-1" 
-                onClick={() => setIsEditDialogOpen(true)}
-              >
-                <Pencil className="h-3 w-3" /> Edit Profile
-              </Button>
+              
               <EditProfileDialog userId={profile.id} firstName={profile.first_name || ""} lastName={profile.last_name || ""} phone={profile.phone || ""} onProfileUpdated={handleProfileUpdated} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
             </>}
         </div>
@@ -105,5 +94,4 @@ const FamilyDashboard = () => {
       </div>
     </div>;
 };
-
 export default FamilyDashboard;
