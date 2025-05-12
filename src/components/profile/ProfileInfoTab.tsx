@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Save, User } from "lucide-react";
@@ -34,7 +34,7 @@ export function ProfileInfoTab({ user, onProfileUpdated }: ProfileInfoTabProps) 
   });
 
   // Update form values when profile changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (profile) {
       form.reset({
         firstName: profile.first_name || "",
