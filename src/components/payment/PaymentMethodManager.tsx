@@ -41,6 +41,7 @@ export function PaymentMethodManager({
   const [useForBoth, setUseForBoth] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [currentCardData, setCurrentCardData] = useState<Partial<CardFormValues> | null>(null);
+  const [currentBankData, setCurrentBankData] = useState<any>(null);
 
   // Effect to sync the dialog state with parent component
   useEffect(() => {
@@ -103,12 +104,20 @@ export function PaymentMethodManager({
           : '',
         cvv: ''
       });
+      setCurrentBankData(null);
       setIsAddPaymentOpen(true);
-    } else {
+    } else if (method.type === 'bank') {
+      // Prepare bank data for editing
+      setCurrentBankData({
+        accountName: method.name || '',
+        accountNumber: `**** **** **** ${method.last4 || ''}`,
+        routingNumber: '', // We don't store the full routing number for security
+        bankName: method.bank_name || ''
+      });
       setCurrentCardData(null);
-      setIsAddBankOpen(true);
-      // If it's a bank account being edited, check if it's used for both
+      // Check if bank account is used for both
       setUseForBoth(method.is_subscription_default === true && method.is_rent_default === true);
+      setIsAddBankOpen(true);
     }
   };
 
@@ -164,6 +173,7 @@ export function PaymentMethodManager({
       // Close the dialog and reset state
       setIsAddBankOpen(false);
       setEditingId(null);
+      setCurrentBankData(null);
       
       if (onBankDetailsChanged) {
         onBankDetailsChanged();
@@ -181,6 +191,7 @@ export function PaymentMethodManager({
     setIsAddBankOpen(false);
     setEditingId(null);
     setCurrentCardData(null);
+    setCurrentBankData(null);
   };
 
   // Select bank account for rent payment
@@ -201,6 +212,7 @@ export function PaymentMethodManager({
   const handleAddCardClick = () => {
     setEditingId(null);
     setCurrentCardData(null);
+    setCurrentBankData(null);
     setIsAddPaymentOpen(true);
   };
 
@@ -208,6 +220,7 @@ export function PaymentMethodManager({
   const handleAddBankClick = () => {
     setEditingId(null);
     setCurrentCardData(null);
+    setCurrentBankData(null);
     setIsAddBankOpen(true);
   };
 
@@ -264,7 +277,7 @@ export function PaymentMethodManager({
                 <AddBankForm 
                   onSubmit={handleAddBankAccount} 
                   isProcessing={isProcessing} 
-                  defaultValues={{
+                  defaultValues={currentBankData || {
                     accountName: "",
                     accountNumber: "",
                     routingNumber: "",
@@ -272,7 +285,8 @@ export function PaymentMethodManager({
                   }} 
                   useForBoth={useForBoth} 
                   onUseForBothChange={setUseForBoth} 
-                  onCancel={handleCancel} 
+                  onCancel={handleCancel}
+                  isEditing={!!editingId}
                 />
               </DialogContent>
             </Dialog>

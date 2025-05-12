@@ -40,6 +40,7 @@ interface AddBankFormProps {
   useForBoth: boolean;
   onUseForBothChange: (checked: boolean) => void;
   onCancel: () => void;
+  isEditing?: boolean;
 }
 
 export function AddBankForm({ 
@@ -48,7 +49,8 @@ export function AddBankForm({
   defaultValues,
   useForBoth,
   onUseForBothChange,
-  onCancel 
+  onCancel,
+  isEditing = false
 }: AddBankFormProps) {
   const form = useForm<BankFormValues>({
     resolver: zodResolver(bankSchema),
@@ -108,7 +110,8 @@ export function AddBankForm({
                     placeholder="Enter account number" 
                     type="password" 
                     autoComplete="off"
-                    {...field} 
+                    {...field}
+                    disabled={isEditing} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -126,7 +129,8 @@ export function AddBankForm({
                   <Input 
                     placeholder="9 digits" 
                     maxLength={9}
-                    {...field} 
+                    {...field}
+                    disabled={isEditing}
                   />
                 </FormControl>
                 <FormMessage />
@@ -154,7 +158,9 @@ export function AddBankForm({
         
         <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4 flex items-start gap-2">
           <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <p>Your banking information is stored securely with encryption and is only accessible by you.</p>
+          <p>{isEditing 
+            ? "You can update the account holder name and bank name. For security reasons, the account and routing numbers cannot be changed." 
+            : "Your banking information is stored securely with encryption and is only accessible by you."}</p>
         </div>
         
         <DialogFooter className="mt-6">
@@ -165,10 +171,10 @@ export function AddBankForm({
             {isProcessing ? (
               <>
                 <Spinner size="sm" className="mr-2" />
-                Saving...
+                {isEditing ? "Updating..." : "Saving..."}
               </>
             ) : (
-              "Save Bank Account"
+              isEditing ? "Update Bank Account" : "Save Bank Account"
             )}
           </Button>
         </DialogFooter>
