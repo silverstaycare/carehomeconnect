@@ -13,6 +13,7 @@ interface CardPaymentSectionProps {
   initialAddBankOpen?: boolean;
   onAddCardOpenChange?: (isOpen: boolean) => void;
   onAddBankOpenChange?: (isOpen: boolean) => void;
+  isEditMode?: boolean;
 }
 
 export function CardPaymentSection({ 
@@ -23,7 +24,8 @@ export function CardPaymentSection({
   initialAddCardOpen = false,
   initialAddBankOpen = false,
   onAddCardOpenChange,
-  onAddBankOpenChange
+  onAddBankOpenChange,
+  isEditMode = false
 }: CardPaymentSectionProps) {
   return (
     <div className="space-y-8">
@@ -42,6 +44,7 @@ export function CardPaymentSection({
           initialAddBankOpen={initialAddBankOpen}
           onAddCardOpenChange={onAddCardOpenChange}
           onAddBankOpenChange={onAddBankOpenChange}
+          isEditMode={isEditMode}
         />
       </div>
     </div>

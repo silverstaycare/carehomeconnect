@@ -10,6 +10,7 @@ interface PaymentMethodsListProps {
   onEdit?: (id: string) => void;
   onAddCard?: () => void;
   onAddBank?: () => void;
+  isEditMode?: boolean;
 }
 
 export function PaymentMethodsList({
@@ -17,7 +18,8 @@ export function PaymentMethodsList({
   onSetDefault,
   onEdit,
   onAddCard,
-  onAddBank
+  onAddBank,
+  isEditMode = false
 }: PaymentMethodsListProps) {
   // Filter methods by type
   const cardMethods = methods.filter(method => method.type === "card");
@@ -38,7 +40,7 @@ export function PaymentMethodsList({
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Payment Cards</h4>
-            {onAddCard && (
+            {isEditMode && onAddCard && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -63,17 +65,19 @@ export function PaymentMethodsList({
                   </p>
                   {/* Removed Default indicator */}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => onEdit && onEdit(method.id!)}
-                    className="p-1 h-auto"
-                  >
-                    <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-                    <span className="sr-only">Edit</span>
-                  </Button>
-                </div>
+                {isEditMode && onEdit && (
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => onEdit(method.id!)}
+                      className="p-1 h-auto"
+                    >
+                      <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -85,7 +89,7 @@ export function PaymentMethodsList({
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Bank Accounts</h4>
-            {onAddBank && (
+            {isEditMode && onAddBank && (
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -110,17 +114,19 @@ export function PaymentMethodsList({
                   </p>
                   {/* Removed Default indicator */}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => onEdit && onEdit(method.id!)}
-                    className="p-1 h-auto"
-                  >
-                    <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-                    <span className="sr-only">Edit</span>
-                  </Button>
-                </div>
+                {isEditMode && onEdit && (
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => onEdit(method.id!)}
+                      className="p-1 h-auto"
+                    >
+                      <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

@@ -15,13 +15,15 @@ interface PaymentMethodSelectProps {
   selectedId: string | null;
   onSelect: (id: string) => void;
   label: string;
+  disabled?: boolean;
 }
 
 export function PaymentMethodSelect({
   methods,
   selectedId,
   onSelect,
-  label
+  label,
+  disabled = false
 }: PaymentMethodSelectProps) {
   const selectedMethod = methods.find(m => m.id === selectedId) || null;
   
@@ -30,9 +32,9 @@ export function PaymentMethodSelect({
       <Select 
         value={selectedId || ""} 
         onValueChange={onSelect}
-        disabled={methods.length === 0}
+        disabled={disabled || methods.length === 0}
       >
-        <SelectTrigger className="w-full">
+        <SelectTrigger className={`w-full ${disabled ? 'opacity-80' : ''}`}>
           <SelectValue placeholder={methods.length > 0 ? "Select a payment method" : "No payment methods available"}>
             {selectedMethod && (
               <div className="flex items-center">

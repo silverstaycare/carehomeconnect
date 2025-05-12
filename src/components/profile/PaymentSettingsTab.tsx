@@ -1,12 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { useBankDetails } from "@/hooks/useBankDetails";
 import { CardPaymentSection } from "@/components/payment/CardPaymentSection";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, CreditCard, Banknote } from "lucide-react";
+import { PlusCircle, CreditCard, Banknote, Pencil } from "lucide-react";
+
 interface PaymentSettingsTabProps {
   user: any;
 }
+
 export function PaymentSettingsTab({
   user
 }: PaymentSettingsTabProps) {
@@ -17,6 +20,7 @@ export function PaymentSettingsTab({
   const [sharedBankAccount, setSharedBankAccount] = useState(false);
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // Check if bank details are shared between payment methods
   useEffect(() => {
@@ -41,17 +45,65 @@ export function PaymentSettingsTab({
   const handleAddBankClick = () => {
     setIsAddBankOpen(true);
   };
+
+  // Toggle edit mode
+  const toggleEditMode = () => {
+    setIsEditMode(!isEditMode);
+  };
+
   return <div className="space-y-6">
-      {/* Add Payment Method Buttons */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        
-        
+      {/* Header with Edit Button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Payment Settings</h2>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={toggleEditMode} 
+          className="flex items-center gap-1"
+        >
+          <Pencil className="h-4 w-4" />
+          {isEditMode ? "Done" : "Edit"}
+        </Button>
       </div>
+      
+      {/* Add Payment Method Buttons */}
+      {isEditMode && (
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Button
+            variant="outline"
+            onClick={handleAddCardClick}
+            className="flex items-center gap-2"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <CreditCard className="h-4 w-4" />
+            Add Card
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleAddBankClick}
+            className="flex items-center gap-2"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <Banknote className="h-4 w-4" />
+            Add Bank Account
+          </Button>
+        </div>
+      )}
 
       {/* Subscription Payment Section */}
       <Card>
         <CardContent className="pt-6">
-          <CardPaymentSection user={user} sharedBankAccount={sharedBankAccount} bankDetails={bankDetails} onBankDetailsChanged={fetchBankDetails} initialAddCardOpen={isAddPaymentOpen} initialAddBankOpen={isAddBankOpen} onAddCardOpenChange={setIsAddPaymentOpen} onAddBankOpenChange={setIsAddBankOpen} />
+          <CardPaymentSection 
+            user={user} 
+            sharedBankAccount={sharedBankAccount} 
+            bankDetails={bankDetails} 
+            onBankDetailsChanged={fetchBankDetails} 
+            initialAddCardOpen={isAddPaymentOpen} 
+            initialAddBankOpen={isAddBankOpen} 
+            onAddCardOpenChange={setIsAddPaymentOpen} 
+            onAddBankOpenChange={setIsAddBankOpen}
+            isEditMode={isEditMode}
+          />
         </CardContent>
       </Card>
     </div>;

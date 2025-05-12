@@ -21,6 +21,7 @@ interface PaymentMethodManagerProps {
   initialAddBankOpen?: boolean;
   onAddCardOpenChange?: (isOpen: boolean) => void;
   onAddBankOpenChange?: (isOpen: boolean) => void;
+  isEditMode?: boolean;
 }
 
 export function PaymentMethodManager({
@@ -31,7 +32,8 @@ export function PaymentMethodManager({
   initialAddCardOpen = false,
   initialAddBankOpen = false,
   onAddCardOpenChange,
-  onAddBankOpenChange
+  onAddBankOpenChange,
+  isEditMode = false
 }: PaymentMethodManagerProps) {
   // States
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(initialAddCardOpen);
@@ -85,6 +87,8 @@ export function PaymentMethodManager({
 
   // Handle editing a payment method
   const handleEdit = (id: string) => {
+    if (!isEditMode) return;
+    
     const method = paymentMethods.find(m => m.id === id);
     if (!method) return;
     
@@ -170,12 +174,16 @@ export function PaymentMethodManager({
 
   // Select bank account for rent payment
   const handleSelectRentBank = async (id: string) => {
-    await setDefaultRentMethod(id);
+    if (isEditMode) {
+      await setDefaultRentMethod(id);
+    }
   };
 
   // Select payment method for subscription
   const handleSelectSubscription = async (id: string) => {
-    await setDefaultSubscriptionMethod(id);
+    if (isEditMode) {
+      await setDefaultSubscriptionMethod(id);
+    }
   };
 
   // Open add card dialog
@@ -211,8 +219,9 @@ export function PaymentMethodManager({
               methods={paymentMethods} 
               onSetDefault={handleSetDefault} 
               onEdit={handleEdit} 
-              onAddCard={handleAddCardClick} 
-              onAddBank={handleAddBankClick} 
+              onAddCard={isEditMode ? handleAddCardClick : undefined} 
+              onAddBank={isEditMode ? handleAddBankClick : undefined}
+              isEditMode={isEditMode}
             />
             
             {/* Add Payment Method Dialog */}
@@ -266,7 +275,8 @@ export function PaymentMethodManager({
                 methods={paymentMethods} 
                 selectedId={selectedSubscriptionId} 
                 onSelect={handleSelectSubscription} 
-                label="" 
+                label=""
+                disabled={!isEditMode}
               /> : 
               <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
                 <p className="text-gray-600">No payment methods added yet</p>
@@ -286,7 +296,8 @@ export function PaymentMethodManager({
                 methods={bankMethods} 
                 selectedId={selectedRentBankId} 
                 onSelect={handleSelectRentBank} 
-                label="" 
+                label=""
+                disabled={!isEditMode}
               /> : 
               <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
                 <p className="text-gray-600">No bank accounts added yet</p>
