@@ -33,6 +33,9 @@ export default function ProfilePage() {
     fetchProfileData();
   };
 
+  // Determine if user is an owner to show subscription tab
+  const isOwner = profile?.role === "owner";
+
   return (
     <div className="container py-8 px-4 max-w-2xl mx-auto">
       <div className="mb-8">
@@ -41,12 +44,14 @@ export default function ProfilePage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="w-full grid grid-cols-3">
+        <TabsList className={`w-full grid ${isOwner ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="manage" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
-            <span>Subscription</span>
-          </TabsTrigger>
+          {isOwner && (
+            <TabsTrigger value="manage" className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              <span>Subscription</span>
+            </TabsTrigger>
+          )}
           <TabsTrigger value="payment" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
             <span>Payments</span>
@@ -60,9 +65,11 @@ export default function ProfilePage() {
           />
         </TabsContent>
         
-        <TabsContent value="manage" className="pt-4">
-          <ManageSubscriptionTab user={user} />
-        </TabsContent>
+        {isOwner && (
+          <TabsContent value="manage" className="pt-4">
+            <ManageSubscriptionTab user={user} />
+          </TabsContent>
+        )}
 
         <TabsContent value="payment" className="pt-4">
           <PaymentSettingsTab user={user} />
