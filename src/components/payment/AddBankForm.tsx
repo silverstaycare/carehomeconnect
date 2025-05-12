@@ -41,6 +41,7 @@ interface AddBankFormProps {
   onUseForBothChange: (checked: boolean) => void;
   onCancel: () => void;
   isEditing?: boolean;
+  isOwner?: boolean; // Add isOwner prop to determine user type
 }
 
 export function AddBankForm({ 
@@ -50,7 +51,8 @@ export function AddBankForm({
   useForBoth,
   onUseForBothChange,
   onCancel,
-  isEditing = false
+  isEditing = false,
+  isOwner = false // Default to false if not provided
 }: AddBankFormProps) {
   const form = useForm<BankFormValues>({
     resolver: zodResolver(bankSchema),
@@ -139,22 +141,25 @@ export function AddBankForm({
           />
         </div>
         
-        <div className="flex items-center space-x-2 mt-4">
-          <Checkbox 
-            id="useForBoth" 
-            checked={useForBoth} 
-            onCheckedChange={(checked) => {
-              onUseForBothChange(checked as boolean);
-              form.setValue('useForBoth', checked as boolean);
-            }}
-          />
-          <label
-            htmlFor="useForBoth"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Use this account for both subscription payments and rent deposits
-          </label>
-        </div>
+        {/* Only show the checkbox for owner user type */}
+        {isOwner && (
+          <div className="flex items-center space-x-2 mt-4">
+            <Checkbox 
+              id="useForBoth" 
+              checked={useForBoth} 
+              onCheckedChange={(checked) => {
+                onUseForBothChange(checked as boolean);
+                form.setValue('useForBoth', checked as boolean);
+              }}
+            />
+            <label
+              htmlFor="useForBoth"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Use this account for both subscription payments and rent deposits
+            </label>
+          </div>
+        )}
         
         <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4 flex items-start gap-2">
           <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
