@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { CreditCard, Banknote, Plus, Pencil } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { PaymentMethod } from '@/services/paymentService';
+
 interface PaymentMethodsListProps {
   methods: PaymentMethod[];
   onEdit?: (id: string) => void;
@@ -10,6 +12,7 @@ interface PaymentMethodsListProps {
   isEditMode?: boolean;
   isOwner?: boolean;
 }
+
 export function PaymentMethodsList({
   methods,
   onEdit,
@@ -21,6 +24,7 @@ export function PaymentMethodsList({
   // Group methods by type
   const cardMethods = methods.filter(method => method.type === 'card');
   const bankMethods = methods.filter(method => method.type === 'bank');
+
   return <div className="space-y-6">
       {/* Cards Section */}
       <div>
@@ -66,7 +70,12 @@ export function PaymentMethodsList({
               </div>)}
           </div> : <div className="text-center p-4 border border-dashed rounded-md bg-gray-50">
             <p className="text-gray-500">No payment cards added yet</p>
-            {isEditMode && onAddCard}
+            {isEditMode && onAddCard && (
+              <Button variant="outline" size="sm" onClick={onAddCard} className="mt-2 flex items-center gap-1 mx-auto">
+                <Plus className="h-4 w-4" />
+                Add Card
+              </Button>
+            )}
           </div>}
       </div>
       
@@ -113,7 +122,12 @@ export function PaymentMethodsList({
               </div>)}
           </div> : <div className="text-center p-4 border border-dashed rounded-md bg-gray-50">
             <p className="text-gray-500">No bank accounts added yet</p>
-            {isEditMode && onAddBank}
+            {isEditMode && onAddBank && (
+              <Button variant="outline" size="sm" onClick={onAddBank} className="mt-2 flex items-center gap-1 mx-auto">
+                <Plus className="h-4 w-4" />
+                Add Bank
+              </Button>
+            )}
           </div>}
       </div>
     </div>;
