@@ -114,7 +114,7 @@ const AppLayout = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleProfileClick}>
                       <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
+                      <span>Account Settings</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
