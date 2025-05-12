@@ -46,14 +46,14 @@ export default function ProfilePage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
         <TabsList className={`w-full grid ${isOwner ? 'grid-cols-4' : 'grid-cols-3'}`}>
-          <TabsTrigger value="profile">Profile Settings</TabsTrigger>
+          <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="manage" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
-            <span>Manage Subscription</span>
+            <span>Subscription</span>
           </TabsTrigger>
           <TabsTrigger value="payment" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
-            <span>Payment Settings</span>
+            <span>Payments</span>
           </TabsTrigger>
           {isOwner && (
             <TabsTrigger value="bank" className="flex items-center gap-2">

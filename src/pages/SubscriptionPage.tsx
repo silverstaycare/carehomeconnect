@@ -31,12 +31,12 @@ const SubscriptionPage = () => {
           className="flex items-center gap-2 mb-4"
         >
           <ArrowLeft size={16} />
-          Back to Settings
+          Back to Profile
         </Button>
       </div>
       <SubscriptionManager />
     </div>
   );
-};
+}
 
 export default SubscriptionPage;

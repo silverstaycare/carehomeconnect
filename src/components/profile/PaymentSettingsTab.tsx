@@ -88,7 +88,7 @@ export function PaymentSettingsTab({
     <div className="space-y-6">
       {/* Header with Edit Button */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Payment Settings</h2>
+        <h2 className="text-2xl font-bold">Payments</h2>
         <Button 
           variant="default" 
           size="sm" 
