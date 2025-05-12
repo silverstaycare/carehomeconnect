@@ -10,7 +10,6 @@ export interface PaymentMethod {
   bank_name?: string;
   exp_month?: number;
   exp_year?: number;
-  is_default?: boolean;
   is_subscription_default?: boolean;
   is_rent_default?: boolean;
   user_id?: string;
@@ -64,7 +63,6 @@ export const paymentService = {
           { 
             ...paymentMethod,
             user_id: userId,
-            is_default: paymentMethod.is_default || isFirstMethod,
             is_subscription_default: paymentMethod.is_subscription_default || isFirstMethod,
             is_rent_default: paymentMethod.type === 'bank' ? (paymentMethod.is_rent_default || isFirstMethod) : false
           }
@@ -201,37 +199,6 @@ export const paymentService = {
     } catch (error) {
       console.error("Error setting default rent method:", error);
       toast.error("Failed to update default rent payment method");
-      return false;
-    }
-  },
-  
-  // Set a payment method as the overall default
-  async setDefaultMethod(id: string): Promise<boolean> {
-    try {
-      console.log("Setting overall default method:", id);
-      
-      // First reset all existing defaults
-      const { error: resetError } = await supabase
-        .from('payment_methods')
-        .update({ is_default: false })
-        .not('id', 'eq', id);
-      
-      if (resetError) throw resetError;
-      
-      // Then set the selected one as default
-      const { error } = await supabase
-        .from('payment_methods')
-        .update({ is_default: true })
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      console.log("Default payment method updated successfully");
-      return true;
-      
-    } catch (error) {
-      console.error("Error setting default method:", error);
-      toast.error("Failed to update default payment method");
       return false;
     }
   }

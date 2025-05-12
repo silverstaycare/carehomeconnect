@@ -1,12 +1,11 @@
 
-import { CreditCard, Banknote, PlusCircle, Pencil } from "lucide-react";
+import React from 'react';
+import { CreditCard, Banknote, Plus, Pencil } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { PaymentMethod } from "@/services/paymentService";
+import { PaymentMethod } from '@/services/paymentService';
 
 interface PaymentMethodsListProps {
   methods: PaymentMethod[];
-  onSetDefault: (id: string) => void;
   onEdit?: (id: string) => void;
   onAddCard?: () => void;
   onAddBank?: () => void;
@@ -15,123 +14,150 @@ interface PaymentMethodsListProps {
 
 export function PaymentMethodsList({
   methods,
-  onSetDefault,
   onEdit,
   onAddCard,
   onAddBank,
   isEditMode = false
 }: PaymentMethodsListProps) {
-  // Filter methods by type
-  const cardMethods = methods.filter(method => method.type === "card");
-  const bankMethods = methods.filter(method => method.type === "bank");
+  // Group methods by type
+  const cardMethods = methods.filter(method => method.type === 'card');
+  const bankMethods = methods.filter(method => method.type === 'bank');
   
-  if (methods.length === 0) {
-    return (
-      <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
-        <p className="text-gray-600">No payment methods added yet</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Cards Section */}
-      {cardMethods.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Payment Cards</h4>
-            {isEditMode && onAddCard && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onAddCard}
-                className="flex items-center gap-1"
+      <div>
+        <div className="flex justify-between items-center mb-3">
+          <h4 className="font-medium text-gray-700">Payment Cards</h4>
+          {onAddCard && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onAddCard}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              <CreditCard className="h-4 w-4" />
+              Add Card
+            </Button>
+          )}
+        </div>
+        
+        {cardMethods.length > 0 ? (
+          <div className="space-y-2">
+            {cardMethods.map((method) => (
+              <div 
+                key={method.id} 
+                className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50"
               >
-                <PlusCircle className="h-3.5 w-3.5" />
-                Add Card
-              </Button>
-            )}
-          </div>
-          {cardMethods.map((method) => (
-            <div key={method.id} className="border rounded-md p-4">
-              <div className="flex items-center">
-                <div className="bg-blue-50 p-2 rounded mr-4">
-                  <CreditCard className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{method.name} •••• {method.last4}</p>
-                  <p className="text-sm text-gray-500">
-                    Expires {method.exp_month}/{method.exp_year}
-                  </p>
-                  {/* Removed Default indicator */}
-                </div>
-                {isEditMode && onEdit && (
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => onEdit(method.id!)}
-                      className="p-1 h-auto"
-                    >
-                      <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-                      <span className="sr-only">Edit</span>
-                    </Button>
+                <div className="flex items-center">
+                  <div className="bg-blue-50 p-2 rounded mr-3">
+                    <CreditCard className="h-5 w-5 text-blue-600" />
                   </div>
+                  <div>
+                    <p className="font-medium">{method.name}</p>
+                    <p className="text-sm text-gray-500">
+                      •••• {method.last4} 
+                      {method.exp_month && method.exp_year && ` • Expires ${String(method.exp_month).padStart(2, '0')}/${String(method.exp_year).slice(-2)}`}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {method.is_subscription_default && (
+                        <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                          Default for subscription
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {isEditMode && onEdit && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => onEdit(method.id as string)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit</span>
+                  </Button>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-
+            ))}
+          </div>
+        ) : (
+          <div className="text-center p-4 border border-dashed rounded-md bg-gray-50">
+            <p className="text-gray-500">No payment cards added yet</p>
+          </div>
+        )}
+      </div>
+      
       {/* Bank Accounts Section */}
-      {bankMethods.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Bank Accounts</h4>
-            {isEditMode && onAddBank && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onAddBank}
-                className="flex items-center gap-1"
+      <div>
+        <div className="flex justify-between items-center mb-3">
+          <h4 className="font-medium text-gray-700">Bank Accounts</h4>
+          {onAddBank && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onAddBank}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              <Banknote className="h-4 w-4" />
+              Add Bank
+            </Button>
+          )}
+        </div>
+        
+        {bankMethods.length > 0 ? (
+          <div className="space-y-2">
+            {bankMethods.map((method) => (
+              <div 
+                key={method.id} 
+                className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50"
               >
-                <PlusCircle className="h-3.5 w-3.5" />
-                Add Bank
-              </Button>
-            )}
-          </div>
-          {bankMethods.map((method) => (
-            <div key={method.id} className="border rounded-md p-4">
-              <div className="flex items-center">
-                <div className="bg-green-50 p-2 rounded mr-4">
-                  <Banknote className="h-5 w-5 text-green-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{method.bank_name}</p>
-                  <p className="text-sm text-gray-500">
-                    {method.name} • Account ending in {method.last4}
-                  </p>
-                  {/* Removed Default indicator */}
-                </div>
-                {isEditMode && onEdit && (
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => onEdit(method.id!)}
-                      className="p-1 h-auto"
-                    >
-                      <Pencil className="h-4 w-4 text-gray-500 hover:text-gray-700" />
-                      <span className="sr-only">Edit</span>
-                    </Button>
+                <div className="flex items-center">
+                  <div className="bg-green-50 p-2 rounded mr-3">
+                    <Banknote className="h-5 w-5 text-green-600" />
                   </div>
+                  <div>
+                    <p className="font-medium">{method.bank_name}</p>
+                    <p className="text-sm text-gray-500">
+                      {method.name} • Account ending in {method.last4}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {method.is_subscription_default && (
+                        <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                          Default for subscription
+                        </span>
+                      )}
+                      {method.is_rent_default && (
+                        <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded">
+                          Default for rent
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {isEditMode && onEdit && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => onEdit(method.id as string)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit</span>
+                  </Button>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        ) : (
+          <div className="text-center p-4 border border-dashed rounded-md bg-gray-50">
+            <p className="text-gray-500">No bank accounts added yet</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -317,7 +317,6 @@ export type Database = {
           exp_month: number | null
           exp_year: number | null
           id: string
-          is_default: boolean | null
           is_rent_default: boolean | null
           is_subscription_default: boolean | null
           last4: string | null
@@ -332,7 +331,6 @@ export type Database = {
           exp_month?: number | null
           exp_year?: number | null
           id?: string
-          is_default?: boolean | null
           is_rent_default?: boolean | null
           is_subscription_default?: boolean | null
           last4?: string | null
@@ -347,7 +345,6 @@ export type Database = {
           exp_month?: number | null
           exp_year?: number | null
           id?: string
-          is_default?: boolean | null
           is_rent_default?: boolean | null
           is_subscription_default?: boolean | null
           last4?: string | null

@@ -56,7 +56,6 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
     fetchPaymentMethods,
     addPaymentMethod,
     updatePaymentMethod,
-    setDefaultMethod,
     setDefaultSubscriptionMethod,
     setDefaultRentMethod,
     getCardMethods,
@@ -112,11 +111,6 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       }
     }
   }, [paymentMethods, getDefaultSubscriptionMethod, getDefaultRentMethod]);
-
-  // Handle setting default payment method
-  const handleSetDefault = async (id: string) => {
-    await setDefaultMethod(id);
-  };
 
   // Handle editing a payment method
   const handleEdit = (id: string) => {
@@ -305,7 +299,6 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
           <div>
             <PaymentMethodsList 
               methods={paymentMethods} 
-              onSetDefault={handleSetDefault} 
               onEdit={handleEdit} 
               onAddCard={isEditMode ? handleAddCardClick : undefined} 
               onAddBank={isEditMode ? handleAddBankClick : undefined}

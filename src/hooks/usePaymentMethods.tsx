@@ -55,14 +55,6 @@ export function usePaymentMethods(userId: string | undefined) {
   }, [fetchPaymentMethods]);
   
   // Set default methods
-  const setDefaultMethod = useCallback(async (id: string) => {
-    const success = await paymentService.setDefaultMethod(id);
-    if (success) {
-      await fetchPaymentMethods();
-    }
-    return success;
-  }, [fetchPaymentMethods]);
-  
   const setDefaultSubscriptionMethod = useCallback(async (id: string) => {
     const success = await paymentService.setDefaultSubscriptionMethod(id);
     if (success) {
@@ -95,8 +87,9 @@ export function usePaymentMethods(userId: string | undefined) {
     return paymentMethods.filter(method => method.type === 'bank');
   }, [paymentMethods]);
   
+  // Use subscription default as primary default
   const getDefaultMethod = useCallback(() => {
-    return paymentMethods.find(method => method.is_default === true);
+    return paymentMethods.find(method => method.is_subscription_default === true);
   }, [paymentMethods]);
   
   const getDefaultSubscriptionMethod = useCallback(() => {
@@ -115,7 +108,6 @@ export function usePaymentMethods(userId: string | undefined) {
     addPaymentMethod,
     updatePaymentMethod,
     deletePaymentMethod,
-    setDefaultMethod,
     setDefaultSubscriptionMethod,
     setDefaultRentMethod,
     getCardMethods,
