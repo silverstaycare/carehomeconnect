@@ -31,8 +31,7 @@ export function PaymentSettingsTab({
   // Get payment methods from hook
   const { 
     fetchPaymentMethods,
-    setDefaultSubscriptionMethod, 
-    setDefaultRentMethod
+    paymentMethods
   } = usePaymentMethods(user?.id);
 
   // Check if bank details are shared between payment methods
@@ -68,12 +67,16 @@ export function PaymentSettingsTab({
         
         // Use the ref to get the selected methods and save them
         if (paymentManagerRef.current) {
-          await paymentManagerRef.current.savePaymentMethodSelections();
+          const hasChanges = paymentManagerRef.current.hasChanges();
           
-          // Refresh payment methods after saving to ensure the UI reflects the current state
-          await fetchPaymentMethods();
-          
-          toast.success("Payment preferences saved");
+          if (hasChanges) {
+            await paymentManagerRef.current.savePaymentMethodSelections();
+            // Refresh payment methods after saving
+            await fetchPaymentMethods();
+            toast.success("Payment preferences saved");
+          } else {
+            toast.info("No changes to save");
+          }
         }
       } catch (error) {
         console.error("Error saving payment preferences:", error);

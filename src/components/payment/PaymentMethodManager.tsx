@@ -1,4 +1,3 @@
-
 import { useState, useEffect, forwardRef, ForwardRefRenderFunction, useImperativeHandle } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,6 +47,8 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
   // Track local selected values separately from DB defaults
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(null);
   const [selectedRentBankId, setSelectedRentBankId] = useState<string | null>(null);
+  // Track if selections have changed from initial DB values
+  const [hasSelectionChanged, setHasSelectionChanged] = useState(false);
 
   // Use the payment methods hook
   const {
@@ -71,7 +72,8 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
     getSelectedSubscriptionId: () => selectedSubscriptionId,
     getSelectedRentBankId: () => selectedRentBankId,
     setSelectedSubscriptionId,
-    setSelectedRentBankId
+    setSelectedRentBankId,
+    hasChanges: () => hasSelectionChanged
   }));
 
   // Effect to sync the dialog state with parent component
@@ -109,6 +111,9 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       if (rentDefault?.id) {
         setSelectedRentBankId(rentDefault.id);
       }
+      
+      // Reset the selection changed state when we load from DB
+      setHasSelectionChanged(false);
     }
   }, [paymentMethods, getDefaultSubscriptionMethod, getDefaultRentMethod]);
 
@@ -220,19 +225,43 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
     setCurrentBankData(null);
   };
 
-  // Select bank account for rent payment - use local state first, update DB on save
+  // Select bank account for rent payment - updates local state, doesn't save to DB yet
   const handleSelectRentBank = (id: string) => {
+    const currentDefault = getDefaultRentMethod();
+    const isChanged = currentDefault?.id !== id;
+    
     setSelectedRentBankId(id);
+    setHasSelectionChanged(isChanged || hasSelectionChanged);
+    
+    // If not in edit mode, save changes immediately
     if (!isEditMode) {
       setDefaultRentMethod(id);
+      
+      // Show a temporary saved message
+      toast.success("Payment method for rent updated");
+      
+      // Reset change tracking since we just saved
+      setHasSelectionChanged(false);
     }
   };
 
-  // Select payment method for subscription - use local state first, update DB on save
+  // Select payment method for subscription - updates local state, doesn't save to DB yet
   const handleSelectSubscription = (id: string) => {
+    const currentDefault = getDefaultSubscriptionMethod();
+    const isChanged = currentDefault?.id !== id;
+    
     setSelectedSubscriptionId(id);
+    setHasSelectionChanged(isChanged || hasSelectionChanged);
+    
+    // If not in edit mode, save changes immediately
     if (!isEditMode) {
       setDefaultSubscriptionMethod(id);
+      
+      // Show a temporary saved message
+      toast.success("Payment method for subscription updated");
+      
+      // Reset change tracking since we just saved
+      setHasSelectionChanged(false);
     }
   };
 
@@ -255,8 +284,11 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       
       await Promise.all(updatePromises);
       
-      // Refresh payment methods after saving to ensure the UI reflects the current state
+      // Update the UI to reflect changes
       await fetchPaymentMethods();
+      
+      // Reset the change tracking flag
+      setHasSelectionChanged(false);
       
       return true;
     } catch (error) {
@@ -376,6 +408,12 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
                 )}
               </div>
             }
+            
+            {isEditMode && hasSelectionChanged && 
+              <p className="text-sm text-amber-600 mt-2">
+                Click "Save" to apply your changes
+              </p>
+            }
           </div>
           
           {/* Separator for visual distinction */}
@@ -411,6 +449,12 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
             {useForBoth && <p className="text-sm text-blue-600 mt-2">
               Using the same bank account for subscription payments and rent deposits
             </p>}
+            
+            {isEditMode && hasSelectionChanged && 
+              <p className="text-sm text-amber-600 mt-2">
+                Click "Save" to apply your changes
+              </p>
+            }
           </div>
         </>
       )}
