@@ -35,7 +35,7 @@ export function PaymentMethodSelect({
         disabled={disabled || methods.length === 0}
       >
         <SelectTrigger className={`w-full ${disabled ? 'opacity-80' : ''}`}>
-          <SelectValue placeholder={methods.length > 0 ? "Select a payment method" : "No payment methods available"}>
+          <SelectValue placeholder="Select a payment method">
             {selectedMethod && (
               <div className="flex items-center">
                 {selectedMethod.type === "card" ? (

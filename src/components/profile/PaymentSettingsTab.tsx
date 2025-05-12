@@ -1,10 +1,12 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useBankDetails } from "@/hooks/useBankDetails";
 import { CardPaymentSection } from "@/components/payment/CardPaymentSection";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, CreditCard, Banknote, Pencil, Save } from "lucide-react";
+import { usePaymentMethods } from "@/hooks/usePaymentMethods";
+import { toast } from "sonner";
 
 interface PaymentSettingsTabProps {
   user: any;
@@ -21,6 +23,18 @@ export function PaymentSettingsTab({
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  
+  // Reference to the component instance to access its methods
+  const paymentManagerRef = useRef<any>(null);
+  
+  // Get payment methods from hook
+  const { 
+    fetchPaymentMethods,
+    setDefaultSubscriptionMethod, 
+    setDefaultRentMethod,
+    getDefaultSubscriptionMethod,
+    getDefaultRentMethod
+  } = usePaymentMethods(user?.id);
 
   // Check if bank details are shared between payment methods
   useEffect(() => {
@@ -46,8 +60,32 @@ export function PaymentSettingsTab({
     setIsAddBankOpen(true);
   };
 
-  // Toggle edit mode
-  const toggleEditMode = () => {
+  // Toggle edit mode and save changes when exiting edit mode
+  const toggleEditMode = async () => {
+    if (isEditMode) {
+      // Save changes when exiting edit mode
+      try {
+        const subscriptionMethodId = document.querySelector('[name="subscription-payment"]')?.getAttribute('data-value');
+        const rentMethodId = document.querySelector('[name="rent-payment"]')?.getAttribute('data-value');
+        
+        if (subscriptionMethodId) {
+          await setDefaultSubscriptionMethod(subscriptionMethodId);
+        }
+        
+        if (rentMethodId) {
+          await setDefaultRentMethod(rentMethodId);
+        }
+        
+        // Refresh payment methods
+        fetchPaymentMethods();
+        
+        toast.success("Payment preferences saved");
+      } catch (error) {
+        console.error("Error saving payment preferences:", error);
+        toast.error("Failed to save payment preferences");
+      }
+    }
+    
     setIsEditMode(!isEditMode);
   };
   
@@ -96,6 +134,7 @@ export function PaymentSettingsTab({
             onAddCardOpenChange={setIsAddPaymentOpen} 
             onAddBankOpenChange={setIsAddBankOpen} 
             isEditMode={isEditMode} 
+            ref={paymentManagerRef}
           />
         </CardContent>
       </Card>

@@ -43,6 +43,9 @@ export function PaymentMethodManager({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [currentCardData, setCurrentCardData] = useState<Partial<CardFormValues> | null>(null);
   const [currentBankData, setCurrentBankData] = useState<any>(null);
+  // Track local selected values separately from DB defaults
+  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(null);
+  const [selectedRentBankId, setSelectedRentBankId] = useState<string | null>(null);
 
   // Effect to sync the dialog state with parent component
   useEffect(() => {
@@ -81,6 +84,17 @@ export function PaymentMethodManager({
     getDefaultSubscriptionMethod,
     getDefaultRentMethod
   } = usePaymentMethods(user?.id);
+
+  // Initialize local state with DB values when payment methods load
+  useEffect(() => {
+    if (paymentMethods.length > 0) {
+      const subscriptionDefault = getDefaultSubscriptionMethod();
+      const rentDefault = getDefaultRentMethod();
+      
+      setSelectedSubscriptionId(subscriptionDefault?.id || null);
+      setSelectedRentBankId(rentDefault?.id || null);
+    }
+  }, [paymentMethods]);
 
   // Handle setting default payment method
   const handleSetDefault = async (id: string) => {
@@ -195,17 +209,30 @@ export function PaymentMethodManager({
     setCurrentBankData(null);
   };
 
-  // Select bank account for rent payment
-  const handleSelectRentBank = async (id: string) => {
-    if (isEditMode) {
-      await setDefaultRentMethod(id);
+  // Select bank account for rent payment - use local state first, update DB on save
+  const handleSelectRentBank = (id: string) => {
+    setSelectedRentBankId(id);
+    if (!isEditMode) {
+      setDefaultRentMethod(id);
     }
   };
 
-  // Select payment method for subscription
-  const handleSelectSubscription = async (id: string) => {
-    if (isEditMode) {
-      await setDefaultSubscriptionMethod(id);
+  // Select payment method for subscription - use local state first, update DB on save
+  const handleSelectSubscription = (id: string) => {
+    setSelectedSubscriptionId(id);
+    if (!isEditMode) {
+      setDefaultSubscriptionMethod(id);
+    }
+  };
+
+  // Save changes to selected payment methods when exiting edit mode
+  const savePaymentMethodSelections = async () => {
+    if (selectedSubscriptionId) {
+      await setDefaultSubscriptionMethod(selectedSubscriptionId);
+    }
+    
+    if (selectedRentBankId) {
+      await setDefaultRentMethod(selectedRentBankId);
     }
   };
 
@@ -229,8 +256,6 @@ export function PaymentMethodManager({
   const cardMethods = getCardMethods();
   const bankMethods = getBankMethods();
   const defaultPaymentId = getDefaultMethod()?.id || null;
-  const selectedRentBankId = getDefaultRentMethod()?.id || null;
-  const selectedSubscriptionId = getDefaultSubscriptionMethod()?.id || null;
   
   return (
     <div className="space-y-6">
