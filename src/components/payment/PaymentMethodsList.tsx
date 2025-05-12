@@ -63,7 +63,7 @@ export function PaymentMethodsList({
                     <div className="mt-1 flex flex-wrap gap-1">
                       {method.is_for_subscription && (
                         <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                          Default for subscription
+                          Selected for subscription
                         </span>
                       )}
                     </div>
@@ -127,12 +127,12 @@ export function PaymentMethodsList({
                     <div className="mt-1 flex flex-wrap gap-1">
                       {method.is_for_subscription && (
                         <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                          Default for subscription
+                          Selected for subscription
                         </span>
                       )}
                       {method.is_for_rent && (
                         <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded">
-                          Default for rent
+                          Selected for rent
                         </span>
                       )}
                     </div>
