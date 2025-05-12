@@ -65,15 +65,9 @@ export function PaymentSettingsTab({
     if (isEditMode) {
       // Save changes when exiting edit mode
       try {
-        const subscriptionMethodId = document.querySelector('[name="subscription-payment"]')?.getAttribute('data-value');
-        const rentMethodId = document.querySelector('[name="rent-payment"]')?.getAttribute('data-value');
-        
-        if (subscriptionMethodId) {
-          await setDefaultSubscriptionMethod(subscriptionMethodId);
-        }
-        
-        if (rentMethodId) {
-          await setDefaultRentMethod(rentMethodId);
+        // Use the ref to get the selected methods and save them
+        if (paymentManagerRef.current) {
+          await paymentManagerRef.current.savePaymentMethodSelections();
         }
         
         // Refresh payment methods
@@ -117,7 +111,26 @@ export function PaymentSettingsTab({
       {/* Add Payment Method Buttons */}
       {isEditMode && (
         <div className="flex flex-wrap gap-3 mb-6">
-          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddCardClick} 
+            className="flex items-center gap-1"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <CreditCard className="h-4 w-4" />
+            Add Card
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleAddBankClick} 
+            className="flex items-center gap-1"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <Banknote className="h-4 w-4" />
+            Add Bank
+          </Button>
         </div>
       )}
 

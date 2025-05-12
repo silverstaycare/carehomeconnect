@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { forwardRef, ForwardRefRenderFunction } from "react";
 import { PaymentMethodManager } from "@/components/payment/PaymentMethodManager";
 import { BankDetailsSection } from "@/components/payment/BankDetailsSection";
 import { BankDetails } from "@/types/bank";
@@ -16,7 +16,8 @@ interface CardPaymentSectionProps {
   isEditMode?: boolean;
 }
 
-export function CardPaymentSection({ 
+// Create the forwarded ref component
+const CardPaymentSectionComponent: ForwardRefRenderFunction<any, CardPaymentSectionProps> = ({ 
   user,
   sharedBankAccount = false,
   bankDetails = null,
@@ -26,7 +27,7 @@ export function CardPaymentSection({
   onAddCardOpenChange,
   onAddBankOpenChange,
   isEditMode = false
-}: CardPaymentSectionProps) {
+}, ref) => {
   return (
     <div className="space-y-8">
       <div>
@@ -45,8 +46,12 @@ export function CardPaymentSection({
           onAddCardOpenChange={onAddCardOpenChange}
           onAddBankOpenChange={onAddBankOpenChange}
           isEditMode={isEditMode}
+          ref={ref}
         />
       </div>
     </div>
   );
-}
+};
+
+// Export the component with forwardRef
+export const CardPaymentSection = forwardRef(CardPaymentSectionComponent);

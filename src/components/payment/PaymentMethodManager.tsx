@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, ForwardRefRenderFunction, useImperativeHandle } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,7 +24,8 @@ interface PaymentMethodManagerProps {
   isEditMode?: boolean;
 }
 
-export function PaymentMethodManager({
+// Create a forwarded ref component
+const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethodManagerProps> = ({
   user,
   sharedBankAccount = false,
   bankDetails = null,
@@ -34,7 +35,7 @@ export function PaymentMethodManager({
   onAddCardOpenChange,
   onAddBankOpenChange,
   isEditMode = false
-}: PaymentMethodManagerProps) {
+}, ref) => {
   // States
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(initialAddCardOpen);
   const [isAddBankOpen, setIsAddBankOpen] = useState(initialAddBankOpen);
@@ -46,6 +47,31 @@ export function PaymentMethodManager({
   // Track local selected values separately from DB defaults
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<string | null>(null);
   const [selectedRentBankId, setSelectedRentBankId] = useState<string | null>(null);
+
+  // Use the payment methods hook
+  const {
+    paymentMethods,
+    isLoading,
+    addPaymentMethod,
+    updatePaymentMethod,
+    setDefaultMethod,
+    setDefaultSubscriptionMethod,
+    setDefaultRentMethod,
+    getCardMethods,
+    getBankMethods,
+    getDefaultMethod,
+    getDefaultSubscriptionMethod,
+    getDefaultRentMethod
+  } = usePaymentMethods(user?.id);
+
+  // Expose methods to parent component using the ref
+  useImperativeHandle(ref, () => ({
+    savePaymentMethodSelections,
+    getSelectedSubscriptionId: () => selectedSubscriptionId,
+    getSelectedRentBankId: () => selectedRentBankId,
+    setSelectedSubscriptionId,
+    setSelectedRentBankId
+  }));
 
   // Effect to sync the dialog state with parent component
   useEffect(() => {
@@ -68,22 +94,6 @@ export function PaymentMethodManager({
       onAddBankOpenChange(isAddBankOpen);
     }
   }, [isAddBankOpen, onAddBankOpenChange]);
-
-  // Use the payment methods hook
-  const {
-    paymentMethods,
-    isLoading,
-    addPaymentMethod,
-    updatePaymentMethod,
-    setDefaultMethod,
-    setDefaultSubscriptionMethod,
-    setDefaultRentMethod,
-    getCardMethods,
-    getBankMethods,
-    getDefaultMethod,
-    getDefaultSubscriptionMethod,
-    getDefaultRentMethod
-  } = usePaymentMethods(user?.id);
 
   // Initialize local state with DB values when payment methods load
   useEffect(() => {
@@ -387,4 +397,7 @@ export function PaymentMethodManager({
       )}
     </div>
   );
-}
+};
+
+// Export the component with forwardRef
+export const PaymentMethodManager = forwardRef(PaymentMethodManagerComponent);
