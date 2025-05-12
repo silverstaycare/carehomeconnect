@@ -13,6 +13,7 @@ export interface PaymentMethod {
   is_for_subscription?: boolean;
   is_for_rent?: boolean;
   user_id?: string;
+  is_for_payment?: boolean;
 }
 
 export const paymentService = {
@@ -64,7 +65,10 @@ export const paymentService = {
             ...paymentMethod,
             user_id: userId,
             is_for_subscription: paymentMethod.is_for_subscription || isFirstMethod,
-            is_for_rent: paymentMethod.type === 'bank' ? (paymentMethod.is_for_rent || isFirstMethod) : false
+            is_for_rent: paymentMethod.type === 'bank' ? (paymentMethod.is_for_rent || isFirstMethod) : false,
+            is_for_payment: paymentMethod.type === 'card' ? 
+              (paymentMethod.is_for_payment !== undefined ? paymentMethod.is_for_payment : true) : 
+              false
           }
         ])
         .select('*')

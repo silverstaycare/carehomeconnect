@@ -52,6 +52,8 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
   const [selectedRentBankId, setSelectedRentBankId] = useState<string | null>(null);
   // Track if selections have changed from initial DB values
   const [hasSelectionChanged, setHasSelectionChanged] = useState(false);
+  // Track new payment methods added in edit mode (for family users)
+  const [newPaymentMethods, setNewPaymentMethods] = useState<PaymentMethod[]>([]);
 
   // Use the payment methods hook
   const {
@@ -72,11 +74,13 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
   // Expose methods to parent component using the ref
   useImperativeHandle(ref, () => ({
     savePaymentMethodSelections,
+    saveNewPaymentMethods,
     getSelectedSubscriptionId: () => selectedSubscriptionId,
     getSelectedRentBankId: () => selectedRentBankId,
     setSelectedSubscriptionId,
     setSelectedRentBankId,
-    hasChanges: () => hasSelectionChanged
+    hasChanges: () => hasSelectionChanged || newPaymentMethods.length > 0,
+    getNewPaymentMethods: () => newPaymentMethods
   }));
 
   // Effect to sync the dialog state with parent component
@@ -117,6 +121,8 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       
       // Reset the selection changed state when we load from DB
       setHasSelectionChanged(false);
+      // Clear any temporary payment methods
+      setNewPaymentMethods([]);
     }
   }, [paymentMethods, getDefaultSubscriptionMethod, getDefaultRentMethod]);
 
@@ -124,7 +130,13 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
   const handleEdit = (id: string) => {
     if (!isEditMode) return;
     
-    const method = paymentMethods.find(m => m.id === id);
+    // Check both database payment methods and temporary new ones
+    let method = paymentMethods.find(m => m.id === id);
+    
+    if (!method) {
+      method = newPaymentMethods.find(m => m.id === id);
+    }
+    
     if (!method) return;
     
     setEditingId(id);
@@ -155,22 +167,42 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
     }
   };
 
+  // Generate temporary ID for new payment methods
+  const generateTempId = () => {
+    return `temp-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  };
+
   // Handle adding new payment method
   const handleAddPaymentMethod = async (data: any) => {
     setIsProcessing(true);
     
     try {
       const newCardMethod: PaymentMethod = {
+        id: editingId || generateTempId(),
         type: "card",
         name: data.cardholderName,
         last4: data.cardNumber.slice(-4),
         exp_month: parseInt(data.expiryDate.split('/')[0], 10),
         exp_year: parseInt(`20${data.expiryDate.split('/')[1]}`, 10),
+        is_for_payment: true,
       };
-      
-      if (editingId) {
-        await updatePaymentMethod(editingId, newCardMethod);
+
+      if (isEditMode && !editingId?.startsWith('temp-')) {
+        // If in edit mode and editing an existing record, update it
+        await updatePaymentMethod(editingId!, newCardMethod);
+      } else if (isEditMode) {
+        // In edit mode but it's a new payment method, save temporarily
+        if (editingId) {
+          // Update existing temporary payment method
+          setNewPaymentMethods(prev => 
+            prev.map(m => m.id === editingId ? newCardMethod : m)
+          );
+        } else {
+          // Add new temporary payment method
+          setNewPaymentMethods(prev => [...prev, newCardMethod]);
+        }
       } else {
+        // Not in edit mode, save to database immediately
         await addPaymentMethod(newCardMethod);
       }
       
@@ -190,17 +222,32 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
     
     try {
       const bankMethod: PaymentMethod = {
+        id: editingId || generateTempId(),
         type: "bank",
         name: data.accountName,
         last4: data.accountNumber.slice(-4),
         bank_name: data.bankName,
-        is_for_subscription: useForBoth ? true : undefined,
-        is_for_rent: true
+        is_for_subscription: useForBoth && isOwner ? true : undefined,
+        is_for_rent: isOwner ? true : undefined,
+        is_for_payment: false,
       };
       
-      if (editingId) {
-        await updatePaymentMethod(editingId, bankMethod);
+      if (isEditMode && !editingId?.startsWith('temp-')) {
+        // If in edit mode and editing an existing record, update it
+        await updatePaymentMethod(editingId!, bankMethod);
+      } else if (isEditMode) {
+        // In edit mode but it's a new payment method, save temporarily
+        if (editingId) {
+          // Update existing temporary payment method
+          setNewPaymentMethods(prev => 
+            prev.map(m => m.id === editingId ? bankMethod : m)
+          );
+        } else {
+          // Add new temporary payment method
+          setNewPaymentMethods(prev => [...prev, bankMethod]);
+        }
       } else {
+        // Not in edit mode, save to database immediately
         await addPaymentMethod(bankMethod);
       }
       
@@ -286,6 +333,40 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
     }
   };
 
+  // Save new payment methods added during edit mode
+  const saveNewPaymentMethods = async () => {
+    console.log("Saving new payment methods to Supabase:", newPaymentMethods);
+    
+    if (newPaymentMethods.length === 0) {
+      return true; // Nothing to save
+    }
+    
+    try {
+      // Filter out temporary IDs before saving to database
+      const methodsToSave = newPaymentMethods.map(method => {
+        const { id, ...methodWithoutId } = method;
+        return methodWithoutId;
+      });
+      
+      // Process each method individually
+      for (const method of methodsToSave) {
+        await addPaymentMethod(method);
+      }
+      
+      // Clear the temporary list
+      setNewPaymentMethods([]);
+      
+      // Refresh the payment methods list
+      await fetchPaymentMethods();
+      
+      return true;
+    } catch (error) {
+      console.error("Error saving new payment methods:", error);
+      toast.error("Failed to save payment methods");
+      return false;
+    }
+  };
+
   // Save changes to selected payment methods when exiting edit mode
   const savePaymentMethodSelections = async () => {
     console.log("Saving payment method selections to Supabase...");
@@ -304,6 +385,9 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       }
       
       await Promise.all(updatePromises);
+      
+      // Save new payment methods if there are any
+      await saveNewPaymentMethods();
       
       // Update the UI to reflect changes by refreshing payment methods
       await fetchPaymentMethods();
@@ -339,6 +423,9 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
   const cardMethods = getCardMethods();
   const bankMethods = getBankMethods();
   const defaultPaymentId = getDefaultMethod()?.id || null;
+
+  // Combine database payment methods with temporary ones for display
+  const allPaymentMethods = [...paymentMethods, ...newPaymentMethods];
   
   return (
     <div className="space-y-6">
@@ -348,14 +435,15 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
         </div>
       ) : (
         <>
-          {/* Subscription Payment Methods Section */}
+          {/* Payment Methods Section */}
           <div>
             <PaymentMethodsList 
-              methods={paymentMethods} 
+              methods={allPaymentMethods} 
               onEdit={handleEdit} 
               onAddCard={isEditMode ? handleAddCardClick : undefined} 
               onAddBank={isEditMode ? handleAddBankClick : undefined}
               isEditMode={isEditMode}
+              isOwner={isOwner}
             />
             
             {/* Add Payment Method Dialog */}
@@ -370,7 +458,7 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
                   isProcessing={isProcessing} 
                   onCancel={handleCancel} 
                   defaultValues={currentCardData}
-                  isEditing={!!editingId}
+                  isEditing={!!editingId && !editingId.startsWith('temp-')}
                 />
               </DialogContent>
             </Dialog>
@@ -394,7 +482,8 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
                   useForBoth={useForBoth} 
                   onUseForBothChange={setUseForBoth} 
                   onCancel={handleCancel}
-                  isEditing={!!editingId}
+                  isEditing={!!editingId && !editingId.startsWith('temp-')}
+                  isOwner={isOwner}
                 />
               </DialogContent>
             </Dialog>
@@ -408,9 +497,9 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
                 Select payment method for subscription
               </p>
               
-              {paymentMethods.length > 0 ? 
+              {allPaymentMethods.length > 0 ? 
                 <PaymentMethodSelect 
-                  methods={paymentMethods} 
+                  methods={allPaymentMethods} 
                   selectedId={selectedSubscriptionId} 
                   onSelect={handleSelectSubscription} 
                   label=""
@@ -479,6 +568,15 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
                   Click "Save" to apply your changes
                 </p>
               }
+            </div>
+          )}
+          
+          {/* Family user payment methods indicator */}
+          {!isOwner && isEditMode && newPaymentMethods.length > 0 && (
+            <div className="border-t border-gray-200 pt-4 mt-2">
+              <p className="text-sm text-amber-600">
+                Click "Save" to add your new payment methods
+              </p>
             </div>
           )}
         </>

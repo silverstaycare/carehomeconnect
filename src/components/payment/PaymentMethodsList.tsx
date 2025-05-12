@@ -10,6 +10,7 @@ interface PaymentMethodsListProps {
   onAddCard?: () => void;
   onAddBank?: () => void;
   isEditMode?: boolean;
+  isOwner?: boolean;
 }
 
 export function PaymentMethodsList({
@@ -17,7 +18,8 @@ export function PaymentMethodsList({
   onEdit,
   onAddCard,
   onAddBank,
-  isEditMode = false
+  isEditMode = false,
+  isOwner = false
 }: PaymentMethodsListProps) {
   // Group methods by type
   const cardMethods = methods.filter(method => method.type === 'card');
@@ -66,6 +68,16 @@ export function PaymentMethodsList({
                           Selected for subscription
                         </span>
                       )}
+                      {method.is_for_payment && (
+                        <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded">
+                          Payment method
+                        </span>
+                      )}
+                      {method.id?.toString().startsWith('temp-') && (
+                        <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded">
+                          Not saved yet
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -86,6 +98,16 @@ export function PaymentMethodsList({
         ) : (
           <div className="text-center p-4 border border-dashed rounded-md bg-gray-50">
             <p className="text-gray-500">No payment cards added yet</p>
+            {isEditMode && onAddCard && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={onAddCard}
+                className="mt-3"
+              >
+                Add Payment Card
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -135,6 +157,11 @@ export function PaymentMethodsList({
                           Selected for rent
                         </span>
                       )}
+                      {method.id?.toString().startsWith('temp-') && (
+                        <span className="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded">
+                          Not saved yet
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -155,6 +182,16 @@ export function PaymentMethodsList({
         ) : (
           <div className="text-center p-4 border border-dashed rounded-md bg-gray-50">
             <p className="text-gray-500">No bank accounts added yet</p>
+            {isEditMode && onAddBank && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={onAddBank}
+                className="mt-3"
+              >
+                Add Bank Account
+              </Button>
+            )}
           </div>
         )}
       </div>

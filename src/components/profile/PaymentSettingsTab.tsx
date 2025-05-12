@@ -67,7 +67,18 @@ export function PaymentSettingsTab({
           const hasChanges = paymentManagerRef.current.hasChanges();
           
           if (hasChanges) {
-            const success = await paymentManagerRef.current.savePaymentMethodSelections();
+            // For owner users - save default selections
+            let success = true;
+            if (isOwner) {
+              success = await paymentManagerRef.current.savePaymentMethodSelections();
+            }
+            
+            // For all users - save any new payment methods
+            const newMethods = paymentManagerRef.current.getNewPaymentMethods();
+            if (newMethods && newMethods.length > 0) {
+              success = await paymentManagerRef.current.saveNewPaymentMethods();
+            }
+            
             if (success) {
               // Refresh payment methods after saving
               await fetchPaymentMethods();
@@ -117,7 +128,6 @@ export function PaymentSettingsTab({
         </Button>
       </div>
       
-      {/* Only show payment sections to the appropriate user type */}
       <Card>
         <CardContent className="pt-6">
           <CardPaymentSection 
