@@ -1,3 +1,4 @@
+
 import { useState, useEffect, forwardRef, ForwardRefRenderFunction, useImperativeHandle } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -284,12 +285,17 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       
       await Promise.all(updatePromises);
       
+      // Update the UI to reflect changes - FIXED: Add this back to refresh payment methods after saving
+      await fetchPaymentMethods();
+      
       // Reset the change tracking flag
       setHasSelectionChanged(false);
       
       return true;
     } catch (error) {
       console.error("Error saving payment method selections:", error);
+      // FIXED: Add the toast error message back
+      toast.error("Failed to save payment preferences");
       return false;
     }
   };

@@ -150,7 +150,7 @@ export const paymentService = {
       const { error: resetError } = await supabase
         .from('payment_methods')
         .update({ is_for_subscription: false })
-        .not('id', 'eq', id);
+        .neq('id', id); // Changed from .not('id', 'eq', id) to .neq for more reliable behavior
       
       if (resetError) throw resetError;
       
@@ -181,7 +181,7 @@ export const paymentService = {
       const { error: resetError } = await supabase
         .from('payment_methods')
         .update({ is_for_rent: false })
-        .not('id', 'eq', id);
+        .neq('id', id); // Changed from .not('id', 'eq', id) to .neq for more reliable behavior
       
       if (resetError) throw resetError;
       
