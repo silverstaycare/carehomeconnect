@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useBankDetails } from "@/hooks/useBankDetails";
 import { CardPaymentSection } from "@/components/payment/CardPaymentSection";
@@ -52,36 +51,21 @@ export function PaymentSettingsTab({
       {/* Header with Edit Button */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Payment Settings</h2>
-        <Button 
-          variant="default" 
-          size="sm" 
-          onClick={toggleEditMode} 
-          className="flex items-center gap-1"
-        >
-          {isEditMode ? (
-            <>
+        <Button variant="default" size="sm" onClick={toggleEditMode} className="flex items-center gap-1">
+          {isEditMode ? <>
               <Save className="h-4 w-4" />
               Save
-            </>
-          ) : (
-            <>
+            </> : <>
               <Pencil className="h-4 w-4" />
               Edit
-            </>
-          )}
+            </>}
         </Button>
       </div>
       
       {/* Add Payment Method Buttons */}
       {isEditMode && <div className="flex flex-wrap gap-3 mb-6">
-          <Button onClick={handleAddCardClick} className="flex items-center gap-1">
-            <CreditCard className="h-4 w-4" />
-            Add Card
-          </Button>
-          <Button onClick={handleAddBankClick} className="flex items-center gap-1">
-            <Banknote className="h-4 w-4" />
-            Add Bank Account
-          </Button>
+          
+          
         </div>}
 
       {/* Subscription Payment Section */}
