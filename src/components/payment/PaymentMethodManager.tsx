@@ -1,4 +1,3 @@
-
 import { useState, useEffect, forwardRef, ForwardRefRenderFunction, useImperativeHandle } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -236,13 +235,22 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
     
     // If not in edit mode, save changes immediately
     if (!isEditMode) {
-      setDefaultRentMethod(id);
-      
-      // Show a temporary saved message
-      toast.success("Payment method for rent updated");
-      
-      // Reset change tracking since we just saved
-      setHasSelectionChanged(false);
+      setDefaultRentMethod(id)
+        .then(() => {
+          // Refresh payment methods after saving to update UI
+          return fetchPaymentMethods();
+        })
+        .then(() => {
+          // Show a temporary saved message
+          toast.success("Payment method for rent updated");
+          
+          // Reset change tracking since we just saved
+          setHasSelectionChanged(false);
+        })
+        .catch((error) => {
+          console.error("Error setting default rent method:", error);
+          toast.error("Failed to update rent payment method");
+        });
     }
   };
 
@@ -256,13 +264,22 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
     
     // If not in edit mode, save changes immediately
     if (!isEditMode) {
-      setDefaultSubscriptionMethod(id);
-      
-      // Show a temporary saved message
-      toast.success("Payment method for subscription updated");
-      
-      // Reset change tracking since we just saved
-      setHasSelectionChanged(false);
+      setDefaultSubscriptionMethod(id)
+        .then(() => {
+          // Refresh payment methods after saving to update UI
+          return fetchPaymentMethods();
+        })
+        .then(() => {
+          // Show a temporary saved message
+          toast.success("Payment method for subscription updated");
+          
+          // Reset change tracking since we just saved
+          setHasSelectionChanged(false);
+        })
+        .catch((error) => {
+          console.error("Error setting default subscription method:", error);
+          toast.error("Failed to update subscription payment method");
+        });
     }
   };
 
@@ -285,7 +302,7 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       
       await Promise.all(updatePromises);
       
-      // Update the UI to reflect changes - FIXED: Add this back to refresh payment methods after saving
+      // Update the UI to reflect changes by refreshing payment methods
       await fetchPaymentMethods();
       
       // Reset the change tracking flag
@@ -294,7 +311,6 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       return true;
     } catch (error) {
       console.error("Error saving payment method selections:", error);
-      // FIXED: Add the toast error message back
       toast.error("Failed to save payment preferences");
       return false;
     }

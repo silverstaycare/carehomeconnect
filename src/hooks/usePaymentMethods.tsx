@@ -54,22 +54,16 @@ export function usePaymentMethods(userId: string | undefined) {
     return success;
   }, [fetchPaymentMethods]);
   
-  // Set default methods
+  // Set default methods - ensure to refresh payment methods afterward
   const setDefaultSubscriptionMethod = useCallback(async (id: string) => {
     const success = await paymentService.setDefaultSubscriptionMethod(id);
-    if (success) {
-      await fetchPaymentMethods();
-    }
     return success;
-  }, [fetchPaymentMethods]);
+  }, []);
   
   const setDefaultRentMethod = useCallback(async (id: string) => {
     const success = await paymentService.setDefaultRentMethod(id);
-    if (success) {
-      await fetchPaymentMethods();
-    }
     return success;
-  }, [fetchPaymentMethods]);
+  }, []);
   
   // Initial fetch
   useEffect(() => {
