@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -92,7 +93,10 @@ const FamilyDashboard = () => {
         </div>
         <div className="mt-4 md:mt-0 flex gap-3 items-center">
           {profile && <>
-              
+              <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)} className="flex items-center gap-1">
+                <Pencil className="h-4 w-4" />
+                Edit Profile
+              </Button>
               <EditProfileDialog userId={profile.id} firstName={profile.first_name || ""} lastName={profile.last_name || ""} phone={profile.phone || ""} onProfileUpdated={handleProfileUpdated} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
             </>}
           <Button onClick={() => window.location.href = "/search"} className="w-full md:w-auto">

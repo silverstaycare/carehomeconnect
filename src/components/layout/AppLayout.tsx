@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 
 const AppLayout = () => {
   const navigate = useNavigate();
@@ -22,21 +23,57 @@ const AppLayout = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userInitials, setUserInitials] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     // Get user role from user metadata if available
     if (user?.user_metadata?.role) {
       setUserRole(user.user_metadata.role);
-      console.log("User role in AppLayout:", user.user_metadata.role);
     }
 
-    // Get user profile data for avatar initials
-    if (user) {
-      const firstName = user.user_metadata?.first_name || "";
-      const lastName = user.user_metadata?.last_name || "";
-      setUserInitials(`${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase());
-      setUserName(`${firstName} ${lastName}`.trim());
-    }
+    // Get user profile data for avatar initials and display name
+    const fetchUserProfile = async () => {
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (!error && data) {
+            setProfile(data);
+            
+            // Set user initials and name from profile if available
+            const firstName = data.first_name || user.user_metadata?.first_name || '';
+            const lastName = data.last_name || user.user_metadata?.last_name || '';
+            setUserInitials(`${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase());
+            
+            // Set display name prioritizing profile data
+            const displayName = `${firstName} ${lastName}`.trim();
+            setUserName(displayName || user.email?.split('@')[0] || 'User');
+          } else {
+            // Fallback to user metadata
+            const firstName = user.user_metadata?.first_name || '';
+            const lastName = user.user_metadata?.last_name || '';
+            setUserInitials(`${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase());
+            
+            const displayName = `${firstName} ${lastName}`.trim();
+            setUserName(displayName || user.email?.split('@')[0] || 'User');
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          
+          // Fallback to user metadata if profile fetch fails
+          const firstName = user.user_metadata?.first_name || '';
+          const lastName = user.user_metadata?.last_name || '';
+          setUserInitials(`${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase());
+          setUserName(`${firstName} ${lastName}`.trim() || user.email?.split('@')[0] || 'User');
+        }
+      }
+    };
+
+    fetchUserProfile();
   }, [user]);
 
   const handleLogout = async () => {
@@ -53,7 +90,6 @@ const AppLayout = () => {
       ? "/owner/dashboard" 
       : "/family/dashboard";
     
-    console.log("Navigating to dashboard:", dashboardPath);
     navigate(dashboardPath);
   };
 
@@ -107,7 +143,7 @@ const AppLayout = () => {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userName || "User"}</p>
+                        <p className="text-sm font-medium leading-none">{userName}</p>
                         <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                       </div>
                     </DropdownMenuLabel>
