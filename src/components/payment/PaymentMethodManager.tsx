@@ -284,16 +284,12 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       
       await Promise.all(updatePromises);
       
-      // Update the UI to reflect changes
-      await fetchPaymentMethods();
-      
       // Reset the change tracking flag
       setHasSelectionChanged(false);
       
       return true;
     } catch (error) {
       console.error("Error saving payment method selections:", error);
-      toast.error("Failed to save payment preferences");
       return false;
     }
   };

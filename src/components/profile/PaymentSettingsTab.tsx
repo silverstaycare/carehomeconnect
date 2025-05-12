@@ -70,10 +70,14 @@ export function PaymentSettingsTab({
           const hasChanges = paymentManagerRef.current.hasChanges();
           
           if (hasChanges) {
-            await paymentManagerRef.current.savePaymentMethodSelections();
-            // Refresh payment methods after saving
-            await fetchPaymentMethods();
-            toast.success("Payment preferences saved");
+            const success = await paymentManagerRef.current.savePaymentMethodSelections();
+            if (success) {
+              // Refresh payment methods after saving
+              await fetchPaymentMethods();
+              toast.success("Payment preferences saved");
+            } else {
+              toast.error("Failed to save payment preferences");
+            }
           } else {
             toast.info("No changes to save");
           }
@@ -83,10 +87,11 @@ export function PaymentSettingsTab({
         toast.error("Failed to save payment preferences");
       } finally {
         setIsSaving(false);
+        setIsEditMode(false); // Exit edit mode regardless of success or failure
       }
+    } else {
+      setIsEditMode(true); // Enter edit mode
     }
-    
-    setIsEditMode(!isEditMode);
   };
   
   return (
