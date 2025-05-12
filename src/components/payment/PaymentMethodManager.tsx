@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PaymentMethodsList } from "@/components/payment/PaymentMethodsList";
-import { AddCardForm } from "@/components/payment/AddCardForm";
+import { AddCardForm, CardFormValues } from "@/components/payment/AddCardForm";
 import { PaymentMethodSelect } from "@/components/payment/PaymentMethodSelect";
 import { BankDetails } from "@/types/bank";
 import { AddBankForm } from "@/components/payment/AddBankForm";
@@ -41,6 +40,7 @@ export function PaymentMethodManager({
   const [isProcessing, setIsProcessing] = useState(false);
   const [useForBoth, setUseForBoth] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentCardData, setCurrentCardData] = useState<Partial<CardFormValues> | null>(null);
 
   // Effect to sync the dialog state with parent component
   useEffect(() => {
@@ -94,8 +94,18 @@ export function PaymentMethodManager({
     
     setEditingId(id);
     if (method.type === 'card') {
+      // Prepare card data for editing
+      setCurrentCardData({
+        cardholderName: method.name || '',
+        cardNumber: `**** **** **** ${method.last4 || ''}`,
+        expiryDate: method.exp_month && method.exp_year 
+          ? `${String(method.exp_month).padStart(2, '0')}/${String(method.exp_year).slice(-2)}` 
+          : '',
+        cvv: ''
+      });
       setIsAddPaymentOpen(true);
     } else {
+      setCurrentCardData(null);
       setIsAddBankOpen(true);
       // If it's a bank account being edited, check if it's used for both
       setUseForBoth(method.is_subscription_default === true && method.is_rent_default === true);
@@ -170,6 +180,7 @@ export function PaymentMethodManager({
     setIsAddPaymentOpen(false);
     setIsAddBankOpen(false);
     setEditingId(null);
+    setCurrentCardData(null);
   };
 
   // Select bank account for rent payment
@@ -189,12 +200,14 @@ export function PaymentMethodManager({
   // Open add card dialog
   const handleAddCardClick = () => {
     setEditingId(null);
+    setCurrentCardData(null);
     setIsAddPaymentOpen(true);
   };
 
   // Open add bank dialog
   const handleAddBankClick = () => {
     setEditingId(null);
+    setCurrentCardData(null);
     setIsAddBankOpen(true);
   };
 
@@ -235,6 +248,8 @@ export function PaymentMethodManager({
                   onSubmit={handleAddPaymentMethod} 
                   isProcessing={isProcessing} 
                   onCancel={handleCancel} 
+                  defaultValues={currentCardData}
+                  isEditing={!!editingId}
                 />
               </DialogContent>
             </Dialog>

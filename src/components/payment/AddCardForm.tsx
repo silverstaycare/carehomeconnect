@@ -22,7 +22,7 @@ const cardSchema = z.object({
   cardNumber: z.string()
     .min(13, { message: "Valid card number required" })
     .max(19)
-    .refine((val) => /^[0-9\s]+$/.test(val), { 
+    .refine((val) => /^[0-9\s]+$/.test(val) || val.includes('*'), { 
       message: "Card number must contain only digits" 
     }),
   expiryDate: z.string()
@@ -45,12 +45,20 @@ export interface AddCardFormProps {
   onSubmit: (data: CardFormValues) => void;
   isProcessing: boolean;
   onCancel: () => void;
+  defaultValues?: Partial<CardFormValues> | null;
+  isEditing?: boolean;
 }
 
-export function AddCardForm({ onSubmit, isProcessing, onCancel }: AddCardFormProps) {
+export function AddCardForm({ 
+  onSubmit, 
+  isProcessing, 
+  onCancel, 
+  defaultValues = null,
+  isEditing = false
+}: AddCardFormProps) {
   const form = useForm<CardFormValues>({
     resolver: zodResolver(cardSchema),
-    defaultValues: {
+    defaultValues: defaultValues || {
       cardholderName: "",
       cardNumber: "",
       expiryDate: "",
@@ -85,6 +93,7 @@ export function AddCardForm({ onSubmit, isProcessing, onCancel }: AddCardFormPro
                 <Input 
                   placeholder="1234 5678 9012 3456" 
                   {...field} 
+                  disabled={isEditing}
                   onChange={(e) => {
                     // Format card number with spaces
                     let value = e.target.value.replace(/\s/g, "");
@@ -152,7 +161,9 @@ export function AddCardForm({ onSubmit, isProcessing, onCancel }: AddCardFormPro
         
         <div className="bg-blue-50 border border-blue-200 p-3 rounded-md text-sm text-blue-700 mb-4 flex items-start gap-2">
           <ShieldCheck className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <p>Your card details are encrypted during transmission and securely tokenized. We never store your full card number.</p>
+          <p>{isEditing 
+            ? "You can update the cardholder name and expiration date. For security reasons, the card number cannot be changed." 
+            : "Your card details are encrypted during transmission and securely tokenized. We never store your full card number."}</p>
         </div>
         
         <DialogFooter className="mt-6">
@@ -163,10 +174,10 @@ export function AddCardForm({ onSubmit, isProcessing, onCancel }: AddCardFormPro
             {isProcessing ? (
               <>
                 <Spinner size="sm" className="mr-2" />
-                Adding...
+                {isEditing ? "Updating..." : "Adding..."}
               </>
             ) : (
-              "Add Card"
+              isEditing ? "Update Card" : "Add Card"
             )}
           </Button>
         </DialogFooter>
