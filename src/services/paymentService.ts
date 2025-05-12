@@ -20,6 +20,8 @@ export const paymentService = {
   // Fetch all payment methods for a user
   async fetchPaymentMethods(userId: string): Promise<PaymentMethod[]> {
     try {
+      console.log("Fetching payment methods for user:", userId);
+      
       const { data, error } = await supabase
         .from('payment_methods')
         .select('*')
@@ -27,6 +29,8 @@ export const paymentService = {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
+      
+      console.log("Payment methods fetched:", data);
       
       // Cast the returned data to ensure type compatibility
       return (data || []).map(item => ({
@@ -44,6 +48,8 @@ export const paymentService = {
   // Add a new payment method
   async addPaymentMethod(userId: string, paymentMethod: PaymentMethod): Promise<PaymentMethod | null> {
     try {
+      console.log("Adding new payment method for user:", userId, paymentMethod);
+      
       // If no payment methods exist yet, make this one default
       const { count } = await supabase
         .from('payment_methods')
@@ -68,6 +74,7 @@ export const paymentService = {
       
       if (error) throw error;
       
+      console.log("Payment method added successfully:", data);
       toast.success(`${paymentMethod.type === 'card' ? 'Card' : 'Bank account'} added successfully`);
       
       // Cast the returned data to ensure type compatibility
@@ -86,6 +93,8 @@ export const paymentService = {
   // Update an existing payment method
   async updatePaymentMethod(id: string, updates: Partial<PaymentMethod>): Promise<PaymentMethod | null> {
     try {
+      console.log("Updating payment method:", id, updates);
+      
       const { data, error } = await supabase
         .from('payment_methods')
         .update(updates)
@@ -95,6 +104,7 @@ export const paymentService = {
       
       if (error) throw error;
       
+      console.log("Payment method updated successfully:", data);
       toast.success("Payment method updated");
       
       // Cast the returned data to ensure type compatibility
@@ -113,6 +123,8 @@ export const paymentService = {
   // Delete a payment method
   async deletePaymentMethod(id: string): Promise<boolean> {
     try {
+      console.log("Deleting payment method:", id);
+      
       const { error } = await supabase
         .from('payment_methods')
         .delete()
@@ -120,6 +132,7 @@ export const paymentService = {
       
       if (error) throw error;
       
+      console.log("Payment method deleted successfully");
       toast.success("Payment method removed");
       return true;
       
@@ -133,6 +146,17 @@ export const paymentService = {
   // Set a payment method as default for subscription payments
   async setDefaultSubscriptionMethod(id: string): Promise<boolean> {
     try {
+      console.log("Setting default subscription method:", id);
+      
+      // First reset all existing defaults
+      const { error: resetError } = await supabase
+        .from('payment_methods')
+        .update({ is_subscription_default: false })
+        .not('id', 'eq', id);
+      
+      if (resetError) throw resetError;
+      
+      // Then set the selected one as default
       const { error } = await supabase
         .from('payment_methods')
         .update({ is_subscription_default: true })
@@ -140,7 +164,7 @@ export const paymentService = {
       
       if (error) throw error;
       
-      toast.success("Default subscription payment method updated");
+      console.log("Default subscription payment method updated successfully");
       return true;
       
     } catch (error) {
@@ -153,6 +177,17 @@ export const paymentService = {
   // Set a payment method as default for rent payments (banks only)
   async setDefaultRentMethod(id: string): Promise<boolean> {
     try {
+      console.log("Setting default rent method:", id);
+      
+      // First reset all existing defaults
+      const { error: resetError } = await supabase
+        .from('payment_methods')
+        .update({ is_rent_default: false })
+        .not('id', 'eq', id);
+      
+      if (resetError) throw resetError;
+      
+      // Then set the selected one as default
       const { error } = await supabase
         .from('payment_methods')
         .update({ is_rent_default: true })
@@ -160,7 +195,7 @@ export const paymentService = {
       
       if (error) throw error;
       
-      toast.success("Default rent payment method updated");
+      console.log("Default rent payment method updated successfully");
       return true;
       
     } catch (error) {
@@ -173,6 +208,17 @@ export const paymentService = {
   // Set a payment method as the overall default
   async setDefaultMethod(id: string): Promise<boolean> {
     try {
+      console.log("Setting overall default method:", id);
+      
+      // First reset all existing defaults
+      const { error: resetError } = await supabase
+        .from('payment_methods')
+        .update({ is_default: false })
+        .not('id', 'eq', id);
+      
+      if (resetError) throw resetError;
+      
+      // Then set the selected one as default
       const { error } = await supabase
         .from('payment_methods')
         .update({ is_default: true })
@@ -180,7 +226,7 @@ export const paymentService = {
       
       if (error) throw error;
       
-      toast.success("Default payment method updated");
+      console.log("Default payment method updated successfully");
       return true;
       
     } catch (error) {

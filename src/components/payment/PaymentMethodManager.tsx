@@ -11,6 +11,7 @@ import { AddBankForm } from "@/components/payment/AddBankForm";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { PaymentMethod } from "@/services/paymentService";
 import { Spinner } from "@/components/ui/spinner";
+import { toast } from "sonner";
 
 interface PaymentMethodManagerProps {
   user: any;
@@ -52,6 +53,7 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
   const {
     paymentMethods,
     isLoading,
+    fetchPaymentMethods,
     addPaymentMethod,
     updatePaymentMethod,
     setDefaultMethod,
@@ -101,10 +103,15 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
       const subscriptionDefault = getDefaultSubscriptionMethod();
       const rentDefault = getDefaultRentMethod();
       
-      setSelectedSubscriptionId(subscriptionDefault?.id || null);
-      setSelectedRentBankId(rentDefault?.id || null);
+      if (subscriptionDefault?.id) {
+        setSelectedSubscriptionId(subscriptionDefault.id);
+      }
+      
+      if (rentDefault?.id) {
+        setSelectedRentBankId(rentDefault.id);
+      }
     }
-  }, [paymentMethods]);
+  }, [paymentMethods, getDefaultSubscriptionMethod, getDefaultRentMethod]);
 
   // Handle setting default payment method
   const handleSetDefault = async (id: string) => {
@@ -237,12 +244,31 @@ const PaymentMethodManagerComponent: ForwardRefRenderFunction<any, PaymentMethod
 
   // Save changes to selected payment methods when exiting edit mode
   const savePaymentMethodSelections = async () => {
-    if (selectedSubscriptionId) {
-      await setDefaultSubscriptionMethod(selectedSubscriptionId);
-    }
+    console.log("Saving payment method selections to Supabase...");
+    console.log("Selected subscription ID:", selectedSubscriptionId);
+    console.log("Selected rent bank ID:", selectedRentBankId);
     
-    if (selectedRentBankId) {
-      await setDefaultRentMethod(selectedRentBankId);
+    try {
+      let updatePromises = [];
+      
+      if (selectedSubscriptionId) {
+        updatePromises.push(setDefaultSubscriptionMethod(selectedSubscriptionId));
+      }
+      
+      if (selectedRentBankId) {
+        updatePromises.push(setDefaultRentMethod(selectedRentBankId));
+      }
+      
+      await Promise.all(updatePromises);
+      
+      // Refresh payment methods to get the updated state
+      await fetchPaymentMethods();
+      
+      return true;
+    } catch (error) {
+      console.error("Error saving payment method selections:", error);
+      toast.error("Failed to save payment preferences");
+      return false;
     }
   };
 

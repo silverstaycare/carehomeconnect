@@ -23,6 +23,7 @@ export function PaymentSettingsTab({
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [isAddBankOpen, setIsAddBankOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Reference to the component instance to access its methods
   const paymentManagerRef = useRef<any>(null);
@@ -31,9 +32,7 @@ export function PaymentSettingsTab({
   const { 
     fetchPaymentMethods,
     setDefaultSubscriptionMethod, 
-    setDefaultRentMethod,
-    getDefaultSubscriptionMethod,
-    getDefaultRentMethod
+    setDefaultRentMethod
   } = usePaymentMethods(user?.id);
 
   // Check if bank details are shared between payment methods
@@ -65,18 +64,22 @@ export function PaymentSettingsTab({
     if (isEditMode) {
       // Save changes when exiting edit mode
       try {
+        setIsSaving(true);
+        
         // Use the ref to get the selected methods and save them
         if (paymentManagerRef.current) {
           await paymentManagerRef.current.savePaymentMethodSelections();
+          
+          // Refresh payment methods after saving to ensure the UI reflects the current state
+          await fetchPaymentMethods();
+          
+          toast.success("Payment preferences saved");
         }
-        
-        // Refresh payment methods
-        fetchPaymentMethods();
-        
-        toast.success("Payment preferences saved");
       } catch (error) {
         console.error("Error saving payment preferences:", error);
         toast.error("Failed to save payment preferences");
+      } finally {
+        setIsSaving(false);
       }
     }
     
@@ -93,11 +96,12 @@ export function PaymentSettingsTab({
           size="sm" 
           onClick={toggleEditMode} 
           className="flex items-center gap-1"
+          disabled={isSaving}
         >
           {isEditMode ? (
             <>
               <Save className="h-4 w-4" />
-              Save
+              {isSaving ? "Saving..." : "Save"}
             </>
           ) : (
             <>
