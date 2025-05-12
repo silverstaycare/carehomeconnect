@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -309,6 +310,16 @@ export function PaymentMethodManager({
               /> : 
               <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
                 <p className="text-gray-600">No payment methods added yet</p>
+                {isEditMode && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAddCardClick}
+                    className="mt-3"
+                  >
+                    Add Payment Method
+                  </Button>
+                )}
               </div>
             }
           </div>
@@ -330,6 +341,16 @@ export function PaymentMethodManager({
               /> : 
               <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-center mb-4">
                 <p className="text-gray-600">No bank accounts added yet</p>
+                {isEditMode && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAddBankClick}
+                    className="mt-3"
+                  >
+                    Add Bank Account
+                  </Button>
+                )}
               </div>
             }
             
