@@ -45,7 +45,7 @@ export function SubscriptionDetails({
   ];
 
   // Calculate monthly payment details
-  const pricePerBed = 19.99;
+  const pricePerBed = subscription.pricePerBed || 19.99;
   const numberOfProperties = properties ? properties.filter(p => p.active).length : 0;
   const numberOfBeds = subscription.numberOfBeds || totalBeds || 1;
   const monthlyTotal = (pricePerBed * numberOfBeds).toFixed(2);
@@ -53,7 +53,10 @@ export function SubscriptionDetails({
   return (
     <Card className="border-2 border-care-500">
       <CardHeader>
-        <CardTitle>Current Subscription</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Care Home Listing</CardTitle>
+          <Badge className="bg-care-600">Active</Badge>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
@@ -62,6 +65,7 @@ export function SubscriptionDetails({
               ${pricePerBed}
               <span className="text-lg font-normal text-gray-600">/bed/month</span>
             </p>
+            <p className="text-sm text-gray-500">Billed monthly, cancel anytime</p>
           </div>
           
           <ul className="space-y-3 mb-6">

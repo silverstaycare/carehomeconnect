@@ -48,6 +48,28 @@ export default function ProfilePage() {
       });
       navigate("/profile", { replace: true });
     }
+
+    // Show success toast if redirected from successful subscription
+    if (searchParams.has('success')) {
+      toast({
+        title: "Subscription Successful",
+        description: "Your subscription has been activated successfully.",
+        variant: "default",
+      });
+      // Clean up URL params
+      navigate('/profile', { state: { activeTab: 'manage' }, replace: true });
+    }
+    
+    // Show canceled toast if subscription was canceled
+    else if (searchParams.has('canceled')) {
+      toast({
+        title: "Subscription Canceled",
+        description: "Your subscription process was canceled.",
+        variant: "default",
+      });
+      // Clean up URL params
+      navigate('/profile', { state: { activeTab: 'manage' }, replace: true });
+    }
   }, [user, navigate, fetchProfileData, searchParams, toast]);
 
   // Fetch fresh profile data when needed, don't re-fetch on every render

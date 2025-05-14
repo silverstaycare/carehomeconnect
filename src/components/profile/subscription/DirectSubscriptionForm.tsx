@@ -10,6 +10,7 @@ import { Check, CreditCard } from "lucide-react";
 interface DirectSubscriptionFormProps {
   user: any;
   numberOfBeds: number;
+  pricePerBed: number;
   onCancel: () => void;
   onSubscriptionComplete: () => void;
 }
@@ -17,14 +18,13 @@ interface DirectSubscriptionFormProps {
 export function DirectSubscriptionForm({ 
   user, 
   numberOfBeds, 
+  pricePerBed,
   onCancel,
   onSubscriptionComplete
 }: DirectSubscriptionFormProps) {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Price per bed
-  const pricePerBed = 19.99;
   const totalPrice = (pricePerBed * numberOfBeds).toFixed(2);
   
   // Features list

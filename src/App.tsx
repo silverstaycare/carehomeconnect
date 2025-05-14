@@ -12,7 +12,6 @@ import FamilyDashboard from "./pages/FamilyDashboard";
 import PropertyDetails from "./pages/PropertyDetails";
 import ListProperty from "./pages/ListProperty";
 import SearchResults from "./pages/SearchResults";
-import SubscriptionPage from "./pages/SubscriptionPage";
 import PaymentPage from "./pages/PaymentPage";
 import ProfilePage from "./pages/ProfilePage";
 
@@ -35,7 +34,6 @@ const App = () => (
             <Route path="profile" element={<ProfilePage />} />
             <Route path="owner/dashboard" element={<OwnerDashboard />} />
             <Route path="owner/list-property" element={<ListProperty />} />
-            <Route path="owner/subscription" element={<SubscriptionPage />} />
             <Route path="family/dashboard" element={<FamilyDashboard />} />
             <Route path="property/:id" element={<PropertyDetails />} />
             <Route path="search" element={<SearchResults />} />

@@ -1,6 +1,5 @@
 
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
 
 interface NoActiveSubscriptionProps {
@@ -9,8 +8,6 @@ interface NoActiveSubscriptionProps {
 }
 
 export function NoActiveSubscription({ onRetry, isProcessing }: NoActiveSubscriptionProps) {
-  const navigate = useNavigate();
-
   return (
     <div className="space-y-6">
       <div className="border border-amber-200 bg-amber-50 rounded-md p-4">
@@ -29,10 +26,6 @@ export function NoActiveSubscription({ onRetry, isProcessing }: NoActiveSubscrip
         >
           {isProcessing ? <Spinner size="sm" className="mr-2" /> : null}
           Retry loading data
-        </Button>
-        
-        <Button onClick={() => navigate("/owner/subscription")}>
-          View Subscription Plans
         </Button>
       </div>
     </div>

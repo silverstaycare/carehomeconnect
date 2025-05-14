@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
 import { useSubscriptionData } from "@/hooks/useSubscriptionData";
 import { useProfileData } from "@/hooks/useProfileData";
@@ -16,7 +15,6 @@ interface ManageSubscriptionTabProps {
 }
 
 export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
-  const navigate = useNavigate();
   const { 
     subscription, 
     isLoading, 
@@ -50,9 +48,6 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
     const portalUrl = await createPortalSession();
     if (portalUrl) {
       window.location.href = portalUrl;
-    } else {
-      // Fallback to subscription page
-      setTimeout(() => navigate("/owner/subscription"), 1500);
     }
   };
 
@@ -70,6 +65,9 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
 
   // Determine whether the user is subscribed
   const isSubscribed = subscription?.status === "active";
+  
+  // Set price per bed
+  const pricePerBed = 19.99;
 
   return (
     <div className="bg-white p-6 rounded-lg border shadow-sm">
@@ -79,6 +77,7 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
             <DirectSubscriptionForm 
               user={user} 
               numberOfBeds={totalBeds}
+              pricePerBed={pricePerBed}
               onCancel={() => setShowSubscribeForm(false)}
               onSubscriptionComplete={() => {
                 setShowSubscribeForm(false);
@@ -101,7 +100,8 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                     <h3 className="font-medium text-lg">Subscribe now directly</h3>
                     <p className="text-gray-600">
                       You have {totalBeds} beds across your properties. 
-                      Subscribe now to list your properties and receive inquiries.
+                      Subscribe now at ${pricePerBed} per bed per month to list your properties 
+                      and receive inquiries.
                     </p>
                   </div>
                 </div>
@@ -119,7 +119,10 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
       ) : (
         <div className="space-y-6">
           <SubscriptionDetails
-            subscription={subscription}
+            subscription={{
+              ...subscription,
+              pricePerBed: pricePerBed
+            }}
             profile={profile}
             isProcessing={isProcessing}
             onManageSubscription={handleManageSubscription}
