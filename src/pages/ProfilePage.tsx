@@ -22,12 +22,20 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!user) {
-      navigate("/login");
+      navigate("/login", { replace: true });
       return;
     }
-  }, [user, navigate]);
+    
+    // Prevent unnecessary reloads by using a ref
+    const initialLoad = { current: true };
+    
+    if (initialLoad.current) {
+      initialLoad.current = false;
+      fetchProfileData();
+    }
+  }, [user, navigate, fetchProfileData]);
 
-  // Fetch fresh profile data
+  // Fetch fresh profile data when needed, don't re-fetch on every render
   const handleProfileUpdated = async () => {
     if (!user) return;
     fetchProfileData();

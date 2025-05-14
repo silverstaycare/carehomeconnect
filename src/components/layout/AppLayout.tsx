@@ -1,4 +1,3 @@
-
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Home, Info, Shield, FileText, User, Settings, LogOut } from "lucide-react";
@@ -94,7 +93,9 @@ const AppLayout = () => {
   };
 
   const handleProfileClick = () => {
-    navigate("/profile");
+    // Use navigate with replace to avoid adding to history stack
+    // which can cause refresh loops when navigating
+    navigate("/profile", { replace: true });
   };
 
   // Check if user is on dashboard page

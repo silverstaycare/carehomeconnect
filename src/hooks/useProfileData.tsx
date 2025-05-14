@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatPhoneNumber } from "@/utils/formatters";
@@ -25,9 +26,12 @@ export function useProfileData(userId: string) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  // Fetch profile data
-  const fetchProfileData = async () => {
-    if (!userId) return;
+  // Fetch profile data with useCallback to prevent unnecessary re-renders
+  const fetchProfileData = useCallback(async () => {
+    if (!userId) {
+      setIsLoading(false);
+      return;
+    }
     
     setIsLoading(true);
     
@@ -63,7 +67,7 @@ export function useProfileData(userId: string) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, toast]);
 
   // Update profile information
   const updateProfile = async (data: ProfileFormValues) => {
@@ -117,7 +121,7 @@ export function useProfileData(userId: string) {
   // Load profile when component mounts
   useEffect(() => {
     fetchProfileData();
-  }, [userId]);
+  }, [fetchProfileData]);
 
   return {
     profile,
