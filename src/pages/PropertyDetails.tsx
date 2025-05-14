@@ -70,17 +70,19 @@ const PropertyDetails = () => {
         image={property.image}
       />
 
-      {/* Property Image */}
-      <div className="mb-4">
-        <PropertyImage 
-          image={property.image} 
-          name={property.name}
-          isOwner={isOwner}
-          propertyId={property.id}
-          onImageUpdated={handleImageUpdated}
-          isEditing={isEditing}
-        />
-      </div>
+      {/* Property Image - Only show for non-owners */}
+      {!isOwner && (
+        <div className="mb-4">
+          <PropertyImage 
+            image={property.image} 
+            name={property.name}
+            isOwner={isOwner}
+            propertyId={property.id}
+            onImageUpdated={handleImageUpdated}
+            isEditing={isEditing}
+          />
+        </div>
+      )}
       
       {/* Property Tabs and Edit Button */}
       <div className="flex items-center justify-between mb-6">
