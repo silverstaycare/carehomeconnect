@@ -76,12 +76,17 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
 
   // Fetch inquiries when the component mounts or when activeTab changes to "inquiries"
   useEffect(() => {
+    let isMounted = true; // To prevent state updates after unmount
+    
     const fetchInquiries = async () => {
-      if (!isOwner) return; // Don't fetch if not owner
+      if (!isOwner) {
+        console.log("Not owner, skipping inquiry fetch");
+        return;
+      }
       
       try {
-        setLoading(true);
         console.log("Fetching inquiries for property:", propertyId);
+        setLoading(true);
         
         const { data, error } = await supabase
           .from('inquiries')
@@ -95,41 +100,46 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
         }
         
         console.log("Inquiries data:", data);
-        setInquiries(data || []);
-        setGroupedInquiries(groupInquiriesByUser(data || []));
         
-        // Mark inquiries as viewed if owner is viewing them and the inquiries tab is active
-        if (isOwner && activeTab === "inquiries") {
-          const pendingInquiries = data ? data.filter(inquiry => inquiry.status === 'pending') : [];
+        if (isMounted) {
+          setInquiries(data || []);
+          setGroupedInquiries(groupInquiriesByUser(data || []));
           
-          if (pendingInquiries.length > 0) {
-            const pendingInquiryIds = pendingInquiries.map(inquiry => inquiry.id);
+          // Mark inquiries as viewed if owner is viewing them and the inquiries tab is active
+          if (isOwner && activeTab === "inquiries" && data && data.length > 0) {
+            const pendingInquiries = data.filter(inquiry => inquiry.status === 'pending');
             
-            // Update the status in Supabase
-            const { error: updateError } = await supabase
-              .from('inquiries')
-              .update({ status: 'viewed' })
-              .in('id', pendingInquiryIds);
+            if (pendingInquiries.length > 0) {
+              const pendingInquiryIds = pendingInquiries.map(inquiry => inquiry.id);
               
-            if (updateError) {
-              console.error('Error updating inquiry status:', updateError);
-              return;
+              // Update the status in Supabase
+              const { error: updateError } = await supabase
+                .from('inquiries')
+                .update({ status: 'viewed' })
+                .in('id', pendingInquiryIds);
+                
+              if (updateError) {
+                console.error('Error updating inquiry status:', updateError);
+                return;
+              }
+                
+              // Update local state to reflect the change
+              setInquiries(prevInquiries => 
+                prevInquiries.map(inquiry => 
+                  pendingInquiryIds.includes(inquiry.id) 
+                    ? { ...inquiry, status: 'viewed' } 
+                    : inquiry
+                )
+              );
             }
-              
-            // Update local state to reflect the change
-            setInquiries(prevInquiries => 
-              prevInquiries.map(inquiry => 
-                pendingInquiryIds.includes(inquiry.id) 
-                  ? { ...inquiry, status: 'viewed' } 
-                  : inquiry
-              )
-            );
           }
         }
       } catch (error) {
         console.error('Error fetching inquiries:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
     
@@ -146,6 +156,7 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
       }, (payload) => {
         // Add the new inquiry to the state
         const newInquiry = payload.new as Inquiry;
+        console.log("New inquiry received:", newInquiry);
         setInquiries(prev => {
           const updated = [newInquiry, ...prev];
           setGroupedInquiries(groupInquiriesByUser(updated));
@@ -164,6 +175,7 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
       
     // Clean up subscription on unmount
     return () => {
+      isMounted = false;
       supabase.removeChannel(channel);
     };
   }, [propertyId, isOwner, activeTab, toast]);

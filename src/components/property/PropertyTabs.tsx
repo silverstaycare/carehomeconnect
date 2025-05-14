@@ -41,6 +41,8 @@ const PropertyTabs = ({
   user
 }: PropertyTabsProps) => {
   const [activeTab, setActiveTab] = useState("details");
+  
+  console.log("PropertyTabs - isOwner:", isOwner); // Debug
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);

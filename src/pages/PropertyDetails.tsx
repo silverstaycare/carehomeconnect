@@ -28,6 +28,8 @@ const PropertyDetails = () => {
     handleAmenitiesServicesUpdated,
     user
   } = usePropertyDetails(id);
+  
+  console.log("PropertyDetails - isOwner:", isOwner); // Debug log
 
   const handleEditClick = () => {
     setIsEditing(true);
