@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Calendar, Package } from 'lucide-react';
 import type { Subscription } from '@/types/subscription';
+import { Badge } from "@/components/ui/badge";
 
 interface CurrentSubscriptionProps {
   subscription: Subscription;

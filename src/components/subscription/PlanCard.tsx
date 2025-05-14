@@ -10,6 +10,7 @@ export interface SubscriptionPlan {
   description: string;
   pricePerBed: number;
   features: string[];
+  recommended?: boolean;
 }
 
 interface PlanCardProps {
