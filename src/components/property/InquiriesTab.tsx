@@ -266,12 +266,14 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
     );
   }
 
+  // Fixed this condition to properly display the "No Inquiries Yet" message
   if (!inquiries || inquiries.length === 0) {
     return (
       <Card>
         <CardContent className="p-6">
+          <h2 className="text-xl font-bold mb-6">Property Inquiries</h2>
           <div className="text-center py-8">
-            <h2 className="text-xl font-bold mb-2">No Inquiries Yet</h2>
+            <h3 className="text-lg font-semibold mb-2">No Inquiries Yet</h3>
             <p className="text-muted-foreground">
               When potential residents or their families inquire about your property, you'll see their messages here.
             </p>
