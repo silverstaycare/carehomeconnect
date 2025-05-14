@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertCircle } from "lucide-react";
 
 interface Inquiry {
   id: string;
@@ -73,9 +74,11 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
     });
     
     // Convert to array and sort by the latest message date (newest inquiry first)
-    return Object.values(grouped).sort((a, b) => 
-      new Date(b.messages[0].created_at).getTime() - new Date(a.messages[0].created_at).getTime()
-    );
+    return Object.values(grouped).sort((a, b) => {
+      if (a.messages.length === 0) return 1;
+      if (b.messages.length === 0) return -1;
+      return new Date(b.messages[0].created_at).getTime() - new Date(a.messages[0].created_at).getTime();
+    });
   };
 
   // Fetch inquiries when the component mounts or when activeTab changes to "inquiries"
@@ -188,6 +191,17 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
           }
         }
       })
+      .on('postgres_changes', { 
+        event: 'DELETE', 
+        schema: 'public', 
+        table: 'inquiries',
+      }, () => {
+        // Refresh inquiries when a deletion occurs
+        console.log("Inquiry deletion detected, refreshing data");
+        if (isMounted.current) {
+          fetchInquiries();
+        }
+      })
       .subscribe();
       
     // Clean up subscription on unmount
@@ -196,6 +210,18 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
       supabase.removeChannel(channel);
     };
   }, [propertyId, isOwner, activeTab, toast]);
+
+  if (!isOwner) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">You need to be the owner of this property to view inquiries.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (loading) {
     return (
@@ -223,8 +249,11 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
       <Card>
         <CardContent className="p-6">
           <div className="text-center py-8">
+            <div className="flex justify-center mb-4">
+              <AlertCircle className="h-12 w-12 text-red-500" />
+            </div>
             <p className="text-red-500 font-medium">Error loading inquiries</p>
-            <p className="text-muted-foreground">{error.message}</p>
+            <p className="text-muted-foreground mt-2">{error.message}</p>
             <button 
               onClick={() => window.location.reload()} 
               className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
@@ -237,24 +266,15 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
     );
   }
 
-  if (!isOwner) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">You need to be the owner of this property to view inquiries.</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   if (!inquiries || inquiries.length === 0) {
     return (
       <Card>
         <CardContent className="p-6">
           <div className="text-center py-8">
-            <p className="text-muted-foreground">No inquiries have been received for this property yet.</p>
+            <h2 className="text-xl font-bold mb-2">No Inquiries Yet</h2>
+            <p className="text-muted-foreground">
+              When potential residents or their families inquire about your property, you'll see their messages here.
+            </p>
           </div>
         </CardContent>
       </Card>
