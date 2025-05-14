@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, user } = useAuth();
   
   const [email, setEmail] = useState("");
@@ -24,6 +24,13 @@ const LoginPage = () => {
   useEffect(() => {
     if (!user) return;
     
+    // Check for redirect in location state
+    const redirectTo = location.state?.redirectTo;
+    if (redirectTo) {
+      navigate(redirectTo);
+      return;
+    }
+    
     // Get user role directly from user metadata instead of querying the profiles table
     const role = user.user_metadata?.role;
     console.log("User role from metadata:", role);
@@ -35,10 +42,10 @@ const LoginPage = () => {
       navigate('/family/dashboard');
     } else {
       console.log("Unknown role or role not found in metadata:", role);
-      // Default fallback - you can decide what to do if role is not found
+      // Default fallback
       navigate('/family/dashboard');
     }
-  }, [user, navigate]);
+  }, [user, navigate, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

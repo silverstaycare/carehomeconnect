@@ -21,7 +21,11 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!user) {
-      navigate("/login", { replace: true });
+      // If no user is logged in, redirect to login
+      navigate("/login", { 
+        state: { redirectTo: "/profile" },
+        replace: true 
+      });
       return;
     }
     

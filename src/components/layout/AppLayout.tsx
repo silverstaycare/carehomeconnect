@@ -93,9 +93,8 @@ const AppLayout = () => {
   };
 
   const handleProfileClick = () => {
-    // Use navigate with replace to avoid adding to history stack
-    // which can cause refresh loops when navigating
-    navigate("/profile", { replace: true });
+    // Navigate to profile page directly without replacement
+    navigate("/profile");
   };
 
   // Check if user is on dashboard page
