@@ -4,4 +4,5 @@ export interface Subscription {
   currentPeriodEnd: string | null;
   numberOfBeds: number;
   pricePerBed?: number;
+  numberOfProperties?: number;
 }

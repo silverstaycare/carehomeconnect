@@ -24,11 +24,13 @@ export function SubscriptionDetails({
 }: SubscriptionDetailsProps) {
   const { properties } = useOwnerProperties();
   const [totalBeds, setTotalBeds] = useState(0);
+  const [totalProperties, setTotalProperties] = useState(0);
   
   // Calculate total beds across all active properties
   useEffect(() => {
     if (properties && properties.length > 0) {
       const activeProperties = properties.filter(p => p.active);
+      setTotalProperties(activeProperties.length);
       const bedsSum = activeProperties.reduce((sum, property) => sum + (property.capacity || 0), 0);
       setTotalBeds(bedsSum);
     }
@@ -46,7 +48,6 @@ export function SubscriptionDetails({
 
   // Calculate monthly payment details
   const pricePerBed = subscription.pricePerBed || 19.99;
-  const numberOfProperties = properties ? properties.filter(p => p.active).length : 0;
   const numberOfBeds = subscription.numberOfBeds || totalBeds || 1;
   const monthlyTotal = (pricePerBed * numberOfBeds).toFixed(2);
   
@@ -96,8 +97,8 @@ export function SubscriptionDetails({
           <h3 className="font-medium text-care-800 mb-3">Current Monthly Billing</h3>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span>Listed Properties:</span>
-              <span className="font-medium">{numberOfProperties}</span>
+              <span>Total No of Home:</span>
+              <span className="font-medium">{totalProperties}</span>
             </div>
             <div className="flex justify-between">
               <span>Total Beds:</span>

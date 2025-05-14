@@ -7,6 +7,7 @@ import { useOwnerProperties } from "@/hooks/useOwnerProperties";
 import { NoActiveSubscription } from "./subscription/NoActiveSubscription";
 import { SubscriptionDetails } from "./subscription/SubscriptionDetails";
 import { DirectSubscriptionForm } from "./subscription/DirectSubscriptionForm";
+import { SubscriptionSummaryCard } from "./subscription/SubscriptionSummaryCard";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
@@ -99,19 +100,18 @@ export function ManageSubscriptionTab({ user }: ManageSubscriptionTabProps) {
                   <div>
                     <h3 className="font-medium text-lg">Subscribe now directly</h3>
                     <p className="text-gray-600">
-                      You have {totalBeds} beds across your properties. 
-                      Subscribe now at ${pricePerBed} per bed per month to list your properties 
+                      Subscribe at ${pricePerBed} per bed per month to list your properties 
                       and receive inquiries.
                     </p>
                   </div>
                 </div>
                 
-                <Button 
-                  onClick={() => setShowSubscribeForm(true)}
-                  className="w-full md:w-auto"
-                >
-                  Subscribe Now
-                </Button>
+                <div className="mt-6 max-w-xs mx-auto">
+                  <SubscriptionSummaryCard 
+                    pricePerBed={pricePerBed} 
+                    onSubscribeClick={() => setShowSubscribeForm(true)} 
+                  />
+                </div>
               </div>
             </>
           )}
