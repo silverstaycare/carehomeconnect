@@ -23,6 +23,7 @@ export function NoActiveSubscription({ onRetry, isProcessing }: NoActiveSubscrip
           size="sm"
           className="flex items-center gap-2"
           disabled={isProcessing}
+          variant="outline"
         >
           {isProcessing ? <Spinner size="sm" className="mr-2" /> : null}
           Retry loading data
