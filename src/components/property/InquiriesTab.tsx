@@ -1,10 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { format } from 'date-fns';
 import { supabase } from "@/integrations/supabase/client";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Inquiry {
   id: string;
@@ -38,6 +39,9 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [groupedInquiries, setGroupedInquiries] = useState<GroupedInquiry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const isMounted = useRef(true);
+  const hasInitiallyFetched = useRef(false);
   const { toast } = useToast();
 
   // Group inquiries by email
@@ -70,23 +74,25 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
     
     // Convert to array and sort by the latest message date (newest inquiry first)
     return Object.values(grouped).sort((a, b) => 
-      new Date(a.messages[0].created_at).getTime() - new Date(b.messages[0].created_at).getTime()
-    ).reverse();
+      new Date(b.messages[0].created_at).getTime() - new Date(a.messages[0].created_at).getTime()
+    );
   };
 
   // Fetch inquiries when the component mounts or when activeTab changes to "inquiries"
   useEffect(() => {
-    let isMounted = true; // To prevent state updates after unmount
+    isMounted.current = true;
     
     const fetchInquiries = async () => {
-      if (!isOwner) {
-        console.log("Not owner, skipping inquiry fetch");
+      if (!isOwner || !propertyId) {
+        console.log("Not owner or missing propertyId, skipping inquiry fetch");
+        setLoading(false);
         return;
       }
       
       try {
         console.log("Fetching inquiries for property:", propertyId);
         setLoading(true);
+        setError(null);
         
         const { data, error } = await supabase
           .from('inquiries')
@@ -96,12 +102,16 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
           
         if (error) {
           console.error("Error fetching inquiries:", error);
-          throw error;
+          if (isMounted.current) {
+            setError(error);
+            setLoading(false);
+          }
+          return;
         }
         
         console.log("Inquiries data:", data);
         
-        if (isMounted) {
+        if (isMounted.current) {
           setInquiries(data || []);
           setGroupedInquiries(groupInquiriesByUser(data || []));
           
@@ -120,7 +130,6 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
                 
               if (updateError) {
                 console.error('Error updating inquiry status:', updateError);
-                return;
               }
                 
               // Update local state to reflect the change
@@ -133,17 +142,22 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
               );
             }
           }
+          
+          setLoading(false);
+          hasInitiallyFetched.current = true;
         }
       } catch (error) {
         console.error('Error fetching inquiries:', error);
-      } finally {
-        if (isMounted) {
+        if (isMounted.current) {
+          setError(error as Error);
           setLoading(false);
         }
       }
     };
     
-    fetchInquiries();
+    if (activeTab === "inquiries" || !hasInitiallyFetched.current) {
+      fetchInquiries();
+    }
     
     // Set up a real-time subscription to listen for new inquiries
     const channel = supabase
@@ -157,34 +171,69 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
         // Add the new inquiry to the state
         const newInquiry = payload.new as Inquiry;
         console.log("New inquiry received:", newInquiry);
-        setInquiries(prev => {
-          const updated = [newInquiry, ...prev];
-          setGroupedInquiries(groupInquiriesByUser(updated));
-          return updated;
-        });
         
-        // Show a toast notification
-        if (activeTab !== 'inquiries') {
-          toast({
-            title: "New Inquiry",
-            description: `New inquiry received from ${newInquiry.name}`,
+        if (isMounted.current) {
+          setInquiries(prev => {
+            const updated = [newInquiry, ...prev];
+            setGroupedInquiries(groupInquiriesByUser(updated));
+            return updated;
           });
+          
+          // Show a toast notification
+          if (activeTab !== 'inquiries') {
+            toast({
+              title: "New Inquiry",
+              description: `New inquiry received from ${newInquiry.name}`,
+            });
+          }
         }
       })
       .subscribe();
       
     // Clean up subscription on unmount
     return () => {
-      isMounted = false;
+      isMounted.current = false;
       supabase.removeChannel(channel);
     };
   }, [propertyId, isOwner, activeTab, toast]);
 
   if (loading) {
     return (
-      <div className="py-8 flex justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-      </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            <div className="flex justify-between items-start">
+              <Skeleton className="h-6 w-1/3" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+            <div className="border-t pt-4">
+              <Skeleton className="h-24 w-full" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center py-8">
+            <p className="text-red-500 font-medium">Error loading inquiries</p>
+            <p className="text-muted-foreground">{error.message}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Retry
+            </button>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -200,7 +249,7 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
     );
   }
 
-  if (inquiries.length === 0) {
+  if (!inquiries || inquiries.length === 0) {
     return (
       <Card>
         <CardContent className="p-6">
