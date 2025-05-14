@@ -1,5 +1,5 @@
 
-import { InfoCircledIcon } from '@radix-ui/react-icons';
+import { Info } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 import { BedsInput } from './BedsInput';
 import { Card, CardContent } from '@/components/ui/card';
@@ -50,7 +50,7 @@ export const SubscriptionPageHeader = ({
                 This means your monthly cost depends on the number of beds in your care home.
               </p>
               <div className="flex items-center text-gray-600 text-sm">
-                <InfoCircledIcon className="mr-1 h-4 w-4" />
+                <Info className="mr-1 h-4 w-4" />
                 <p>You can manage or cancel your subscription at any time.</p>
               </div>
             </div>
@@ -65,7 +65,7 @@ export const SubscriptionPageHeader = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger className="flex items-center text-gray-600 text-sm underline cursor-help">
-                      <InfoCircledIcon className="mr-1 h-4 w-4" />
+                      <Info className="mr-1 h-4 w-4" />
                       How is this calculated?
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">

@@ -1,7 +1,15 @@
 
 import { PromoCodeBox } from "@/components/subscription/PromoCodeBox";
 import { PlanCard } from "@/components/subscription/PlanCard";
-import type { Subscription, SubscriptionPlan } from "@/types/subscription";
+import type { Subscription } from "@/types/subscription";
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description: string;
+  pricePerBed: number;
+  features: string[];
+}
 
 interface SubscriptionOptionsProps {
   plans: SubscriptionPlan[];
@@ -43,7 +51,7 @@ export const SubscriptionOptions = ({
           <PlanCard
             key={plan.id}
             plan={plan}
-            isCurrentPlan={currentSubscription?.planId === plan.id && currentSubscription?.status === 'active'}
+            isCurrentPlan={false}
             totalPrice={Number(calculateTotalPrice(plan.pricePerBed))}
             numberOfBeds={numberOfBeds}
             boostEnabled={boostEnabled}

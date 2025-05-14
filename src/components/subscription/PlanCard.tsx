@@ -2,18 +2,26 @@
 import { Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SubscriptionPlan } from "@/types/subscription";
+import { Badge } from "@/components/ui/badge";
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description: string;
+  pricePerBed: number;
+  features: string[];
+}
 
 interface PlanCardProps {
   plan: SubscriptionPlan;
   isCurrentPlan: boolean;
   totalPrice: number;
   numberOfBeds: number;
+  isSelected: boolean;
   boostEnabled: boolean;
   boostPrice: number;
+  onSelect: () => void;
   onSubscribe: () => void;
-  isSelected?: boolean;
-  onSelect?: () => void;
 }
 
 export const PlanCard = ({
@@ -21,11 +29,11 @@ export const PlanCard = ({
   isCurrentPlan,
   totalPrice,
   numberOfBeds,
+  isSelected,
   boostEnabled,
   boostPrice,
-  onSubscribe,
-  isSelected,
-  onSelect
+  onSelect,
+  onSubscribe
 }: PlanCardProps) => {
   // Determine button label based on current plan and the plan being displayed
   const getButtonLabel = () => {
