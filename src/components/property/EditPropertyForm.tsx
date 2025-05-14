@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
-
 interface Property {
   id: string;
   name: string;
@@ -22,7 +20,6 @@ interface Property {
   state: string;
   zip_code: string;
 }
-
 interface EditPropertyFormProps {
   property: Property;
   onSave: (updatedProperty: Partial<Property>) => void;
@@ -56,7 +53,6 @@ const formSchema = z.object({
     message: "Valid zip code is required"
   })
 });
-
 const EditPropertyForm = ({
   property,
   onSave,
@@ -66,7 +62,6 @@ const EditPropertyForm = ({
 
   // Split the location into components if available
   const addressParts = property.location.split(", ");
-  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -80,7 +75,6 @@ const EditPropertyForm = ({
       zip_code: property.zip_code || (addressParts.length > 2 ? addressParts[2].split(" ")[1] : "")
     }
   });
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
@@ -97,11 +91,9 @@ const EditPropertyForm = ({
       };
 
       // Update the database
-      const { error } = await supabase
-        .from('care_homes')
-        .update(propertyUpdate)
-        .eq('id', property.id);
-
+      const {
+        error
+      } = await supabase.from('care_homes').update(propertyUpdate).eq('id', property.id);
       if (error) throw error;
 
       // Call the onSave prop with the new values
@@ -109,7 +101,7 @@ const EditPropertyForm = ({
         ...propertyUpdate,
         location: `${values.address}, ${values.city}, ${values.state} ${values.zip_code}`
       });
-      
+
       // Toast notifications have been removed
     } catch (error) {
       console.error("Error updating property:", error);
@@ -118,149 +110,94 @@ const EditPropertyForm = ({
       setIsSubmitting(false);
     }
   };
-
-  return (
-    <Form {...form}>
+  return <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
+        <FormField control={form.control} name="name" render={({
+        field
+      }) => <FormItem>
               <FormLabel>Property Name</FormLabel>
               <FormControl>
                 <Input placeholder="Enter property name" {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
+            </FormItem>} />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
+        <FormField control={form.control} name="description" render={({
+        field
+      }) => <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Describe your property"
-                  className="min-h-[150px]"
-                  {...field}
-                />
+                <Textarea placeholder="Describe your property" className="min-h-[150px]" {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
+            </FormItem>} />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="price" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Starting Monthly Rent ($)</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
 
-          <FormField
-            control={form.control}
-            name="capacity"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="capacity" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Capacity (residents)</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
         </div>
 
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
+        <FormField control={form.control} name="address" render={({
+        field
+      }) => <FormItem>
               <FormLabel>Street Address</FormLabel>
               <FormControl>
                 <Input placeholder="123 Main St" {...field} />
               </FormControl>
               <FormMessage />
-            </FormItem>
-          )}
-        />
+            </FormItem>} />
 
         <div className="grid grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="city"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="city" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>City</FormLabel>
                 <FormControl>
                   <Input placeholder="City" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
 
-          <FormField
-            control={form.control}
-            name="state"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="state" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>State</FormLabel>
                 <FormControl>
                   <Input placeholder="State" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
 
-          <FormField
-            control={form.control}
-            name="zip_code"
-            render={({ field }) => (
-              <FormItem>
+          <FormField control={form.control} name="zip_code" render={({
+          field
+        }) => <FormItem>
                 <FormLabel>Zip Code</FormLabel>
                 <FormControl>
                   <Input placeholder="12345" {...field} />
                 </FormControl>
                 <FormMessage />
-              </FormItem>
-            )}
-          />
+              </FormItem>} />
         </div>
 
-        <div className="flex justify-end gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
+        
       </form>
-    </Form>
-  );
+    </Form>;
 };
-
 export default EditPropertyForm;
