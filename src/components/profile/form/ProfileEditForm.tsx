@@ -8,6 +8,7 @@ export interface ProfileFormValues {
   firstName: string;
   lastName: string;
   phone: string;
+  email?: string; // Added email as an optional property
 }
 
 interface ProfileEditFormProps {
