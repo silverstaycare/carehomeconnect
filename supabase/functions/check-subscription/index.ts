@@ -22,7 +22,7 @@ serve(async (req) => {
     // Create Supabase client for auth
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     // Get the authorization header from the request
@@ -47,6 +47,16 @@ serve(async (req) => {
     });
     
     if (customers.data.length === 0) {
+      // Update the subscribers table to record no subscription
+      await supabaseClient.from("subscribers").upsert({
+        user_id: user.id,
+        subscription_id: null,
+        status: 'inactive',
+        beds_count: 0,
+        current_period_end: null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+
       // No subscription found
       return new Response(JSON.stringify({ 
         subscribed: false,
@@ -67,6 +77,16 @@ serve(async (req) => {
     });
     
     if (subscriptions.data.length === 0) {
+      // Update the subscribers table to record canceled/expired subscription
+      await supabaseClient.from("subscribers").upsert({
+        user_id: user.id,
+        subscription_id: null,
+        status: 'inactive',
+        beds_count: 0,
+        current_period_end: null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+
       // No active subscription found
       return new Response(JSON.stringify({ 
         subscribed: false,
@@ -79,32 +99,21 @@ serve(async (req) => {
     
     const subscription = subscriptions.data[0];
     
-    // Get the subscription items to determine plan and add-ons
-    const items = await stripe.subscriptionItems.list({
-      subscription: subscription.id,
-    });
-    
-    // Determine plan type and whether boost is enabled
-    let planId = 'basic';
-    let hasBoost = false;
+    // Get number of beds from subscription quantity
     let numberOfBeds = 1;
-    
-    for (const item of items.data) {
-      const product = await stripe.products.retrieve(item.price.product as string);
-      
-      if (product.metadata.type === 'plan') {
-        planId = product.metadata.plan_id || 'basic';
-        
-        // Try to get the number of beds from the quantity or metadata
-        if (item.quantity) {
-          numberOfBeds = item.quantity;
-        } else if (product.metadata.beds) {
-          numberOfBeds = parseInt(product.metadata.beds, 10);
-        }
-      } else if (product.metadata.type === 'addon' && product.metadata.name === 'boost') {
-        hasBoost = true;
-      }
+    if (subscription.items.data.length > 0) {
+      numberOfBeds = subscription.items.data[0].quantity || 1;
     }
+    
+    // Update the subscribers table with current subscription info
+    await supabaseClient.from("subscribers").upsert({
+      user_id: user.id,
+      subscription_id: subscription.id,
+      status: 'active',
+      beds_count: numberOfBeds,
+      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
     
     // Return subscription details
     return new Response(JSON.stringify({
@@ -113,8 +122,6 @@ serve(async (req) => {
         id: subscription.id,
         status: subscription.status,
         currentPeriodEnd: subscription.current_period_end * 1000, // Convert to milliseconds
-        planId,
-        hasBoost,
         numberOfBeds
       }
     }), {

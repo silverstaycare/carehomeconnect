@@ -6,64 +6,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import type { Subscription, SubscriptionPlan } from "@/types/subscription";
+import type { Subscription } from "@/types/subscription";
 import { SuccessDialog } from "./SuccessDialog";
 import { CanceledDialog } from "./CanceledDialog";
 import { SubscriptionPageHeader } from "./SubscriptionPageHeader";
-import { SubscriptionOptions } from "./SubscriptionOptions";
-import { ConfirmPlanChangeButton } from "./ConfirmPlanChangeButton";
+import { SingleSubscriptionOption } from "./SingleSubscriptionOption";
+import { PromoCodeBox } from "./PromoCodeBox";
 
 const SubscriptionManager = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [boostEnabled, setBoostEnabled] = useState(false);
   const [numberOfBeds, setNumberOfBeds] = useState(1);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const boostPrice = 49.99;
-  
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showCanceledDialog, setShowCanceledDialog] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(false);
 
-  useEffect(() => {
-    const mockPlans: SubscriptionPlan[] = [
-      {
-        id: 'basic',
-        name: 'Starter',
-        pricePerBed: 59.99,
-        billingCycle: 'monthly',
-        features: [
-          'Get online.',
-          'List your care home',
-          'Basic profile (photos, description, pricing)',
-          'Inquiries sent to email',
-          'Limited to 1 active listing per home'
-        ]
-      },
-      {
-        id: 'pro',
-        name: 'Pro',
-        pricePerBed: 79.99,
-        billingCycle: 'monthly',
-        features: [
-          'Grow faster, more leads.',
-          'Everything in Starter',
-          'Priority placement in search results',
-          'SMS/Email lead notifications',
-          'Online booking inquiry form',
-          'Up to 5 homes/properties',
-          'Analytics dashboard (views, inquiries)'
-        ]
-      }
-    ];
+  // Price per bed per month
+  const pricePerBed = 19.99;
 
-    setPlans(mockPlans);
+  useEffect(() => {
     checkSubscriptionStatus();
   }, []);
 
@@ -81,14 +48,12 @@ const SubscriptionManager = () => {
       
       if (data.subscribed && data.subscription) {
         setCurrentSubscription({
-          planId: data.subscription.planId,
           status: data.subscription.status,
           currentPeriodEnd: data.subscription.currentPeriodEnd,
-          hasBoost: data.subscription.hasBoost
+          numberOfBeds: data.subscription.numberOfBeds
         });
         
         // Set the UI to match the current subscription
-        setBoostEnabled(data.subscription.hasBoost);
         setNumberOfBeds(data.subscription.numberOfBeds);
       } else {
         setCurrentSubscription(null);
@@ -106,27 +71,21 @@ const SubscriptionManager = () => {
     }
   };
 
-  const calculateTotalPrice = (pricePerBed: number) => {
-    let total = pricePerBed * numberOfBeds;
-    if (boostEnabled) {
-      total += boostPrice;
-    }
+  const calculateTotalPrice = () => {
+    const total = pricePerBed * numberOfBeds;
     return total.toFixed(2);
   };
 
-  const handleSubscribe = async (planId: string) => {
+  const handleSubscribe = async () => {
     if (!user) {
       toast({
         title: "Login Required",
-        description: "Please log in to subscribe to a plan",
+        description: "Please log in to subscribe",
         variant: "destructive",
       });
       navigate("/login");
       return;
     }
-    
-    const selectedPlan = plans.find(p => p.id === planId);
-    if (!selectedPlan) return;
     
     try {
       setIsProcessing(true);
@@ -134,9 +93,7 @@ const SubscriptionManager = () => {
       // Create a checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          planId,
           numberOfBeds,
-          boostEnabled,
         },
       });
       
@@ -202,60 +159,6 @@ const SubscriptionManager = () => {
     });
   };
 
-  const handleSelectPlan = (planId: string) => {
-    setSelectedPlanId(planId);
-  };
-
-  const handleConfirmPlanChange = async () => {
-    if (!selectedPlanId) {
-      toast({
-        title: "No Plan Selected",
-        description: "Please select a plan before confirming",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setIsProcessing(true);
-      
-      // Create a checkout session with the existing payment method
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          planId: selectedPlanId,
-          numberOfBeds,
-          boostEnabled,
-          useExistingPaymentMethod: true,
-        },
-      });
-      
-      if (error) throw error;
-      
-      // Handle the response - might immediately redirect or confirm the change
-      if (data.success) {
-        toast({
-          title: "Plan Updated",
-          description: "Your subscription plan has been updated successfully",
-        });
-        checkSubscriptionStatus();
-      } else if (data.url) {
-        // If we still need to redirect to a checkout page
-        window.location.href = data.url;
-      } else {
-        throw new Error("Unexpected response from server");
-      }
-    } catch (error) {
-      console.error("Error updating subscription:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update subscription plan",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="container py-12 flex justify-center items-center">
@@ -274,29 +177,20 @@ const SubscriptionManager = () => {
         currentSubscription={currentSubscription}
         numberOfBeds={numberOfBeds}
         onBedsChange={setNumberOfBeds}
-        boostEnabled={boostEnabled}
-        onBoostChange={setBoostEnabled}
-        boostPrice={boostPrice}
+        pricePerBed={pricePerBed}
       />
 
-      <SubscriptionOptions
-        plans={plans}
-        currentSubscription={currentSubscription}
+      <PromoCodeBox onApplyPromo={handlePromoCode} />
+
+      <SingleSubscriptionOption 
+        pricePerBed={pricePerBed}
         numberOfBeds={numberOfBeds}
-        boostEnabled={boostEnabled}
-        boostPrice={boostPrice}
-        onPromoApplied={handlePromoCode}
+        totalPrice={Number(calculateTotalPrice())}
+        currentSubscription={currentSubscription}
+        isProcessing={isProcessing}
         onSubscribe={handleSubscribe}
-        selectedPlanId={selectedPlanId}
-        onSelectPlan={handleSelectPlan}
+        onManage={handleManageSubscription}
       />
-
-      {currentSubscription?.status === 'active' && selectedPlanId && (
-        <ConfirmPlanChangeButton 
-          isProcessing={isProcessing}
-          onConfirm={handleConfirmPlanChange}
-        />
-      )}
 
       <SuccessDialog 
         open={showSuccessDialog} 

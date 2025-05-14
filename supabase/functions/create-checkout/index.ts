@@ -41,44 +41,22 @@ serve(async (req) => {
     const user = userData.user;
 
     // Get request body
-    const { planId, numberOfBeds, boostEnabled, successUrl, cancelUrl } = await req.json();
+    const { numberOfBeds, successUrl, cancelUrl } = await req.json();
     
-    // Create line items
-    const lineItems = [];
-
-    // Determine pricing based on the plan
-    if (planId === 'pro') {
-      // Use the specific Stripe Price ID for Pro plan
-      lineItems.push({
-        price: 'price_1RNYnxIpb6JiWPFAiaqSd2BI',
-        quantity: numberOfBeds,
-      });
-    } else if (planId === 'basic') {
-      // Use the specific Stripe Price ID for Starter plan
-      lineItems.push({
-        price: 'price_1RNYneIpb6JiWPFADhjn8JtB',
-        quantity: numberOfBeds,
-      });
-    } else {
-      throw new Error("Invalid plan ID");
-    }
-
-    // Add boost if enabled
-    if (boostEnabled) {
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Boost Add-on',
-          },
-          unit_amount: 4999, // $49.99 in cents
-          recurring: {
-            interval: 'month',
-          },
+    // Create line items for the single subscription tier at $19.99 per bed
+    const lineItems = [{
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: 'Care Home Listing Subscription',
         },
-        quantity: 1,
-      });
-    }
+        unit_amount: 1999, // $19.99 in cents
+        recurring: {
+          interval: 'month',
+        },
+      },
+      quantity: numberOfBeds || 1,
+    }];
 
     // Check if user already exists as a Stripe customer
     const customers = await stripe.customers.list({
@@ -101,9 +79,7 @@ serve(async (req) => {
       cancel_url: cancelUrl || `${req.headers.get("origin")}/owner/subscription?canceled=true`,
       metadata: {
         userId: user.id,
-        planId: planId,
         numberOfBeds: numberOfBeds.toString(),
-        boostEnabled: boostEnabled ? 'true' : 'false',
       },
     });
 

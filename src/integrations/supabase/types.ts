@@ -304,6 +304,39 @@ export type Database = {
         }
         Relationships: []
       }
+      subscribers: {
+        Row: {
+          beds_count: number
+          created_at: string
+          current_period_end: string | null
+          id: string
+          status: string
+          subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          beds_count?: number
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          beds_count?: number
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

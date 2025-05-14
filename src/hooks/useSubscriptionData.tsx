@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Subscription, SubscriptionPlan } from "@/types/subscription";
+import { Subscription } from "@/types/subscription";
 
 export function useSubscriptionData(userId: string) {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -78,42 +78,6 @@ export function useSubscriptionData(userId: string) {
     }
   };
 
-  // Update subscription
-  const updateSubscription = async (planId: string, hasBoost: boolean) => {
-    if (!userId) return false;
-    
-    setIsProcessing(true);
-    
-    try {
-      // Call Supabase edge function to update subscription
-      const { data, error } = await supabase.functions.invoke('update-subscription', {
-        body: { planId, hasBoost }
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Subscription updated",
-        description: "Your subscription has been updated successfully",
-        icon: "check"
-      });
-      
-      // Refresh subscription data
-      fetchSubscription();
-      return true;
-    } catch (error) {
-      console.error("Error updating subscription:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update subscription. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   // Create customer portal session
   const createPortalSession = async () => {
     if (!userId) return null;
@@ -154,7 +118,6 @@ export function useSubscriptionData(userId: string) {
     isProcessing,
     fetchSubscription,
     cancelSubscription,
-    updateSubscription,
     createPortalSession
   };
 }

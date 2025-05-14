@@ -22,7 +22,6 @@ export function SubscriptionDetails({
   isProcessing,
   onManageSubscription
 }: SubscriptionDetailsProps) {
-  const isPro = subscription?.planId === 'pro';
   const { properties } = useOwnerProperties();
   const [totalBeds, setTotalBeds] = useState(0);
   
@@ -36,38 +35,31 @@ export function SubscriptionDetails({
   }, [properties]);
   
   // Define features based on the plan
-  const features = isPro ? [
-    'Grow faster, more leads',
-    'Priority placement in search results',
-    'SMS/Email lead notifications',
-    'Online booking inquiry form',
-    'Up to 5 homes/properties',
-    'Analytics dashboard'
-  ] : [
-    'Get online',
+  const features = [
     'List your care home',
-    'Basic profile (photos, description, pricing)',
-    'Inquiries sent to email',
-    'Limited to 1 active listing per home'
+    'Profile with photos, description, and pricing',
+    'Online booking inquiry form',
+    'Email notifications for inquiries',
+    'Analytics dashboard (views, inquiries)',
+    'Priority placement in search results'
   ];
 
   // Calculate monthly payment details
-  const pricePerBed = isPro ? 79.99 : 59.99;
+  const pricePerBed = 19.99;
   const numberOfProperties = properties ? properties.filter(p => p.active).length : 0;
-  const monthlyTotal = (pricePerBed * totalBeds).toFixed(2);
-  const boostPrice = subscription?.hasBoost ? 19.99 : 0;
-  const totalWithBoost = (parseFloat(monthlyTotal) + boostPrice).toFixed(2);
+  const numberOfBeds = subscription.numberOfBeds || totalBeds || 1;
+  const monthlyTotal = (pricePerBed * numberOfBeds).toFixed(2);
   
   return (
-    <Card className={`border-2 ${isPro ? 'border-care-500' : 'border-blue-400'}`}>
+    <Card className="border-2 border-care-500">
       <CardHeader>
-        <CardTitle>Current Plan: {isPro ? 'Pro' : 'Starter'}</CardTitle>
+        <CardTitle>Current Subscription</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
           <div className="mb-6">
             <p className="text-2xl font-bold">
-              ${isPro ? '79.99' : '59.99'}
+              ${pricePerBed}
               <span className="text-lg font-normal text-gray-600">/bed/month</span>
             </p>
           </div>
@@ -91,15 +83,6 @@ export function SubscriptionDetails({
                   </span>
                 </div>
               )}
-              
-              {subscription?.hasBoost && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Visibility boost:</span>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Active
-                  </Badge>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -114,7 +97,7 @@ export function SubscriptionDetails({
             </div>
             <div className="flex justify-between">
               <span>Total Beds:</span>
-              <span className="font-medium">{totalBeds}</span>
+              <span className="font-medium">{numberOfBeds}</span>
             </div>
             <div className="flex justify-between">
               <span>Rate Per Bed:</span>
@@ -122,7 +105,7 @@ export function SubscriptionDetails({
             </div>
             <div className="border-t border-care-200 pt-2 mt-2 flex justify-between font-bold">
               <span>Total Monthly Cost:</span>
-              <span>${subscription?.hasBoost ? totalWithBoost : monthlyTotal}</span>
+              <span>${monthlyTotal}</span>
             </div>
           </div>
         </div>
