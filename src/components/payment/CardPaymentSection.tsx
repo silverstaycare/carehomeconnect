@@ -1,18 +1,8 @@
 
 import React, { forwardRef, ForwardRefRenderFunction } from "react";
-import { PaymentMethodManager } from "@/components/payment/PaymentMethodManager";
-import { BankDetailsSection } from "@/components/payment/BankDetailsSection";
-import { BankDetails } from "@/types/bank";
 
 interface CardPaymentSectionProps {
   user: any;
-  sharedBankAccount?: boolean;
-  bankDetails?: BankDetails | null;
-  onBankDetailsChanged?: () => void;
-  initialAddCardOpen?: boolean;
-  initialAddBankOpen?: boolean;
-  onAddCardOpenChange?: (isOpen: boolean) => void;
-  onAddBankOpenChange?: (isOpen: boolean) => void;
   isEditMode?: boolean;
   isOwner?: boolean;
 }
@@ -20,31 +10,17 @@ interface CardPaymentSectionProps {
 // Create the forwarded ref component
 const CardPaymentSectionComponent: ForwardRefRenderFunction<any, CardPaymentSectionProps> = ({ 
   user,
-  sharedBankAccount = false,
-  bankDetails = null,
-  onBankDetailsChanged,
-  initialAddCardOpen = false,
-  initialAddBankOpen = false,
-  onAddCardOpenChange,
-  onAddBankOpenChange,
   isEditMode = false,
   isOwner = false
 }, ref) => {
   return (
     <div className="space-y-8">
-      <PaymentMethodManager 
-        user={user} 
-        sharedBankAccount={sharedBankAccount} 
-        bankDetails={bankDetails}
-        onBankDetailsChanged={onBankDetailsChanged}
-        initialAddCardOpen={initialAddCardOpen}
-        initialAddBankOpen={initialAddBankOpen}
-        onAddCardOpenChange={onAddCardOpenChange}
-        onAddBankOpenChange={onAddBankOpenChange}
-        isEditMode={isEditMode}
-        isOwner={isOwner}
-        ref={ref}
-      />
+      <div className="bg-amber-50 border-l-4 border-amber-400 p-4">
+        <p className="text-amber-700">
+          Payment information is now processed securely through Stripe and not stored in our system.
+          Payment details will be requested at checkout.
+        </p>
+      </div>
     </div>
   );
 };

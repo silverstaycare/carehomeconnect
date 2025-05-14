@@ -5,6 +5,7 @@ import LoadingSpinner from '@/components/payment/LoadingSpinner';
 import PropertyNotFound from '@/components/payment/PropertyNotFound';
 import PaymentSummary from '@/components/payment/PaymentSummary';
 import PaymentForm from '@/components/payment/PaymentForm';
+import { toast } from "sonner";
 
 interface PropertyDetails {
   id: string;
@@ -48,31 +49,6 @@ const PaymentPage = () => {
     fetchPropertyDetails();
   }, [propertyId]);
 
-  const formatCardNumber = (value: string) => {
-    const val = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = val.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-
-    for (let i = 0; i < match.length; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return value;
-    }
-  };
-
-  const formatExpiry = (value: string) => {
-    const val = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    if (val.length > 2) {
-      return val.substring(0, 2) + '/' + val.substring(2, 4);
-    }
-    return val;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -84,7 +60,14 @@ const PaymentPage = () => {
       if (expiry.length < 5) throw new Error('Please enter a valid expiry date');
       if (cvc.length < 3) throw new Error('Please enter a valid CVC');
 
+      // Here, we would normally redirect to Stripe checkout
+      // For now, we'll simulate a successful payment
       await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast.success("Payment successful", {
+        description: "Your payment has been processed successfully."
+      });
+      
       navigate('/family/dashboard');
     } catch (error) {
       console.error('Payment error:', error);

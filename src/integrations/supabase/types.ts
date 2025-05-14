@@ -9,42 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      bank_details: {
-        Row: {
-          account_name: string
-          account_number: string
-          bank_name: string
-          created_at: string | null
-          id: string
-          routing_number: string
-          updated_at: string | null
-          use_for_both: boolean | null
-          user_id: string
-        }
-        Insert: {
-          account_name: string
-          account_number: string
-          bank_name: string
-          created_at?: string | null
-          id?: string
-          routing_number: string
-          updated_at?: string | null
-          use_for_both?: boolean | null
-          user_id: string
-        }
-        Update: {
-          account_name?: string
-          account_number?: string
-          bank_name?: string
-          created_at?: string | null
-          id?: string
-          routing_number?: string
-          updated_at?: string | null
-          use_for_both?: boolean | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       bookings: {
         Row: {
           care_home_id: string
@@ -309,54 +273,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      payment_methods: {
-        Row: {
-          bank_name: string | null
-          created_at: string | null
-          exp_month: number | null
-          exp_year: number | null
-          id: string
-          is_for_payment: boolean | null
-          is_for_rent: boolean | null
-          is_for_subscription: boolean | null
-          last4: string | null
-          name: string
-          type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          bank_name?: string | null
-          created_at?: string | null
-          exp_month?: number | null
-          exp_year?: number | null
-          id?: string
-          is_for_payment?: boolean | null
-          is_for_rent?: boolean | null
-          is_for_subscription?: boolean | null
-          last4?: string | null
-          name: string
-          type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          bank_name?: string | null
-          created_at?: string | null
-          exp_month?: number | null
-          exp_year?: number | null
-          id?: string
-          is_for_payment?: boolean | null
-          is_for_rent?: boolean | null
-          is_for_subscription?: boolean | null
-          last4?: string | null
-          name?: string
-          type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
       }
       profiles: {
         Row: {

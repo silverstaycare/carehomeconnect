@@ -3,9 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { CreditCard, Home } from "lucide-react";
+import { Home } from "lucide-react";
 import { ProfileInfoTab } from "@/components/profile/ProfileInfoTab";
-import { PaymentSettingsTab } from "@/components/profile/PaymentSettingsTab";
 import { ManageSubscriptionTab } from "@/components/profile/ManageSubscriptionTab";
 import { useProfileData } from "@/hooks/useProfileData";
 
@@ -48,11 +47,11 @@ export default function ProfilePage() {
     <div className="container py-8 px-4 max-w-2xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Account Settings</h1>
-        <p className="text-gray-600">Manage your account and subscription</p>
+        <p className="text-gray-600">Manage your account {isOwner && "and subscription"}</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className={`w-full grid ${isOwner ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <TabsList className={`w-full grid ${isOwner ? 'grid-cols-2' : 'grid-cols-1'}`}>
           <TabsTrigger value="profile">Profile</TabsTrigger>
           {isOwner && (
             <TabsTrigger value="manage" className="flex items-center gap-2">
@@ -60,10 +59,6 @@ export default function ProfilePage() {
               <span>Subscription</span>
             </TabsTrigger>
           )}
-          <TabsTrigger value="payment" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            <span>Payments</span>
-          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="profile" className="pt-4">
@@ -78,10 +73,6 @@ export default function ProfilePage() {
             <ManageSubscriptionTab user={user} />
           </TabsContent>
         )}
-
-        <TabsContent value="payment" className="pt-4">
-          <PaymentSettingsTab user={user} />
-        </TabsContent>
       </Tabs>
     </div>
   );
