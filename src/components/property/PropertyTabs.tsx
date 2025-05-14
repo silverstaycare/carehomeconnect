@@ -115,13 +115,15 @@ const PropertyTabs = ({
       </TabsContent>
       
       {/* Inquiries Tab - Only shown to property owners */}
-      <TabsContent value="inquiries">
-        <InquiriesTab
-          propertyId={property.id}
-          isOwner={isOwner}
-          activeTab={activeTab}
-        />
-      </TabsContent>
+      {isOwner && (
+        <TabsContent value="inquiries">
+          <InquiriesTab
+            propertyId={property.id}
+            isOwner={isOwner}
+            activeTab={activeTab}
+          />
+        </TabsContent>
+      )}
     </Tabs>
   );
 };

@@ -77,8 +77,11 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
   // Fetch inquiries when the component mounts or when activeTab changes to "inquiries"
   useEffect(() => {
     const fetchInquiries = async () => {
+      if (!isOwner) return; // Don't fetch if not owner
+      
       try {
         setLoading(true);
+        console.log("Fetching inquiries for property:", propertyId);
         
         const { data, error } = await supabase
           .from('inquiries')
@@ -87,9 +90,11 @@ const InquiriesTab = ({ propertyId, isOwner, activeTab }: InquiriesTabProps) => 
           .order('created_at', { ascending: false });
           
         if (error) {
+          console.error("Error fetching inquiries:", error);
           throw error;
         }
         
+        console.log("Inquiries data:", data);
         setInquiries(data || []);
         setGroupedInquiries(groupInquiriesByUser(data || []));
         
