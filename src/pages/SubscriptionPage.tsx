@@ -1,24 +1,44 @@
+
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import SubscriptionManager from '@/components/subscription/SubscriptionManager';
 
 const SubscriptionPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
 
   // Check for success or canceled status from URL
   useEffect(() => {
-    // Clean up URL params
-    if (searchParams.has('success') || searchParams.has('canceled')) {
+    // Show success toast if redirected from successful subscription
+    if (searchParams.has('success')) {
+      toast({
+        title: "Subscription Successful",
+        description: "Your subscription has been activated successfully.",
+        variant: "default",
+      });
+      // Clean up URL params
       navigate('/owner/subscription', { replace: true });
     }
-  }, [searchParams, navigate]);
+    
+    // Show canceled toast if subscription was canceled
+    else if (searchParams.has('canceled')) {
+      toast({
+        title: "Subscription Canceled",
+        description: "Your subscription process was canceled.",
+        variant: "default",
+      });
+      // Clean up URL params
+      navigate('/owner/subscription', { replace: true });
+    }
+  }, [searchParams, navigate, toast]);
 
   const handleBackToProfile = () => {
     // Navigate to profile page with the manage tab active
-    navigate('/profile', { state: { activeTab: 'profile' } });
+    navigate('/profile', { state: { activeTab: 'manage' } });
   };
 
   return (

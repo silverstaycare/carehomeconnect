@@ -1,15 +1,18 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Home } from "lucide-react";
 import { ProfileInfoTab } from "@/components/profile/ProfileInfoTab";
 import { ManageSubscriptionTab } from "@/components/profile/ManageSubscriptionTab";
 import { useProfileData } from "@/hooks/useProfileData";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(() => {
     // Check if we have a tab parameter in the location state
     return location.state?.activeTab || "profile";
@@ -36,7 +39,16 @@ export default function ProfilePage() {
       initialLoad.current = false;
       fetchProfileData();
     }
-  }, [user, navigate, fetchProfileData]);
+    
+    // Show success toast if subscribed parameter is present
+    if (searchParams.has('subscribed')) {
+      toast({
+        title: "Subscription Activated",
+        description: "Your care home subscription has been activated successfully.",
+      });
+      navigate("/profile", { replace: true });
+    }
+  }, [user, navigate, fetchProfileData, searchParams, toast]);
 
   // Fetch fresh profile data when needed, don't re-fetch on every render
   const handleProfileUpdated = async () => {
